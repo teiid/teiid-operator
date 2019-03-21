@@ -16,10 +16,10 @@ type VirtualDatabaseSpec struct {
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
-	Phase          IntegrationPhase `json:"phase,omitempty"`
-	Failure        string           `json:"failure,omitempty"`
-	Image          string           `json:"image,omitempty"`
-	RuntimeVersion string           `json:"runtimeVersion,omitempty"`
+	Phase          PublishingPhase `json:"phase,omitempty"`
+	Failure        string          `json:"failure,omitempty"`
+	Image          string          `json:"image,omitempty"`
+	RuntimeVersion string          `json:"runtimeVersion,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -44,34 +44,34 @@ type VirtualDatabaseList struct {
 }
 
 // IntegrationPhase --
-type IntegrationPhase string
+type PublishingPhase string
 
 const (
 	// IntegrationKind --
 	IntegrationKind string = "Integration"
 
 	// IntegrationPhaseInitial --
-	IntegrationPhaseInitial IntegrationPhase = ""
+	PublishingPhaseInitial PublishingPhase = ""
 	// IntegrationPhaseWaitingForPlatform --
-	IntegrationPhaseWaitingForPlatform IntegrationPhase = "Waiting For Platform"
+	PublishingPhaseWaitingForPlatform PublishingPhase = "Waiting For Platform"
 	// IntegrationPhaseBuildingContext --
-	IntegrationPhaseBuildingContext IntegrationPhase = "Building Context"
+	PublishingPhaseBuildingContext PublishingPhase = "Building Context"
 	// IntegrationPhaseResolvingContext --
-	IntegrationPhaseResolvingContext IntegrationPhase = "Resolving Context"
+	PublishingPhaseResolvingContext PublishingPhase = "Resolving Context"
 	// IntegrationPhaseBuildImageSubmitted --
-	IntegrationPhaseBuildImageSubmitted IntegrationPhase = "Build Image Submitted"
+	PublishingPhaseBuildImageSubmitted PublishingPhase = "Build Image Submitted"
 	// IntegrationPhaseBuildImageRunning --
-	IntegrationPhaseBuildImageRunning IntegrationPhase = "Build Image Running"
+	PublishingPhaseBuildImageRunning PublishingPhase = "Build Image Running"
 	// IntegrationPhaseDeploying --
-	IntegrationPhaseDeploying IntegrationPhase = "Deploying"
+	PublishingPhaseDeploying PublishingPhase = "Deploying"
 	// IntegrationPhaseRunning --
-	IntegrationPhaseRunning IntegrationPhase = "Running"
+	PublishingPhaseRunning PublishingPhase = "Running"
 	// IntegrationPhaseError --
-	IntegrationPhaseError IntegrationPhase = "Error"
+	PublishingPhaseError PublishingPhase = "Error"
 	// IntegrationPhaseBuildFailureRecovery --
-	IntegrationPhaseBuildFailureRecovery IntegrationPhase = "Building Failure Recovery"
+	PublishingPhaseBuildFailureRecovery PublishingPhase = "Building Failure Recovery"
 	// IntegrationPhaseDeleting --
-	IntegrationPhaseDeleting IntegrationPhase = "Deleting"
+	PublishingPhaseDeleting PublishingPhase = "Deleting"
 )
 
 func init() {
