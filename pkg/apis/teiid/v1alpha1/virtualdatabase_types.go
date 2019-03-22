@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -10,13 +11,17 @@ import (
 // VirtualDatabaseSpec defines the desired state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseSpec struct {
-	Replicas *int32 `json:"replicas,omitempty"`
+	Replicas      *int32          `json:"replicas,omitempty"`
+	Content       string          `json:"content,omitempty"`
+	Dependencies  []string        `json:"dependencies,omitempty"`
+	Configuration []corev1.EnvVar `json:"env,omitempty"`
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
 	Phase          PublishingPhase `json:"phase,omitempty"`
+	Digest         string          `json:"digest,omitempty"`
 	Failure        string          `json:"failure,omitempty"`
 	Image          string          `json:"image,omitempty"`
 	RuntimeVersion string          `json:"runtimeVersion,omitempty"`
@@ -48,16 +53,14 @@ type PublishingPhase string
 
 const (
 	// IntegrationKind --
-	IntegrationKind string = "Integration"
+	VirtualDatabaseKind string = "VirtualDatabase"
 
 	// IntegrationPhaseInitial --
 	PublishingPhaseInitial PublishingPhase = ""
-	// IntegrationPhaseWaitingForPlatform --
-	PublishingPhaseWaitingForPlatform PublishingPhase = "Waiting For Platform"
-	// IntegrationPhaseBuildingContext --
-	PublishingPhaseBuildingContext PublishingPhase = "Building Context"
-	// IntegrationPhaseResolvingContext --
-	PublishingPhaseResolvingContext PublishingPhase = "Resolving Context"
+
+	// Code generation
+	PublishingPhaseCodeGeneration PublishingPhase = "Code Generation"
+
 	// IntegrationPhaseBuildImageSubmitted --
 	PublishingPhaseBuildImageSubmitted PublishingPhase = "Build Image Submitted"
 	// IntegrationPhaseBuildImageRunning --

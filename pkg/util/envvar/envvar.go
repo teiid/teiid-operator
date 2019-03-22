@@ -17,7 +17,9 @@ limitations under the License.
 
 package envvar
 
-import corev1 "k8s.io/api/core/v1"
+import (
+	corev1 "k8s.io/api/core/v1"
+)
 
 // Get --
 func Get(vars []corev1.EnvVar, name string) *corev1.EnvVar {

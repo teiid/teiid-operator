@@ -20,8 +20,9 @@ package log
 import (
 	"fmt"
 
-	"github.com/go-logr/logr"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+
+	"github.com/go-logr/logr"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
@@ -30,7 +31,7 @@ var Log Logger
 
 func init() {
 	Log = Logger{
-		delegate: logf.Log.WithName("teiid-operator"),
+		delegate: logf.Log.WithName("VirtualDatabase"),
 	}
 }
 
@@ -83,6 +84,43 @@ func (l Logger) WithValues(keysAndValues ...interface{}) Logger {
 	}
 }
 
+// ForIntegration --
+func (l Logger) ForVirtualDatabase(target *v1alpha1.VirtualDatabase) Logger {
+	return l.WithValues(
+		"api-version", target.APIVersion,
+		"kind", target.Kind,
+		"ns", target.Namespace,
+		"name", target.Name,
+	)
+}
+
+// ***********************************
+//
+// Helpers
+//
+// ***********************************
+
+// WithName --
+func WithName(name string) Logger {
+	return Log.WithName(name)
+}
+
+// WithValues --
+func WithValues(keysAndValues ...interface{}) Logger {
+	return Log.WithValues(keysAndValues...)
+}
+
+// ForIntegration --
+func ForIntegration(target *v1alpha1.VirtualDatabase) Logger {
+	return Log.ForVirtualDatabase(target)
+}
+
+// ***********************************
+//
+//
+//
+// ***********************************
+
 // Debugf --
 func Debugf(format string, args ...interface{}) {
 	Log.Debugf(format, args...)
@@ -111,13 +149,4 @@ func Info(msg string, keysAndValues ...interface{}) {
 // Error --
 func Error(err error, msg string, keysAndValues ...interface{}) {
 	Log.Error(err, msg, keysAndValues...)
-}
-
-func (l Logger) ForVirtualDatabase(target *v1alpha1.VirtualDatabase) Logger {
-	return l.WithValues(
-		"api-version", target.APIVersion,
-		"kind", target.Kind,
-		"ns", target.Namespace,
-		"name", target.Name,
-	)
 }

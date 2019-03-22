@@ -21,36 +21,37 @@ import (
 	"context"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/client"
-	"github.com/teiid/teiid-operator/pkg/util/log"
 )
 
-// Action --
-type Action interface {
-	client.Injectable
-
-	// a user friendly name for the action
-	Name() string
-
-	// returns true if the action can handle the vdb
-	CanHandle(vdb *v1alpha1.VirtualDatabase) bool
-
-	// executes the handling function
-	Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error
-
-	// Inject virtualization logger
-	InjectLogger(log.Logger)
+func NewCodeGenerationAction() Action {
+	return &codeGenerationAction{}
 }
 
-type baseAction struct {
-	client client.Client
-	Log    log.Logger
+type codeGenerationAction struct {
+	baseAction
 }
 
-func (action *baseAction) InjectClient(client client.Client) {
-	action.client = client
+// Name returns a common name of the action
+func (action *codeGenerationAction) Name() string {
+	return "code generation"
 }
 
-func (action *baseAction) InjectLogger(log log.Logger) {
-	action.Log = log
+// CanHandle tells whether this action can handle the virtualdatabase
+func (action *codeGenerationAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
+	return vdb.Status.Phase == v1alpha1.PublishingPhaseCodeGeneration
+}
+
+// Handle handles the virtualdatabase
+func (action *codeGenerationAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error {
+
+	// do code generation.
+
+	// update the status
+	target := vdb.DeepCopy()
+
+	target.Status.Phase = v1alpha1.PublishingPhaseBuildImageSubmitted
+
+	action.Log.Info("VDB state transition", "phase", target.Status.Phase)
+
+	return action.client.Status().Update(ctx, target)
 }

@@ -29,67 +29,29 @@ import (
 
 // ComputeForIntegration a digest of the fields that are relevant for the deployment
 // Produces a digest that can be used as docker image tag
-func ComputeForIntegration(integration *v1alpha1.Integration) (string, error) {
+func ComputeForVirtualDatabase(vdb *v1alpha1.VirtualDatabase) (string, error) {
 	hash := sha256.New()
 	// Operator version is relevant
 	if _, err := hash.Write([]byte(defaults.Version)); err != nil {
 		return "", err
 	}
-	// Integration Context is relevant
-	if _, err := hash.Write([]byte(integration.Spec.Context)); err != nil {
-		return "", err
-	}
 
 	// Integration code
-	for _, s := range integration.Spec.Sources {
-		if s.Content != "" {
-			if _, err := hash.Write([]byte(s.Content)); err != nil {
-				return "", err
-			}
-		}
-	}
-
-	// Integration resources
-	for _, item := range integration.Spec.Resources {
-		if _, err := hash.Write([]byte(item.Content)); err != nil {
+	if vdb.Spec.Content != "" {
+		if _, err := hash.Write([]byte(vdb.Spec.Content)); err != nil {
 			return "", err
 		}
 	}
 
 	// Integration dependencies
-	for _, item := range integration.Spec.Dependencies {
+	for _, item := range vdb.Spec.Dependencies {
 		if _, err := hash.Write([]byte(item)); err != nil {
 			return "", err
 		}
 	}
 
 	// Integration configuration
-	for _, item := range integration.Spec.Configuration {
-		if _, err := hash.Write([]byte(item.String())); err != nil {
-			return "", err
-		}
-	}
-
-	// Add a letter at the beginning and use URL safe encoding
-	digest := "v" + base64.RawURLEncoding.EncodeToString(hash.Sum(nil))
-	return digest, nil
-}
-
-// ComputeForIntegrationContext a digest of the fields that are relevant for the deployment
-// Produces a digest that can be used as docker image tag
-func ComputeForIntegrationContext(context *v1alpha1.IntegrationContext) (string, error) {
-	hash := sha256.New()
-	// Operator version is relevant
-	if _, err := hash.Write([]byte(defaults.Version)); err != nil {
-		return "", err
-	}
-
-	for _, item := range context.Spec.Dependencies {
-		if _, err := hash.Write([]byte(item)); err != nil {
-			return "", err
-		}
-	}
-	for _, item := range context.Spec.Configuration {
+	for _, item := range vdb.Spec.Configuration {
 		if _, err := hash.Write([]byte(item.String())); err != nil {
 			return "", err
 		}

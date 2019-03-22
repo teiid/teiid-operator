@@ -20,11 +20,7 @@ package virtualdatabase
 import (
 	"context"
 
-	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
-
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/platform"
-	"github.com/teiid/teiid-operator/pkg/trait"
 	"github.com/teiid/teiid-operator/pkg/util/digest"
 )
 
@@ -42,70 +38,29 @@ func (action *initializeAction) Name() string {
 	return "initialize"
 }
 
-// CanHandle tells whether this action can handle the integration
+// CanHandle tells whether this action can handle the virtualdatabase
 func (action *initializeAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
 	return vdb.Status.Phase == v1alpha1.PublishingPhaseInitial
 }
 
-// Handle handles the integrations
-func (action *initializeAction) Handle(ctx context.Context, integration *v1alpha1.Integration) error {
-	pl, err := platform.GetCurrentPlatform(ctx, action.client, integration.Namespace)
+// Handle handles the virtualdatabase
+func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error {
 
-	// The integration platform needs to be ready before starting to create integrations
-	if err != nil || pl.Status.Phase != v1alpha1.IntegrationPlatformPhaseReady {
-		action.L.Info("Waiting for the integration platform to be initialized")
-
-		if integration.Status.Phase != v1alpha1.IntegrationPhaseWaitingForPlatform {
-			target := integration.DeepCopy()
-			target.Status.Phase = v1alpha1.IntegrationPhaseWaitingForPlatform
-
-			action.L.Info("Integration state transition", "phase", target.Status.Phase)
-
-			return action.client.Status().Update(ctx, target)
-		}
-
-		return nil
-	}
-
-	dgst, err := digest.ComputeForIntegration(integration)
+	dgst, err := digest.ComputeForVirtualDatabase(vdb)
 	if err != nil {
 		return err
-	}
-
-	//
-	// restore phase to initial phase as traits are not aware of
-	// WaitingForPlatform phase
-	//
-	if integration.Status.Phase == v1alpha1.IntegrationPhaseWaitingForPlatform {
-		target := integration.DeepCopy()
-		target.Status.Phase = v1alpha1.IntegrationPhaseInitial
-		target.Status.Digest = dgst
-
-		return action.client.Status().Update(ctx, target)
 	}
 
 	// better not changing the spec section of the target because it may be used for comparison by a
-	// higher level controller (e.g. Knative source controller)
+	// higher level controller
 
-	target := integration.DeepCopy()
+	target := vdb.DeepCopy()
 
-	// execute custom initialization
-	env, err := trait.Apply(ctx, action.client, target, nil)
-	if err != nil {
-		return err
-	}
-
-	err = kubernetes.ReplaceResources(ctx, action.client, env.Resources.Items())
-	if err != nil {
-		return err
-	}
-
-	target.Status.Phase = v1alpha1.IntegrationPhaseBuildingContext
+	target.Status.Phase = v1alpha1.PublishingPhaseCodeGeneration
 	target.Status.Digest = dgst
-	target.Status.Context = integration.Spec.Context
 	target.Status.Image = ""
 
-	action.L.Info("Integration state transition", "phase", target.Status.Phase)
+	action.Log.Info("VDB state transition", "phase", target.Status.Phase)
 
 	return action.client.Status().Update(ctx, target)
 }
