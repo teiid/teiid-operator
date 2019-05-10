@@ -11,6 +11,7 @@ import (
 // VirtualDatabaseSpec defines the desired state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseSpec struct {
+	ImageSpec     ImageSpec       `json:"image,omitempty"`
 	Replicas      *int32          `json:"replicas,omitempty"`
 	Content       string          `json:"content,omitempty"`
 	Dependencies  []string        `json:"dependencies,omitempty"`
@@ -25,6 +26,14 @@ type VirtualDatabaseStatus struct {
 	Failure        string          `json:"failure,omitempty"`
 	Image          string          `json:"image,omitempty"`
 	RuntimeVersion string          `json:"runtimeVersion,omitempty"`
+}
+
+// VirtualDatabaseStatus defines the observed state of VirtualDatabase
+// +k8s:openapi-gen=true
+type ImageSpec struct {
+	BaseImage  string `json:"base,omitempty"`
+	DiskSize   string `json:"disk-size,omitempty"`
+	MemorySize string `json:"memory-size,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -60,11 +69,14 @@ const (
 
 	// Code generation
 	PublishingPhaseCodeGeneration PublishingPhase = "Code Generation"
-
+	// Code generation completed
+	PublishingPhaseCodeGenerationCompleted PublishingPhase = "Code Generation Completed"
 	// IntegrationPhaseBuildImageSubmitted --
 	PublishingPhaseBuildImageSubmitted PublishingPhase = "Build Image Submitted"
 	// IntegrationPhaseBuildImageRunning --
 	PublishingPhaseBuildImageRunning PublishingPhase = "Build Image Running"
+	// IntegrationPhaseBuildImageRunning --
+	PublishingPhaseBuildImageComplete PublishingPhase = "Build Image Completed"
 	// IntegrationPhaseDeploying --
 	PublishingPhaseDeploying PublishingPhase = "Deploying"
 	// IntegrationPhaseRunning --

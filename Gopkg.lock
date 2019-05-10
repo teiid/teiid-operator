@@ -10,14 +10,6 @@
   version = "v0.36.0"
 
 [[projects]]
-  digest = "1:a26f8da48b22e6176c1c6a2459904bb30bd0c49ada04b2963c2c3a203e81a620"
-  name = "github.com/Masterminds/semver"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "c7af12943936e8c39859482e61f0574c2fd7fc75"
-  version = "v1.4.2"
-
-[[projects]]
   digest = "1:0a111edd8693fd977f42a0c4f199a0efb13c20aec9da99ad8830c7bb6a87e8d6"
   name = "github.com/PuerkitoBio/purell"
   packages = ["."]
@@ -32,23 +24,6 @@
   packages = ["."]
   pruneopts = "NT"
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
-
-[[projects]]
-  digest = "1:346506520d24058e118385dc57a0e2e25a6dba93300cb12779f9bedbc3f4f4e5"
-  name = "github.com/apache/camel-k"
-  packages = [
-    "pkg/apis",
-    "pkg/apis/camel/v1alpha1",
-    "pkg/client",
-    "pkg/util",
-    "pkg/util/kubernetes",
-    "pkg/util/log",
-    "pkg/util/monitoring",
-    "pkg/util/openshift",
-  ]
-  pruneopts = "NT"
-  revision = "b60898b41e3082d051cb6167f77fc6d00bc888f2"
-  version = "0.3.1"
 
 [[projects]]
   digest = "1:680b63a131506e668818d630d3ca36123ff290afa0afc9f4be21940adca3f27d"
@@ -105,14 +80,6 @@
   pruneopts = "NT"
   revision = "72bf35d0ff611848c1dc9df0f976c81192392fa5"
   version = "v4.1.0"
-
-[[projects]]
-  digest = "1:aa3ed0a71c4e66e4ae6486bf97a3f4cab28edc78df2e50c5ad01dc7d91604b88"
-  name = "github.com/fatih/structs"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "4966fc68f5b7593aafa6cbbba2d65ec6e1416047"
-  version = "v1.1.0"
 
 [[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
@@ -315,14 +282,6 @@
   version = "v1.3.0"
 
 [[projects]]
-  digest = "1:ebd0081aed1cd0af2f65a362c0ceea985eae9fe72efb28cefb84eca3b98dd3a3"
-  name = "github.com/jpillora/backoff"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "8eab2debe79d12b7bd3d10653910df25fa9552ba"
-  version = "1.0.0"
-
-[[projects]]
   digest = "1:1d39c063244ad17c4b18e8da1551163b6ffb52bd1640a49a8ec5c3b7bf4dbd5d"
   name = "github.com/json-iterator/go"
   packages = ["."]
@@ -386,14 +345,6 @@
   version = "v0.4.1"
 
 [[projects]]
-  digest = "1:58999a98719fddbac6303cb17e8d85b945f60b72f48e3a2df6b950b97fa926f1"
-  name = "github.com/konsorten/go-windows-terminal-sequences"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
-  version = "v1.0.2"
-
-[[projects]]
   digest = "1:4244266b65ea535b8ebd109a327720821707b59f9a37bda738946d52ec69442d"
   name = "github.com/magiconair/properties"
   packages = ["."]
@@ -438,14 +389,6 @@
   version = "v1.0.1"
 
 [[projects]]
-  digest = "1:a45ae66dea4c899d79fceb116accfa1892105c251f0dcd9a217ddc276b42ec68"
-  name = "github.com/mitchellh/mapstructure"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
-  version = "v1.1.2"
-
-[[projects]]
   digest = "1:2f42fa12d6911c7b7659738758631bec870b7e9b4c6be5444f963cdcfccc191f"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -465,15 +408,11 @@
   digest = "1:8bc8f43d2332d035857c92581df240f247c287629d5f60c751df609f9b6215c5"
   name = "github.com/openshift/api"
   packages = [
-    "apps/v1",
-    "authorization/v1",
     "build/v1",
     "image/docker10",
     "image/dockerpre012",
     "image/v1",
-    "pkg/serialization",
     "route/v1",
-    "template/v1",
   ]
   pruneopts = "NT"
   revision = "0d921e363e951d89f583292c60d013c318df64dc"
@@ -592,28 +531,12 @@
   version = "v1.2.2"
 
 [[projects]]
-  digest = "1:0975c74a2cd70df6c2ae353c6283a25ce759dda7e1e706e5c07458baf3faca22"
-  name = "github.com/rs/xid"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "15d26544def341f036c5f8dca987a4cbe575032c"
-  version = "v1.2.1"
-
-[[projects]]
   digest = "1:57abe5c41d4509b53bd76107b65a7ac76763f3d5b68cad9765e3776712388488"
   name = "github.com/scylladb/go-set"
   packages = ["strset"]
   pruneopts = "NT"
   revision = "e560bb8f49bb7f34d4f59b7e771f6e1307c329da"
   version = "v1.0.2"
-
-[[projects]]
-  digest = "1:c8a0dfc6208c2af75549dbd7a0c4446cc214b7a049a872858a8ec6f58e4fd082"
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "dae0fa8d5b0c810a8ab733fbd5510c7cae84eca4"
-  version = "v1.4.0"
 
 [[projects]]
   digest = "1:1bc08ec221c4fb25e6f2c019b23fe989fb44573c696983d8e403a3b76cc378e1"
@@ -1132,15 +1055,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Masterminds/semver",
-    "github.com/apache/camel-k/pkg/apis/camel/v1alpha1",
-    "github.com/apache/camel-k/pkg/util/kubernetes",
-    "github.com/apache/camel-k/pkg/util/log",
-    "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1",
-    "github.com/fatih/structs",
     "github.com/go-logr/logr",
     "github.com/go-openapi/spec",
-    "github.com/jpillora/backoff",
     "github.com/knative/eventing/pkg/apis/eventing/v1alpha1",
     "github.com/knative/serving/pkg/apis/serving/v1alpha1",
     "github.com/magiconair/properties",
@@ -1153,7 +1069,6 @@
     "github.com/operator-framework/operator-sdk/pkg/metrics",
     "github.com/operator-framework/operator-sdk/version",
     "github.com/pkg/errors",
-    "github.com/rs/xid",
     "github.com/scylladb/go-set/strset",
     "github.com/spf13/pflag",
     "github.com/stoewer/go-strcase",
@@ -1161,9 +1076,7 @@
     "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
-    "k8s.io/api/extensions/v1beta1",
     "k8s.io/apimachinery/pkg/api/errors",
-    "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
     "k8s.io/apimachinery/pkg/labels",
@@ -1172,9 +1085,7 @@
     "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/runtime/serializer/json",
     "k8s.io/apimachinery/pkg/runtime/serializer/versioning",
-    "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apimachinery/pkg/util/json",
-    "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/util/yaml",
     "k8s.io/apimachinery/pkg/watch",
     "k8s.io/client-go/dynamic",

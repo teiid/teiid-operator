@@ -19,6 +19,7 @@ package envvar
 
 import (
 	corev1 "k8s.io/api/core/v1"
+	"strings"
 )
 
 // Get --

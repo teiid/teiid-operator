@@ -19,8 +19,11 @@ package virtualdatabase
 
 import (
 	"context"
+	"io/ioutil"
+	"os"
 	"time"
 
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	teiidv1alpha1 "github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/client"
 	teiidclient "github.com/teiid/teiid-operator/pkg/client"
@@ -118,11 +121,20 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	logger := log.Log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	logger.Info("Reconciling VirtualDatabase")
 
-	ctx := context.TODO()
+	buildStatus := &v1alpha1.BuildStatus{}
+	tempDir, err := ioutil.TempDir(os.TempDir(), "builder-")
+	if err != nil {
+		log.Error(err, "Unexpected error while creating a temporary dir")
+		return reconcile.Result{}, err
+	}
+	buildStatus.TarFile = tempDir + "vdb.tar"
+	defer os.RemoveAll(tempDir)
+
+	ctx := context.WithValue(context.TODO(), v1alpha1.BuildStatusKey, buildStatus)
 
 	// Fetch the VirtualDatabase instance
 	instance := &teiidv1alpha1.VirtualDatabase{}
-	err := r.client.Get(ctx, request.NamespacedName, instance)
+	err = r.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return reconcile.Result{}, nil
@@ -139,7 +151,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	// 	return reconcile.Result{}, err
 	// }
 
-	vitulaDatabaseActionPool := []Action{
+	buildSteps := []Action{
 		NewInitializeAction(),
 		NewCodeGenerationAction(),
 	}
@@ -150,7 +162,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	}
 
 	ilog := logger.ForVirtualDatabase(instance)
-	for _, a := range vitulaDatabaseActionPool {
+	for _, a := range buildSteps {
 		a.InjectClient(r.client)
 		a.InjectLogger(ilog)
 		if a.CanHandle(instance) {
@@ -162,7 +174,6 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 						Requeue: true,
 					}, nil
 				}
-
 				return reconcile.Result{}, err
 			}
 		}

@@ -16,4 +16,8 @@ const (
 
 	// LocalRepository --
 	LocalRepository = "/tmp/artifacts/m2"
+
+	TeiidVersion = "1.1.0-SNAPSHOT"
+
+	SpringBootVersion = "2.1.2.RELEASE"
 )
