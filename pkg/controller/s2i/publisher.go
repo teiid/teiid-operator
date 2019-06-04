@@ -18,10 +18,9 @@ limitations under the License.
 package s2i
 
 import (
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-
 	buildv1 "github.com/openshift/api/build/v1"
 	imagev1 "github.com/openshift/api/image/v1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

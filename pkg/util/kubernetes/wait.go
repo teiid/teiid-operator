@@ -23,9 +23,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/teiid/teiid-operator/pkg/client"
-	"k8s.io/apimachinery/pkg/runtime"
-
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
