@@ -1,8 +1,6 @@
-FROM alpine:3.8
+FROM registry.access.redhat.com/ubi8-minimal
 
-ENV OPERATOR=/usr/local/bin/teiid-operator \
-    USER_UID=1001 \
-    USER_NAME=teiid-operator
+ENV OPERATOR=/usr/local/bin/teiid-operator
 
 # install operator binary
 COPY build/_output/bin/teiid-operator ${OPERATOR}
@@ -12,4 +10,4 @@ RUN  /usr/local/bin/user_setup
 
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
 
-USER ${USER_UID}
+USER 1001

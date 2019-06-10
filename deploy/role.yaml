@@ -44,3 +44,11 @@ rules:
   - '*'
   verbs:
   - '*'
+- apiGroups:
+    - apps
+  resourceNames:
+    - teiid-operator
+  resources:
+    - deployments/finalizers
+  verbs:
+    - update

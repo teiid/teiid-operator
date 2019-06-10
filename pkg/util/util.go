@@ -25,12 +25,9 @@ import (
 	"syscall"
 
 	"github.com/magiconair/properties"
-
-	"github.com/scylladb/go-set/strset"
-
-	corev1 "k8s.io/api/core/v1"
-
 	"github.com/pkg/errors"
+	"github.com/scylladb/go-set/strset"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // StringSliceJoin --
