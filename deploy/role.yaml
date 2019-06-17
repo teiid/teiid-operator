@@ -1,27 +1,19 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
+kind: Role
 metadata:
-  creationTimestamp: null
   name: teiid-operator
 rules:
 - apiGroups:
   - ""
+  - vdb.teiid.io
+  - apps.openshift.io
+  - image.openshift.io
+  - build.openshift.io
+  - route.openshift.io
   resources:
-  - pods
-  - services
-  - endpoints
-  - persistentvolumeclaims
-  - events
-  - configmaps
-  - secrets
+  - '*'
   verbs:
   - '*'
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - get
 - apiGroups:
   - apps
   resources:
@@ -39,16 +31,10 @@ rules:
   - get
   - create
 - apiGroups:
-  - teiid.io
-  resources:
-  - '*'
-  verbs:
-  - '*'
-- apiGroups:
-    - apps
+  - apps
   resourceNames:
-    - teiid-operator
+  - teiid-operator
   resources:
-    - deployments/finalizers
+  - deployments/finalizers
   verbs:
-    - update
+  - update

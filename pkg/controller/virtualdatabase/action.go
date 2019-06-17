@@ -20,14 +20,14 @@ package virtualdatabase
 import (
 	"context"
 
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/client"
-	"github.com/teiid/teiid-operator/pkg/util/log"
+	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
+	logt "github.com/teiid/teiid-operator/pkg/util/log"
 )
 
 // Action --
 type Action interface {
-	client.Injectable
+	teiidclient.Injectable
 
 	// a user friendly name for the action
 	Name() string
@@ -39,18 +39,18 @@ type Action interface {
 	Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error
 
 	// Inject virtualization logger
-	InjectLogger(log.Logger)
+	InjectLogger(logt.Logger)
 }
 
 type baseAction struct {
-	client client.Client
-	Log    log.Logger
+	client teiidclient.Client
+	Log    logt.Logger
 }
 
-func (action *baseAction) InjectClient(client client.Client) {
+func (action *baseAction) InjectClient(client teiidclient.Client) {
 	action.client = client
 }
 
-func (action *baseAction) InjectLogger(log log.Logger) {
+func (action *baseAction) InjectLogger(log logt.Logger) {
 	action.Log = log
 }

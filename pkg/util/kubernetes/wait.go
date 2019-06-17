@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/teiid/teiid-operator/pkg/client"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
@@ -39,7 +39,7 @@ const (
 )
 
 // WaitCondition --
-func WaitCondition(ctx context.Context, c client.Client, obj runtime.Object, condition ResourceCheckFunction, maxDuration time.Duration) error {
+func WaitCondition(ctx context.Context, c teiidclient.Client, obj runtime.Object, condition ResourceCheckFunction, maxDuration time.Duration) error {
 	start := time.Now()
 	key, err := k8sclient.ObjectKeyFromObject(obj)
 	if err != nil {

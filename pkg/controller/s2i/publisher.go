@@ -20,7 +20,7 @@ package s2i
 import (
 	buildv1 "github.com/openshift/api/build/v1"
 	imagev1 "github.com/openshift/api/image/v1"
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -49,7 +49,7 @@ func CreateBuildConfiguration(vdb *v1alpha1.VirtualDatabase) buildv1.BuildConfig
 					SourceStrategy: &buildv1.SourceBuildStrategy{
 						From: corev1.ObjectReference{
 							Kind: "ImageStreamTag",
-							Name: vdb.Spec.ImageSpec.BaseImage,
+							Name: vdb.Spec.Image.BaseImage,
 						},
 					},
 				},

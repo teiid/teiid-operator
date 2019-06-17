@@ -23,7 +23,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/defaults"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/tar"

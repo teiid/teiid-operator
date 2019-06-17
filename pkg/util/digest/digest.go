@@ -23,7 +23,7 @@ import (
 	"math/rand"
 	"strconv"
 
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/defaults"
 )
 
@@ -51,7 +51,7 @@ func ComputeForVirtualDatabase(vdb *v1alpha1.VirtualDatabase) (string, error) {
 	}
 
 	// Integration configuration
-	for _, item := range vdb.Spec.Configuration {
+	for _, item := range vdb.Spec.Env {
 		if _, err := hash.Write([]byte(item.String())); err != nil {
 			return "", err
 		}

@@ -1,0 +1,5 @@
+#! package-manifest: deploy/courier/0.0.1/teiid-operator.0.0.1.clusterserviceversion.yaml
+packageName: teiid-operator
+channels:
+  - name: alpha
+    currentCSV: teiid-operator.0.0.1

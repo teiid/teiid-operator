@@ -1,7 +1,0 @@
-apiVersion: teiid.io/v1alpha1
-kind: VirtualDatabase
-metadata:
-  name: example-virtualdatabase
-spec:
-  # Add fields here
-  size: 3
