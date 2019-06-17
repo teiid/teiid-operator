@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/client"
+	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	yaml2 "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
@@ -66,7 +66,7 @@ func JSONToYAML(src []byte) ([]byte, error) {
 }
 
 // GetConfigMap --
-func GetConfigMap(context context.Context, client client.Client, name string, namespace string) (*corev1.ConfigMap, error) {
+func GetConfigMap(context context.Context, client teiidclient.Client, name string, namespace string) (*corev1.ConfigMap, error) {
 	key := k8sclient.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -91,7 +91,7 @@ func GetConfigMap(context context.Context, client client.Client, name string, na
 }
 
 // GetSecret --
-func GetSecret(context context.Context, client client.Client, name string, namespace string) (*corev1.Secret, error) {
+func GetSecret(context context.Context, client teiidclient.Client, name string, namespace string) (*corev1.Secret, error) {
 	key := k8sclient.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -116,7 +116,7 @@ func GetSecret(context context.Context, client client.Client, name string, names
 }
 
 // GetVirtualDatabase --
-func GetVirtualDatabase(context context.Context, client client.Client, name string, namespace string) (*v1alpha1.VirtualDatabase, error) {
+func GetVirtualDatabase(context context.Context, client teiidclient.Client, name string, namespace string) (*v1alpha1.VirtualDatabase, error) {
 	key := k8sclient.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -132,7 +132,7 @@ func GetVirtualDatabase(context context.Context, client client.Client, name stri
 }
 
 // GetService --
-func GetService(context context.Context, client client.Client, name string, namespace string) (*corev1.Service, error) {
+func GetService(context context.Context, client teiidclient.Client, name string, namespace string) (*corev1.Service, error) {
 	key := k8sclient.ObjectKey{
 		Name:      name,
 		Namespace: namespace,
@@ -157,7 +157,7 @@ func GetService(context context.Context, client client.Client, name string, name
 }
 
 // GetDiscoveryTypes --
-func GetDiscoveryTypes(client client.Client) ([]metav1.TypeMeta, error) {
+func GetDiscoveryTypes(client teiidclient.Client) ([]metav1.TypeMeta, error) {
 	resources, err := client.Discovery().ServerPreferredNamespacedResources()
 	if err != nil {
 		return nil, err
@@ -177,7 +177,7 @@ func GetDiscoveryTypes(client client.Client) ([]metav1.TypeMeta, error) {
 }
 
 // LookUpResources --
-func LookUpResources(ctx context.Context, client client.Client, namespace string, selectors []string) ([]unstructured.Unstructured, error) {
+func LookUpResources(ctx context.Context, client teiidclient.Client, namespace string, selectors []string) ([]unstructured.Unstructured, error) {
 	types, err := GetDiscoveryTypes(client)
 	if err != nil {
 		return nil, err

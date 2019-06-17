@@ -24,7 +24,7 @@ import (
 
 	buildv1 "github.com/openshift/api/build/v1"
 	"github.com/pkg/errors"
-	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/s2i"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes/customclient"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"

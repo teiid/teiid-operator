@@ -23,7 +23,7 @@ import (
 	eventing "github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/pkg/errors"
-	"github.com/teiid/teiid-operator/pkg/client"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,7 +32,7 @@ import (
 )
 
 // ReplaceResources allows to completely replace a list of resources on Kubernetes, taking care of immutable fields and resource versions
-func ReplaceResources(ctx context.Context, c client.Client, objects []runtime.Object) error {
+func ReplaceResources(ctx context.Context, c teiidclient.Client, objects []runtime.Object) error {
 	for _, object := range objects {
 		err := ReplaceResource(ctx, c, object)
 		if err != nil {
@@ -43,7 +43,7 @@ func ReplaceResources(ctx context.Context, c client.Client, objects []runtime.Ob
 }
 
 // ReplaceResource allows to completely replace a resource on Kubernetes, taking care of immutable fields and resource versions
-func ReplaceResource(ctx context.Context, c client.Client, res runtime.Object) error {
+func ReplaceResource(ctx context.Context, c teiidclient.Client, res runtime.Object) error {
 	err := c.Create(ctx, res)
 	if err != nil && k8serrors.IsAlreadyExists(err) {
 		existing := res.DeepCopyObject()
