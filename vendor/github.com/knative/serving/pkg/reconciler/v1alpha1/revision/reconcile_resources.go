@@ -64,7 +64,7 @@ func (c *Reconciler) reconcileDeployment(ctx context.Context, rev *v1alpha1.Revi
 		return fmt.Errorf("Revision: %q does not own Deployment: %q", rev.Name, deploymentName)
 	} else {
 		// The deployment exists, but make sure that it has the shape that we expect.
-		deployment, _, err = c.checkAndUpdateDeployment(ctx, rev, deployment)
+		deployment, err = c.checkAndUpdateDeployment(ctx, rev, deployment)
 		if err != nil {
 			logger.Errorf("Error updating deployment %q: %v", deploymentName, err)
 			return err
@@ -100,12 +100,17 @@ func (c *Reconciler) reconcileDeployment(ctx context.Context, rev *v1alpha1.Revi
 			"Revision %s not ready due to Deployment timeout", rev.Name)
 	}
 
-	// We do this here so that we can construct the Image resource based on the
-	// resulting Deployment resource (e.g. including resolved digest).
+	return nil
+}
+
+func (c *Reconciler) reconcileImageCache(ctx context.Context, rev *v1alpha1.Revision) error {
+	logger := logging.FromContext(ctx)
+
+	ns := rev.Namespace
 	imageName := resourcenames.ImageCache(rev)
 	_, getImageCacheErr := c.imageLister.Images(ns).Get(imageName)
 	if apierrs.IsNotFound(getImageCacheErr) {
-		_, err := c.createImageCache(ctx, rev, deployment)
+		_, err := c.createImageCache(ctx, rev)
 		if err != nil {
 			logger.Errorf("Error creating image cache %q: %v", imageName, err)
 			return err
@@ -188,13 +193,12 @@ func (c *Reconciler) reconcileService(ctx context.Context, rev *v1alpha1.Revisio
 		// It may change if a user edits things around our controller, which we
 		// should not allow, or if our expectations of how the service should look
 		// changes (e.g. we update our controller with new sidecars).
-		var changed Changed
-		_, changed, err = c.checkAndUpdateService(ctx, rev, resources.MakeK8sService, service)
+		_, changed, err := c.checkAndUpdateService(ctx, rev, resources.MakeK8sService, service)
 		if err != nil {
 			logger.Errorf("Error updating Service %q: %v", serviceName, err)
 			return err
 		}
-		if changed == WasChanged {
+		if changed == wasChanged {
 			logger.Infof("Updated Service %q", serviceName)
 			rev.Status.MarkDeploying("Updating")
 		}
@@ -218,14 +222,14 @@ func (c *Reconciler) reconcileService(ctx context.Context, rev *v1alpha1.Revisio
 	// If the endpoints resource indicates that the Service it sits in front of is ready,
 	// then surface this in our Revision status as resources available (pods were scheduled)
 	// and container healthy (endpoints should be gated by any provided readiness checks).
-	if getIsServiceReady(endpoints) {
+	if isServiceReady(endpoints) {
 		rev.Status.MarkResourcesAvailable()
 		rev.Status.MarkContainerHealthy()
 	} else if !rev.Status.IsActivationRequired() {
-		// If the endpoints is NOT ready, then check whether it is taking unreasonably
+		// If the endpoints resource is NOT ready, then check whether it is taking unreasonably
 		// long to become ready and if so mark our revision as having timed out waiting
 		// for the Service to become ready.
-		revisionAge := time.Now().Sub(getRevisionLastTransitionTime(rev))
+		revisionAge := time.Since(getRevisionLastTransitionTime(rev))
 		if revisionAge >= serviceTimeoutDuration {
 			rev.Status.MarkServiceTimeout()
 			// TODO(mattmoor): How to ensure this only fires once?
@@ -251,9 +255,9 @@ func (c *Reconciler) reconcileFluentdConfigMap(ctx context.Context, rev *v1alpha
 	if apierrs.IsNotFound(err) {
 		// ConfigMap doesn't exist, going to create it
 		desiredConfigMap := resources.MakeFluentdConfigMap(rev, cfgs.Observability)
-		configMap, err = c.KubeClientSet.CoreV1().ConfigMaps(ns).Create(desiredConfigMap)
+		_, err = c.KubeClientSet.CoreV1().ConfigMaps(ns).Create(desiredConfigMap)
 		if err != nil {
-			logger.Error("Error creating fluentd configmap", zap.Error(err))
+			logger.Errorw("Error creating fluentd configmap", zap.Error(err))
 			return err
 		}
 		logger.Infof("Created fluentd configmap: %q", name)
@@ -274,7 +278,7 @@ func (c *Reconciler) reconcileFluentdConfigMap(ctx context.Context, rev *v1alpha
 			existing.Data = desiredConfigMap.Data
 			_, err = c.KubeClientSet.CoreV1().ConfigMaps(ns).Update(existing)
 			if err != nil {
-				logger.Error("Error updating fluentd configmap", zap.Error(err))
+				logger.Errorw("Error updating fluentd configmap", zap.Error(err))
 				return err
 			}
 		}

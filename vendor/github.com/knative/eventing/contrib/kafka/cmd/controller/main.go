@@ -4,20 +4,20 @@ import (
 	"flag"
 	"os"
 
-	istiov1alpha3 "github.com/knative/pkg/apis/istio/v1alpha3"
-	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/runtime"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
-	"sigs.k8s.io/controller-runtime/pkg/client/config"
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-	"sigs.k8s.io/controller-runtime/pkg/manager"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
+	// Uncomment the following line to load the gcp plugin (only required to authenticate against GKE clusters).
+	// _ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 
 	provisionerController "github.com/knative/eventing/contrib/kafka/pkg/controller"
 	"github.com/knative/eventing/contrib/kafka/pkg/controller/channel"
 	eventingv1alpha "github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
 	"github.com/knative/eventing/pkg/provisioners"
+	"go.uber.org/zap"
+	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+	"sigs.k8s.io/controller-runtime/pkg/manager"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
 )
 
 // SchemeFunc adds types to a Scheme.
@@ -27,6 +27,10 @@ type SchemeFunc func(*runtime.Scheme) error
 type ProvideFunc func(mgr manager.Manager, config *provisionerController.KafkaProvisionerConfig, logger *zap.Logger) (controller.Controller, error)
 
 func main() {
+	os.Exit(_main())
+}
+
+func _main() int {
 	flag.Parse()
 	logf.SetLogger(logf.ZapLogger(false))
 
@@ -37,13 +41,12 @@ func main() {
 	mgr, err := manager.New(config.GetConfigOrDie(), manager.Options{})
 	if err != nil {
 		logger.Error(err, "unable to run controller manager")
-		os.Exit(1)
+		return 1
 	}
 
 	// Add custom types to this array to get them into the manager's scheme.
 	schemeFuncs := []SchemeFunc{
 		eventingv1alpha.AddToScheme,
-		istiov1alpha3.AddToScheme,
 	}
 	for _, schemeFunc := range schemeFuncs {
 		schemeFunc(mgr.GetScheme())
@@ -61,13 +64,13 @@ func main() {
 
 	if err != nil {
 		logger.Error(err, "unable to run controller manager")
-		os.Exit(1)
+		return 1
 	}
 
 	for _, provider := range providers {
 		if _, err := provider(mgr, provisionerConfig, logger.Desugar()); err != nil {
 			logger.Error(err, "unable to run controller manager")
-			os.Exit(1)
+			return 1
 		}
 	}
 
@@ -76,4 +79,5 @@ func main() {
 	if err != nil {
 		logger.Fatal("Manager.Start() returned an error", zap.Error(err))
 	}
+	return 0
 }

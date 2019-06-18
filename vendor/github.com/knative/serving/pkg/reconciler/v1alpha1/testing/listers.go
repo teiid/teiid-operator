@@ -44,11 +44,12 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-var buildAddToScheme = func(scheme *runtime.Scheme) {
+var buildAddToScheme = func(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypeWithName(schema.GroupVersionKind{Group: "build.knative.dev", Version: "v1alpha1", Kind: "Build"}, &unstructured.Unstructured{})
+	return nil
 }
 
-var clientSetSchemes = []func(*runtime.Scheme){
+var clientSetSchemes = []func(*runtime.Scheme) error{
 	fakekubeclientset.AddToScheme,
 	fakesharedclientset.AddToScheme,
 	fakeservingclientset.AddToScheme,
@@ -131,6 +132,11 @@ func (l *Listers) GetClusterIngressLister() networkinglisters.ClusterIngressList
 
 func (l *Listers) GetVirtualServiceLister() istiolisters.VirtualServiceLister {
 	return istiolisters.NewVirtualServiceLister(l.indexerFor(&istiov1alpha3.VirtualService{}))
+}
+
+// GetGatewayLister gets lister for Istio Gateway resource.
+func (l *Listers) GetGatewayLister() istiolisters.GatewayLister {
+	return istiolisters.NewGatewayLister(l.indexerFor(&istiov1alpha3.Gateway{}))
 }
 
 func (l *Listers) GetImageLister() cachinglisters.ImageLister {

@@ -17,18 +17,17 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/knative/pkg/cloudevents"
+	cloudevents "github.com/cloudevents/sdk-go"
+	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport/http"
 )
 
 type Heartbeat struct {
@@ -80,23 +79,54 @@ func main() {
 		maxMsg = m
 	}
 
+	defer func() {
+		var err error
+		r := recover()
+		if r != nil {
+			err = r.(error)
+			log.Printf("recovered from panic: %v", err)
+		}
+	}()
+
 	if delay > 0 {
 		log.Printf("will sleep for %s", delay)
 		time.Sleep(delay)
-		log.Printf("awake, contining")
-	}
-
-	if eventID == "" {
-		eventID = uuid.New().String()
+		log.Printf("awake, continuing")
 	}
 
 	if source == "" {
 		source = "localhost"
 	}
 
+	var encodingOption http.Option
+	switch encoding {
+	case "binary":
+		encodingOption = cloudevents.WithBinaryEncoding()
+	case "structured":
+		encodingOption = cloudevents.WithStructuredEncoding()
+	default:
+		log.Printf("unsupported encoding option: %q\n", encoding)
+		os.Exit(1)
+	}
+
+	t, err := cloudevents.NewHTTPTransport(
+		cloudevents.WithTarget(sink),
+		encodingOption,
+	)
+	if err != nil {
+		log.Fatalf("failed to create transport, %v", err)
+	}
+	c, err := cloudevents.NewClient(t,
+		cloudevents.WithTimeNow(),
+		cloudevents.WithUUIDs(),
+	)
+	if err != nil {
+		log.Fatalf("failed to create client, %v", err)
+	}
+
 	var untyped map[string]interface{}
 	if err := json.Unmarshal([]byte(data), &untyped); err != nil {
-		fmt.Println("Currently sendevent only supports JSON event data")
+		log.Println("Currently sendevent only supports JSON event data")
 		os.Exit(1)
 	}
 
@@ -106,9 +136,23 @@ func main() {
 	for {
 		sequence++
 		untyped["sequence"] = fmt.Sprintf("%d", sequence)
-		if err := postMessage(sink, untyped); err != nil {
-			fmt.Printf("postMessage returned an error: %v\n", err)
+
+		event := cloudevents.NewEvent()
+		if eventID != "" {
+			event.SetID(eventID)
 		}
+		event.SetType(eventType)
+		event.SetSource(source)
+		if err := event.SetData(untyped); err != nil {
+			log.Fatalf("failed to set data, %v", err)
+		}
+
+		if resp, err := c.Send(context.Background(), event); err != nil {
+			log.Printf("send returned an error: %v\n", err)
+		} else if resp != nil {
+			log.Printf("Got response from %s\n%s\n", sink, resp)
+		}
+
 		// Wait for next tick
 		<-ticker.C
 		// Only send a limited number of messages.
@@ -116,51 +160,4 @@ func main() {
 			return
 		}
 	}
-}
-
-// Creates a CloudEvent Context for a given heartbeat.
-func cloudEventsContext() *cloudevents.EventContext {
-	return &cloudevents.EventContext{
-		CloudEventsVersion: cloudevents.CloudEventsVersion,
-		EventType:          eventType,
-		EventID:            eventID,
-		Source:             source,
-		EventTime:          time.Now(),
-	}
-}
-
-func postMessage(target string, data map[string]interface{}) error {
-	ctx := cloudEventsContext()
-
-	log.Printf("posting to %q, sequence %q", target, data["sequence"])
-
-	var req *http.Request
-	var err error
-	switch encoding {
-	case "binary":
-		ctx.ContentType = cloudevents.ContentTypeBinaryJSON
-		req, err = cloudevents.Binary.NewRequest(target, data, *ctx)
-	case "structured":
-		req, err = cloudevents.Structured.NewRequest(target, data, *ctx)
-	default:
-		fmt.Printf("unsupported encoding option: %q\n", encoding)
-		os.Exit(1)
-	}
-	if err != nil {
-		log.Printf("failed to create http request: %s", err)
-		return err
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("failed to do POST: %v", err)
-		return err
-	}
-	defer resp.Body.Close()
-	log.Printf("response Status: %s", resp.Status)
-	body, _ := ioutil.ReadAll(resp.Body)
-	log.Printf("response Body: %s", string(body))
-	return nil
-
 }

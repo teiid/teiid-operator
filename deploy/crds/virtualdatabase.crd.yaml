@@ -90,12 +90,26 @@ spec:
                     contextDir:
                       type: string
                       description: Context/subdirectory where the code is located, relatively to repo root
+                sourceFileChanges:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    description: File changes or additions to existing source for a binary build
+                    required:
+                      - relativePath
+                      - contents
+                    properties:
+                      relativePath:
+                        type: string
+                      contents:
+                        type: string
                 webhooks:
                   type: array
                   minItems: 1
                   items:
                     type: object
-                    description: WebHook secretes for build configs
+                    description: WebHook secrets for build configs
                     required:
                       - type
                       - secret

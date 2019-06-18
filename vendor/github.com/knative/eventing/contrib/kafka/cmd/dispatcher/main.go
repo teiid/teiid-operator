@@ -17,39 +17,30 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
-	"os"
 
+	"github.com/knative/eventing/contrib/kafka/pkg/controller"
+	provisionerController "github.com/knative/eventing/contrib/kafka/pkg/controller"
+	"github.com/knative/eventing/contrib/kafka/pkg/dispatcher"
+	"github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
+	"github.com/knative/eventing/pkg/channelwatcher"
+	"github.com/knative/eventing/pkg/tracing"
+	"github.com/knative/pkg/configmap"
+	"github.com/knative/pkg/signals"
+	"github.com/knative/pkg/system"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"
-
-	provisionerController "github.com/knative/eventing/contrib/kafka/pkg/controller"
-	"github.com/knative/eventing/contrib/kafka/pkg/dispatcher"
-	"github.com/knative/eventing/pkg/sidecar/configmap/watcher"
-	"github.com/knative/pkg/system"
 )
 
 func main() {
-
-	configMapName := os.Getenv("DISPATCHER_CONFIGMAP_NAME")
-	if configMapName == "" {
-		configMapName = provisionerController.DispatcherConfigMapName
-	}
-	configMapNamespace := os.Getenv("DISPATCHER_CONFIGMAP_NAMESPACE")
-	if configMapNamespace == "" {
-		configMapNamespace = system.Namespace()
-	}
-
+	flag.Parse()
 	logger, err := zap.NewProduction()
 	if err != nil {
 		log.Fatalf("unable to create logger: %v", err)
 	}
-
 	provisionerConfig, err := provisionerController.GetProvisionerConfig("/etc/config-provisioner")
 	if err != nil {
 		logger.Fatal("unable to load provisioner config", zap.Error(err))
@@ -60,40 +51,47 @@ func main() {
 		logger.Fatal("unable to create manager.", zap.Error(err))
 	}
 
-	kafkaDispatcher, err := dispatcher.NewDispatcher(provisionerConfig.Brokers, logger)
+	kafkaDispatcher, err := dispatcher.NewDispatcher(provisionerConfig.Brokers, provisionerConfig.ConsumerMode, logger)
 	if err != nil {
 		logger.Fatal("unable to create kafka dispatcher.", zap.Error(err))
 	}
-
-	kc, err := kubernetes.NewForConfig(mgr.GetConfig())
-	if err != nil {
-		logger.Fatal("unable to create kubernetes client.", zap.Error(err))
+	if err = mgr.Add(kafkaDispatcher); err != nil {
+		logger.Fatal("Unable to add kafkaDispatcher", zap.Error(err))
 	}
 
-	cmw, err := watcher.NewWatcher(logger, kc, configMapNamespace, configMapName, kafkaDispatcher.UpdateConfig)
-	if err != nil {
-		logger.Fatal("unable to create configmap watcher", zap.String("configmap", fmt.Sprintf("%s/%s", configMapNamespace, configMapName)))
+	if err := v1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
+		logger.Fatal("Unable to add scheme for eventing apis.", zap.Error(err))
 	}
-	mgr.Add(cmw)
+
+	// Zipkin tracing.
+	kc := kubernetes.NewForConfigOrDie(mgr.GetConfig())
+	configMapWatcher := configmap.NewInformedWatcher(kc, system.Namespace())
+	if err = tracing.SetupDynamicZipkinPublishing(logger.Sugar(), configMapWatcher, "kafka-dispatcher"); err != nil {
+		logger.Fatal("Error setting up Zipkin publishing", zap.Error(err))
+	}
+
+	if err = channelwatcher.New(mgr, logger, channelwatcher.UpdateConfigWatchHandler(kafkaDispatcher.UpdateConfig, shouldWatch)); err != nil {
+		logger.Fatal("Unable to create channel watcher.", zap.Error(err))
+	}
 
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
 
-	// Start both the manager (which notices ConfigMap changes) and the HTTP server.
-	var g errgroup.Group
-	g.Go(func() error {
-		// Start blocks forever, so run it in a goroutine.
-		return mgr.Start(stopCh)
-	})
-
-	g.Go(func() error {
-		// Setups message receiver and blocks
-		return kafkaDispatcher.Start(stopCh)
-	})
-
-	err = g.Wait()
-	if err != nil {
-		logger.Error("Either the kafka message receiver or the ConfigMap noticer failed.", zap.Error(err))
+	// configMapWatcher does not block, so start it first.
+	if err = configMapWatcher.Start(stopCh); err != nil {
+		logger.Fatal("Failed to start ConfigMap watcher", zap.Error(err))
 	}
 
+	// Start blocks forever.
+	err = mgr.Start(stopCh)
+	if err != nil {
+		logger.Fatal("Manager.Start() returned an error", zap.Error(err))
+	}
+	logger.Info("Exiting...")
+}
+
+func shouldWatch(ch *v1alpha1.Channel) bool {
+	return ch.Spec.Provisioner != nil &&
+		ch.Spec.Provisioner.Namespace == "" &&
+		ch.Spec.Provisioner.Name == controller.Name
 }

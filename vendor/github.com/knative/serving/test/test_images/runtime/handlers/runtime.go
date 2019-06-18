@@ -30,6 +30,8 @@ func runtimeHandler(w http.ResponseWriter, r *http.Request) {
 			Files:   fileInfo(filePaths...),
 			Cgroups: cgroups(cgroupPaths...),
 			Mounts:  mounts(),
+			Stdin:   stdin(),
+			User:    userInfo(),
 		},
 	}
 

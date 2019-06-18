@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Knative Authors
+Copyright 2019 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,14 +27,21 @@ import (
 
 type EventingV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	BrokersGetter
 	ChannelsGetter
 	ClusterChannelProvisionersGetter
+	EventTypesGetter
 	SubscriptionsGetter
+	TriggersGetter
 }
 
 // EventingV1alpha1Client is used to interact with features provided by the eventing.knative.dev group.
 type EventingV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *EventingV1alpha1Client) Brokers(namespace string) BrokerInterface {
+	return newBrokers(c, namespace)
 }
 
 func (c *EventingV1alpha1Client) Channels(namespace string) ChannelInterface {
@@ -45,8 +52,16 @@ func (c *EventingV1alpha1Client) ClusterChannelProvisioners() ClusterChannelProv
 	return newClusterChannelProvisioners(c)
 }
 
+func (c *EventingV1alpha1Client) EventTypes(namespace string) EventTypeInterface {
+	return newEventTypes(c, namespace)
+}
+
 func (c *EventingV1alpha1Client) Subscriptions(namespace string) SubscriptionInterface {
 	return newSubscriptions(c, namespace)
+}
+
+func (c *EventingV1alpha1Client) Triggers(namespace string) TriggerInterface {
+	return newTriggers(c, namespace)
 }
 
 // NewForConfig creates a new EventingV1alpha1Client for the given config.

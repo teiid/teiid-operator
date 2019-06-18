@@ -34,6 +34,6 @@ spec:
     - name: MAVEN_PROJECT
       value: rdbms-example/
     - name: MAVEN_ARGS_APPEND
-      value: -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -am -pl $(MAVEN_PROJECT)
+      value: -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -Popenshift -am -pl $(MAVEN_PROJECT)
     - name: ARTIFACT_DIR
       value: $(MAVEN_PROJECT)target/

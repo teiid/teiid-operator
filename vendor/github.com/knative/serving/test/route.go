@@ -19,8 +19,10 @@ limitations under the License.
 package test
 
 import (
+	"net/http"
 	"testing"
 
+	"github.com/knative/pkg/test/spoof"
 	"github.com/knative/serving/pkg/apis/serving/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -44,7 +46,7 @@ func CreateBlueGreenRoute(t *testing.T, clients *Clients, names, blue, green Res
 	return err
 }
 
-// UpdateRoute updates a route in the given namespace using the route name in names
+// UpdateBlueGreenRoute updates a route in the given namespace using the route name in names.
 func UpdateBlueGreenRoute(t *testing.T, clients *Clients, names, blue, green ResourceNames) (*v1alpha1.Route, error) {
 	route, err := clients.ServingClient.Routes.Get(names.Route, metav1.GetOptions{})
 	if err != nil {
@@ -58,4 +60,17 @@ func UpdateBlueGreenRoute(t *testing.T, clients *Clients, names, blue, green Res
 		return nil, err
 	}
 	return clients.ServingClient.Routes.Patch(names.Route, types.JSONPatchType, patchBytes, "")
+}
+
+// RetryingRouteInconsistency retries common requests seen when creating a new route
+// - 404 until the route is propagated to the proxy
+func RetryingRouteInconsistency(innerCheck spoof.ResponseChecker) spoof.ResponseChecker {
+	return func(resp *spoof.Response) (bool, error) {
+		if resp.StatusCode == http.StatusNotFound {
+			return false, nil
+		}
+
+		// If we didn't match any retryable codes, invoke the ResponseChecker that we wrapped.
+		return innerCheck(resp)
+	}
 }

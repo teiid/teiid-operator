@@ -17,31 +17,20 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"log"
-	"time"
 
 	"github.com/knative/eventing/contrib/natss/pkg/dispatcher/channel"
 	"github.com/knative/eventing/contrib/natss/pkg/dispatcher/dispatcher"
+	"github.com/knative/eventing/contrib/natss/pkg/util"
+	eventingv1alpha1 "github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
+	"github.com/knative/eventing/pkg/tracing"
+	"github.com/knative/pkg/configmap"
 	"github.com/knative/pkg/signals"
+	"github.com/knative/pkg/system"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
-
-	"github.com/knative/eventing/contrib/natss/pkg/controller/clusterchannelprovisioner"
-	eventingv1alpha1 "github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
-	"github.com/knative/eventing/pkg/utils"
-)
-
-var (
-	readTimeout  = 1 * time.Minute
-	writeTimeout = 1 * time.Minute
-
-	port               int
-	configMapNoticer   string
-	configMapNamespace string
-	configMapName      string
 )
 
 func main() {
@@ -57,29 +46,41 @@ func main() {
 	}
 
 	// Add custom types to this array to get them into the manager's scheme.
-	eventingv1alpha1.AddToScheme(mgr.GetScheme())
+	if err = eventingv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
+		logger.Fatal("Unable to add eventingv1alpha1 scheme", zap.Error(err))
+	}
 
-	stopCh := signals.SetupSignalHandler()
-	var g errgroup.Group
+	// Zipkin tracing.
+	kc := kubernetes.NewForConfigOrDie(mgr.GetConfig())
+	configMapWatcher := configmap.NewInformedWatcher(kc, system.Namespace())
+	if err = tracing.SetupDynamicZipkinPublishing(logger.Sugar(), configMapWatcher, "natss-dispatcher"); err != nil {
+		logger.Fatal("Error setting up Zipkin publishing", zap.Error(err))
+	}
 
 	logger.Info("Dispatcher starting...")
-	natssUrl := fmt.Sprintf(clusterchannelprovisioner.NatssUrlTmpl, utils.GetClusterDomainName())
-	dispatcher, err := dispatcher.NewDispatcher(natssUrl, logger)
+	d, err := dispatcher.NewDispatcher(util.GetDefaultNatssURL(), util.GetDefaultClusterID(), logger)
 	if err != nil {
 		logger.Fatal("Unable to create NATSS dispatcher.", zap.Error(err))
 	}
 
-	g.Go(func() error {
-		return dispatcher.Start(stopCh)
-	})
+	if err = mgr.Add(d); err != nil {
+		logger.Fatal("Unable to add the dispatcher", zap.Error(err))
+	}
 
-	_, err = channel.ProvideController(dispatcher, mgr, logger)
+	_, err = channel.ProvideController(d, mgr, logger)
 	if err != nil {
 		logger.Fatal("Unable to create Channel controller", zap.Error(err))
 	}
 
 	logger.Info("Dispatcher controller starting...")
+	stopCh := signals.SetupSignalHandler()
 
+	// configMapWatcher does not block, so start it first.
+	if err = configMapWatcher.Start(stopCh); err != nil {
+		logger.Fatal("Failed to start ConfigMap watcher", zap.Error(err))
+	}
+
+	// Start blocks forever.
 	err = mgr.Start(stopCh)
 	if err != nil {
 		logger.Fatal("Manager.Start() returned an error", zap.Error(err))

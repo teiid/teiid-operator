@@ -19,6 +19,7 @@ package network
 import (
 	"net"
 	"strings"
+	"time"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -29,6 +30,10 @@ const (
 	// with this header will not be passed to the user container or
 	// included in request metrics.
 	ProbeHeaderName = "k-network-probe"
+
+	// ProxyHeaderName is the name of an internal header that activator
+	// uses to mark requests going through it.
+	ProxyHeaderName = "k-proxy-request"
 
 	// ConfigName is the name of the configmap containing all
 	// customizations for networking features.
@@ -45,6 +50,28 @@ const (
 	// IstioIngressClassName value for specifying knative's Istio
 	// ClusterIngress reconciler.
 	IstioIngressClassName = "istio.ingress.networking.knative.dev"
+
+	// DomainTemplateKey is the name of the configuration entry that
+	// specifies the golang template string to use to construct the
+	// Knative service's DNS name.
+	DomainTemplateKey = "domainTemplate"
+
+	// DefaultConnTimeout specifies a short default connection timeout
+	// to avoid hitting the issue fixed in
+	// https://github.com/kubernetes/kubernetes/pull/72534 but only
+	// avalailable after Kubernetes 1.14.
+	//
+	// Our connections are usually between pods in the same cluster
+	// like activator <-> queue-proxy, or even between containers
+	// within the same pod queue-proxy <-> user-container, so a
+	// smaller connect timeout would be justifiable.
+	//
+	// We should consider exposing this as a configuration.
+	DefaultConnTimeout = 200 * time.Millisecond
+
+	// DefaultDomainTemplate is the default golang template to use when
+	// constructing the Knative Route's Domain(host)
+	DefaultDomainTemplate = "{{.Name}}.{{.Namespace}}.{{.Domain}}"
 )
 
 // Config contains the networking configuration defined in the
@@ -56,6 +83,10 @@ type Config struct {
 
 	// DefaultClusterIngressClass specifies the default ClusterIngress class.
 	DefaultClusterIngressClass string
+
+	// DomainTemplate is the golang text template to use to generate the
+	// Route's domain (host) for the Service.
+	DomainTemplate string
 }
 
 func validateAndNormalizeOutboundIPRanges(s string) (string, error) {
@@ -94,10 +125,18 @@ func NewConfigFromConfigMap(configMap *corev1.ConfigMap) (*Config, error) {
 	} else {
 		nc.IstioOutboundIPRanges = normalizedIpr
 	}
+
 	if ingressClass, ok := configMap.Data[DefaultClusterIngressClassKey]; !ok {
 		nc.DefaultClusterIngressClass = IstioIngressClassName
 	} else {
 		nc.DefaultClusterIngressClass = ingressClass
 	}
+
+	// Blank DomainTemplate makes no sense so use our default
+	nc.DomainTemplate = configMap.Data[DomainTemplateKey]
+	if nc.DomainTemplate == "" {
+		nc.DomainTemplate = DefaultDomainTemplate
+	}
+
 	return nc, nil
 }

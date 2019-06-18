@@ -19,15 +19,17 @@ package resources
 import (
 	"strconv"
 
+	"k8s.io/apimachinery/pkg/util/intstr"
+
 	"github.com/knative/pkg/logging"
 	"github.com/knative/pkg/system"
+	"github.com/knative/serving/pkg/apis/serving"
 	"github.com/knative/serving/pkg/apis/serving/v1alpha1"
 	"github.com/knative/serving/pkg/autoscaler"
 	"github.com/knative/serving/pkg/queue"
 	"github.com/knative/serving/pkg/reconciler/v1alpha1/revision/config"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 var (
@@ -47,16 +49,7 @@ var (
 		Name:          v1alpha1.RequestQueueMetricsPortName,
 		ContainerPort: int32(v1alpha1.RequestQueueMetricsPort),
 	}}
-	// This handler (1) marks the service as not ready and (2)
-	// adds a small delay before the container is killed.
-	queueLifecycle = &corev1.Lifecycle{
-		PreStop: &corev1.Handler{
-			HTTPGet: &corev1.HTTPGetAction{
-				Port: intstr.FromInt(v1alpha1.RequestQueueAdminPort),
-				Path: queue.RequestQueueQuitPath,
-			},
-		},
-	}
+
 	queueReadinessProbe = &corev1.Probe{
 		Handler: corev1.Handler{
 			HTTPGet: &corev1.HTTPGetAction{
@@ -77,12 +70,13 @@ var (
 )
 
 // makeQueueContainer creates the container spec for queue sidecar.
-func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, autoscalerConfig *autoscaler.Config,
-	controllerConfig *config.Controller) *corev1.Container {
+func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, observabilityConfig *config.Observability,
+	autoscalerConfig *autoscaler.Config, controllerConfig *config.Controller) *corev1.Container {
 	configName := ""
 	if owner := metav1.GetControllerOf(rev); owner != nil && owner.Kind == "Configuration" {
 		configName = owner.Name
 	}
+	serviceName := rev.Labels[serving.ServiceLabelKey]
 
 	autoscalerAddress := "autoscaler"
 	userPort := getUserPort(rev)
@@ -97,11 +91,13 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, a
 		Image:          controllerConfig.QueueSidecarImage,
 		Resources:      queueResources,
 		Ports:          queuePorts,
-		Lifecycle:      queueLifecycle,
 		ReadinessProbe: queueReadinessProbe,
 		Env: []corev1.EnvVar{{
 			Name:  "SERVING_NAMESPACE",
 			Value: rev.Namespace,
+		}, {
+			Name:  "SERVING_SERVICE",
+			Value: serviceName,
 		}, {
 			Name:  "SERVING_CONFIGURATION",
 			Value: configName,
@@ -128,11 +124,24 @@ func makeQueueContainer(rev *v1alpha1.Revision, loggingConfig *logging.Config, a
 				},
 			},
 		}, {
+			Name: "SERVING_POD_IP",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "status.podIP",
+				},
+			},
+		}, {
 			Name:  "SERVING_LOGGING_CONFIG",
 			Value: loggingConfig.LoggingConfig,
 		}, {
 			Name:  "SERVING_LOGGING_LEVEL",
 			Value: loggingLevel,
+		}, {
+			Name:  "SERVING_REQUEST_LOG_TEMPLATE",
+			Value: observabilityConfig.RequestLogTemplate,
+		}, {
+			Name:  "SERVING_REQUEST_METRICS_BACKEND",
+			Value: observabilityConfig.RequestMetricsBackend,
 		}, {
 			Name:  "USER_PORT",
 			Value: strconv.Itoa(int(userPort)),

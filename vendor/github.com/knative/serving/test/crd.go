@@ -23,6 +23,7 @@ import (
 	"testing"
 	"unicode"
 
+	ptest "github.com/knative/pkg/test"
 	"github.com/knative/pkg/test/helpers"
 	"github.com/knative/serving/pkg/apis/serving/v1alpha1"
 	v1alpha1testing "github.com/knative/serving/pkg/reconciler/v1alpha1/testing"
@@ -119,10 +120,11 @@ func ConfigurationSpec(imagePath string, options *Options) *v1alpha1.Configurati
 		RevisionTemplate: v1alpha1.RevisionTemplateSpec{
 			Spec: v1alpha1.RevisionSpec{
 				Container: corev1.Container{
-					Image:          imagePath,
-					Resources:      options.ContainerResources,
-					ReadinessProbe: options.ReadinessProbe,
-					Ports:          options.ContainerPorts,
+					Image:           imagePath,
+					Resources:       options.ContainerResources,
+					ReadinessProbe:  options.ReadinessProbe,
+					Ports:           options.ContainerPorts,
+					SecurityContext: options.SecurityContext,
 				},
 				ContainerConcurrency: v1alpha1.RevisionContainerConcurrencyType(options.ContainerConcurrency),
 			},
@@ -148,7 +150,7 @@ func Configuration(namespace string, names ResourceNames, options *Options, fopt
 			Namespace: namespace,
 			Name:      names.Config,
 		},
-		Spec: *ConfigurationSpec(ImagePath(names.Image), options),
+		Spec: *ConfigurationSpec(ptest.ImagePath(names.Image), options),
 	}
 	if options.ContainerPorts != nil && len(options.ContainerPorts) > 0 {
 		config.Spec.RevisionTemplate.Spec.Container.Ports = options.ContainerPorts
@@ -175,7 +177,7 @@ func ConfigurationWithBuild(namespace string, names ResourceNames, build *v1alph
 			RevisionTemplate: v1alpha1.RevisionTemplateSpec{
 				Spec: v1alpha1.RevisionSpec{
 					Container: corev1.Container{
-						Image: ImagePath(names.Image),
+						Image: ptest.ImagePath(names.Image),
 					},
 				},
 			},
@@ -186,46 +188,20 @@ func ConfigurationWithBuild(namespace string, names ResourceNames, build *v1alph
 // LatestService returns a RunLatest Service object in namespace with the name names.Service
 // that uses the image specified by names.Image.
 func LatestService(namespace string, names ResourceNames, options *Options, fopt ...v1alpha1testing.ServiceOption) *v1alpha1.Service {
-	svc := &v1alpha1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      names.Service,
-		},
-		Spec: v1alpha1.ServiceSpec{
-			RunLatest: &v1alpha1.RunLatestType{
-				Configuration: *ConfigurationSpec(ImagePath(names.Image), options),
-			},
-		},
-	}
+	a := append([]v1alpha1testing.ServiceOption{
+		v1alpha1testing.WithRunLatestConfigSpec(*ConfigurationSpec(ptest.ImagePath(names.Image), options)),
+	}, fopt...)
+	return v1alpha1testing.Service(names.Service, namespace, a...)
 
-	// Apply any mutations we have been provided.
-	for _, opt := range fopt {
-		opt(svc)
-	}
-	return svc
 }
 
 // ReleaseLatestService returns a Release Service object in namespace with the name names.Service
 // that uses the image specified by names.Image and `@latest` as the only revision.
 func ReleaseLatestService(namespace string, names ResourceNames, options *Options, fopt ...v1alpha1testing.ServiceOption) *v1alpha1.Service {
-	svc := &v1alpha1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      names.Service,
-		},
-		Spec: v1alpha1.ServiceSpec{
-			Release: &v1alpha1.ReleaseType{
-				Revisions:     []string{v1alpha1.ReleaseLatestRevisionKeyword},
-				Configuration: *ConfigurationSpec(ImagePath(names.Image), options),
-			},
-		},
-	}
-
-	// Apply any mutations we have been provided.
-	for _, opt := range fopt {
-		opt(svc)
-	}
-	return svc
+	a := append([]v1alpha1testing.ServiceOption{
+		v1alpha1testing.WithReleaseRolloutConfigSpec(*ConfigurationSpec(ptest.ImagePath(names.Image), options),
+			[]string{v1alpha1.ReleaseLatestRevisionKeyword}...)}, fopt...)
+	return v1alpha1testing.Service(names.Service, namespace, a...)
 }
 
 // ReleaseService returns a Release Service object in namespace with the name names.Service that uses
@@ -290,7 +266,7 @@ func makeK8sNamePrefix(s string) string {
 			newToken = true
 			continue
 		}
-		if sb.Len() > 0 && (newToken == true || unicode.IsUpper(c)) {
+		if sb.Len() > 0 && (newToken || unicode.IsUpper(c)) {
 			sb.WriteRune('-')
 		}
 		sb.WriteRune(unicode.ToLower(c))

@@ -17,6 +17,7 @@ limitations under the License.
 package testing
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/knative/pkg/apis"
@@ -48,34 +49,31 @@ const (
 var _ apis.Validatable = (*Resource)(nil)
 var _ apis.Defaultable = (*Resource)(nil)
 var _ apis.Immutable = (*Resource)(nil)
-var _ apis.Annotatable = (*Resource)(nil)
 var _ apis.Listable = (*Resource)(nil)
 
 // ResourceSpec represents test resource spec.
 type ResourceSpec struct {
 	FieldWithDefault               string `json:"fieldWithDefault,omitempty"`
+	FieldWithContextDefault        string `json:"fieldWithContextDefault,omitempty"`
 	FieldWithValidation            string `json:"fieldWithValidation,omitempty"`
 	FieldThatsImmutable            string `json:"fieldThatsImmutable,omitempty"`
 	FieldThatsImmutableWithDefault string `json:"fieldThatsImmutableWithDefault,omitempty"`
 }
 
 // SetDefaults sets the defaults on the object.
-func (c *Resource) SetDefaults() {
-	c.Spec.SetDefaults()
-}
+func (c *Resource) SetDefaults(ctx context.Context) {
+	c.Spec.SetDefaults(ctx)
 
-// SetDefaults sets the defaults on the spec.
-func (cs *ResourceSpec) SetDefaults() {
-	if cs.FieldWithDefault == "" {
-		cs.FieldWithDefault = "I'm a default."
-	}
-	if cs.FieldThatsImmutableWithDefault == "" {
-		cs.FieldThatsImmutableWithDefault = "this is another default value"
+	if apis.IsInUpdate(ctx) {
+		old := apis.GetBaseline(ctx).(*Resource)
+		c.AnnotateUserInfo(ctx, old, apis.GetUserInfo(ctx))
+	} else {
+		c.AnnotateUserInfo(ctx, nil, apis.GetUserInfo(ctx))
 	}
 }
 
 // AnnotateUserInfo satisfies the Annotatable interface.
-func (c *Resource) AnnotateUserInfo(prev apis.Annotatable, ui *authenticationv1.UserInfo) {
+func (c *Resource) AnnotateUserInfo(ctx context.Context, prev *Resource, ui *authenticationv1.UserInfo) {
 	a := c.ObjectMeta.GetAnnotations()
 	if a == nil {
 		a = map[string]string{}
@@ -88,13 +86,16 @@ func (c *Resource) AnnotateUserInfo(prev apis.Annotatable, ui *authenticationv1.
 	if prev == nil {
 		a[CreatorAnnotation] = userName
 	} else {
-		up := prev.(*Resource)
 		// No spec update ==> bail out.
-		if ok, _ := kmp.SafeEqual(up.Spec, c.Spec); ok {
-			return
-		}
-		if up.ObjectMeta.GetAnnotations() != nil {
-			a[CreatorAnnotation] = up.ObjectMeta.GetAnnotations()[CreatorAnnotation]
+		if ok, _ := kmp.SafeEqual(prev.Spec, c.Spec); ok {
+			if prev.ObjectMeta.GetAnnotations() != nil {
+				a[CreatorAnnotation] = prev.ObjectMeta.GetAnnotations()[CreatorAnnotation]
+				userName = prev.ObjectMeta.GetAnnotations()[UpdaterAnnotation]
+			}
+		} else {
+			if prev.ObjectMeta.GetAnnotations() != nil {
+				a[CreatorAnnotation] = prev.ObjectMeta.GetAnnotations()[CreatorAnnotation]
+			}
 		}
 	}
 	// Regardless of `old` set the updater.
@@ -102,18 +103,52 @@ func (c *Resource) AnnotateUserInfo(prev apis.Annotatable, ui *authenticationv1.
 	c.ObjectMeta.SetAnnotations(a)
 }
 
-func (c *Resource) Validate() *apis.FieldError {
-	return c.Spec.Validate().ViaField("spec")
+func (c *Resource) Validate(ctx context.Context) *apis.FieldError {
+	err := c.Spec.Validate(ctx).ViaField("spec")
+
+	if apis.IsInUpdate(ctx) {
+		original := apis.GetBaseline(ctx).(*Resource)
+		err = err.Also(c.CheckImmutableFields(ctx, original))
+	}
+	return err
 }
 
-func (cs *ResourceSpec) Validate() *apis.FieldError {
+type onContextKey struct{}
+
+// WithValue returns a WithContext for attaching an OnContext with the given value.
+func WithValue(ctx context.Context, val string) context.Context {
+	return context.WithValue(ctx, onContextKey{}, &OnContext{Value: val})
+}
+
+// OnContext is a struct for holding a value attached to a context.
+type OnContext struct {
+	Value string
+}
+
+// SetDefaults sets the defaults on the spec.
+func (cs *ResourceSpec) SetDefaults(ctx context.Context) {
+	if cs.FieldWithDefault == "" {
+		cs.FieldWithDefault = "I'm a default."
+	}
+	if cs.FieldWithContextDefault == "" {
+		oc, ok := ctx.Value(onContextKey{}).(*OnContext)
+		if ok {
+			cs.FieldWithContextDefault = oc.Value
+		}
+	}
+	if cs.FieldThatsImmutableWithDefault == "" {
+		cs.FieldThatsImmutableWithDefault = "this is another default value"
+	}
+}
+
+func (cs *ResourceSpec) Validate(ctx context.Context) *apis.FieldError {
 	if cs.FieldWithValidation != "magic value" {
 		return apis.ErrInvalidValue(cs.FieldWithValidation, "fieldWithValidation")
 	}
 	return nil
 }
 
-func (current *Resource) CheckImmutableFields(og apis.Immutable) *apis.FieldError {
+func (current *Resource) CheckImmutableFields(ctx context.Context, og apis.Immutable) *apis.FieldError {
 	original, ok := og.(*Resource)
 	if !ok {
 		return &apis.FieldError{Message: "The provided original was not a Resource"}

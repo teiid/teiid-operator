@@ -259,6 +259,14 @@ func MakePod(build *v1alpha1.Build, kubeclient kubernetes.Interface) (*corev1.Po
 	}
 	annotations["sidecar.istio.io/inject"] = "false"
 
+	// Copy labels on the build through to the underlying pod to allow users
+	// to specify pod labels.
+	labels := map[string]string{}
+	for key, val := range build.Labels {
+		labels[key] = val
+	}
+	labels[buildNameLabelKey] = build.Name
+
 	cred, secrets, err := makeCredentialInitializer(build, kubeclient)
 	if err != nil {
 		return nil, err
@@ -346,7 +354,7 @@ func MakePod(build *v1alpha1.Build, kubeclient kubernetes.Interface) (*corev1.Po
 	if build.Status.Cluster != nil && build.Status.Cluster.PodName != "" {
 		podName = build.Status.Cluster.PodName
 	} else {
-		return nil, fmt.Errorf("Can't create pod for build %q: pod name not set", build.Name)
+		return nil, fmt.Errorf("can't create pod for build %q: pod name not set", build.Name)
 	}
 
 	return &corev1.Pod{
@@ -364,9 +372,7 @@ func MakePod(build *v1alpha1.Build, kubeclient kubernetes.Interface) (*corev1.Po
 				}),
 			},
 			Annotations: annotations,
-			Labels: map[string]string{
-				buildNameLabelKey: build.Name,
-			},
+			Labels:      labels,
 		},
 		Spec: corev1.PodSpec{
 			// If the build fails, don't restart it.
@@ -414,7 +420,7 @@ func BuildStatusFromPod(p *corev1.Pod, buildSpec v1alpha1.BuildSpec) v1alpha1.Bu
 		// is the source-fetching container.
 		skip++
 	}
-	// Also skip multiple sourcees specified by the build.
+	// Also skip multiple sources specified by the build.
 	skip += len(buildSpec.Sources)
 	if skip <= len(p.Status.InitContainerStatuses) {
 		for _, s := range p.Status.InitContainerStatuses[skip:] {

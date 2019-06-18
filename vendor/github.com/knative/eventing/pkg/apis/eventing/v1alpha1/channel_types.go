@@ -20,10 +20,12 @@ import (
 	eventingduck "github.com/knative/eventing/pkg/apis/duck/v1alpha1"
 	"github.com/knative/pkg/apis"
 	duckv1alpha1 "github.com/knative/pkg/apis/duck/v1alpha1"
+	"github.com/knative/pkg/kmeta"
 	"github.com/knative/pkg/webhook"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 // +genclient
@@ -46,12 +48,17 @@ type Channel struct {
 	Status ChannelStatus `json:"status,omitempty"`
 }
 
-// Check that Channel can be validated, can be defaulted, and has immutable fields.
-var _ apis.Validatable = (*Channel)(nil)
-var _ apis.Defaultable = (*Channel)(nil)
-var _ apis.Immutable = (*Channel)(nil)
-var _ runtime.Object = (*Channel)(nil)
-var _ webhook.GenericCRD = (*Channel)(nil)
+var (
+	// Check that Channel can be validated, can be defaulted, and has immutable fields.
+	_ apis.Validatable   = (*Channel)(nil)
+	_ apis.Defaultable   = (*Channel)(nil)
+	_ apis.Immutable     = (*Channel)(nil)
+	_ runtime.Object     = (*Channel)(nil)
+	_ webhook.GenericCRD = (*Channel)(nil)
+
+	// Check that we can create OwnerReferences to a Channel.
+	_ kmeta.OwnerRefable = (*Channel)(nil)
+)
 
 // ChannelSpec specifies the Provisioner backing a channel and the configuration
 // arguments for a Channel.
@@ -77,17 +84,12 @@ type ChannelSpec struct {
 	Subscribable *eventingduck.Subscribable `json:"subscribable,omitempty"`
 }
 
-var chanCondSet = duckv1alpha1.NewLivingConditionSet(ChannelConditionProvisioned, ChannelConditionAddressable)
-
 // ChannelStatus represents the current state of a Channel.
 type ChannelStatus struct {
-	// ObservedGeneration is the most recent generation observed for this Channel.
-	// It corresponds to the Channel's generation, which is updated on mutation by
-	// the API Server.
-	// TODO: The above comment is only true once
-	// https://github.com/kubernetes/kubernetes/issues/58778 is fixed.
-	// +optional
-	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
+	// inherits duck/v1alpha1 Status, which currently provides:
+	// * ObservedGeneration - the 'Generation' of the Service that was last processed by the controller.
+	// * Conditions - the latest available observations of a resource's current state.
+	duckv1alpha1.Status `json:",inline"`
 
 	// Channel is Addressable. It currently exposes the endpoint as a
 	// fully-qualified DNS name which will distribute traffic over the
@@ -96,65 +98,9 @@ type ChannelStatus struct {
 	// It generally has the form {channel}.{namespace}.svc.{cluster domain name}
 	Address duckv1alpha1.Addressable `json:"address,omitempty"`
 
-	// Represents the latest available observations of a channel's current state.
-	// +optional
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	Conditions duckv1alpha1.Conditions `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type"`
-
 	// Internal is status unique to each ClusterChannelProvisioner.
 	// +optional
 	Internal *runtime.RawExtension `json:"internal,omitempty"`
-}
-
-const (
-	// ChannelConditionReady has status True when the Channel is ready to
-	// accept traffic.
-	ChannelConditionReady = duckv1alpha1.ConditionReady
-
-	// ChannelConditionProvisioned has status True when the Channel's
-	// backing resources have been provisioned.
-	ChannelConditionProvisioned duckv1alpha1.ConditionType = "Provisioned"
-
-	// ChannelConditionAddressable has status true when this Channel meets
-	// the Addressable contract and has a non-empty hostname.
-	ChannelConditionAddressable duckv1alpha1.ConditionType = "Addressable"
-)
-
-// GetCondition returns the condition currently associated with the given type, or nil.
-func (cs *ChannelStatus) GetCondition(t duckv1alpha1.ConditionType) *duckv1alpha1.Condition {
-	return chanCondSet.Manage(cs).GetCondition(t)
-}
-
-// IsReady returns true if the resource is ready overall.
-func (cs *ChannelStatus) IsReady() bool {
-	return chanCondSet.Manage(cs).IsHappy()
-}
-
-// InitializeConditions sets relevant unset conditions to Unknown state.
-func (cs *ChannelStatus) InitializeConditions() {
-	chanCondSet.Manage(cs).InitializeConditions()
-}
-
-// MarkProvisioned sets ChannelConditionProvisioned condition to True state.
-func (cs *ChannelStatus) MarkProvisioned() {
-	chanCondSet.Manage(cs).MarkTrue(ChannelConditionProvisioned)
-}
-
-// MarkNotProvisioned sets ChannelConditionProvisioned condition to False state.
-func (cs *ChannelStatus) MarkNotProvisioned(reason, messageFormat string, messageA ...interface{}) {
-	chanCondSet.Manage(cs).MarkFalse(ChannelConditionProvisioned, reason, messageFormat, messageA...)
-}
-
-// SetAddress makes this Channel addressable by setting the hostname. It also
-// sets the ChannelConditionAddressable to true.
-func (cs *ChannelStatus) SetAddress(hostname string) {
-	cs.Address.Hostname = hostname
-	if hostname != "" {
-		chanCondSet.Manage(cs).MarkTrue(ChannelConditionAddressable)
-	} else {
-		chanCondSet.Manage(cs).MarkFalse(ChannelConditionAddressable, "emptyHostname", "hostname is the empty string")
-	}
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -165,4 +111,9 @@ type ChannelList struct {
 	// +optional
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []Channel `json:"items"`
+}
+
+// GetGroupVersionKind returns GroupVersionKind for Channels
+func (c *Channel) GetGroupVersionKind() schema.GroupVersionKind {
+	return SchemeGroupVersion.WithKind("Channel")
 }

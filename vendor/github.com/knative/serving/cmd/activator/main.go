@@ -24,11 +24,11 @@ import (
 	"net/http"
 	"time"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/knative/serving/cmd/util"
 	"github.com/knative/serving/pkg/autoscaler"
-	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.com/knative/pkg/logging/logkey"
 
@@ -45,6 +45,7 @@ import (
 	"github.com/knative/serving/pkg/apis/serving/v1alpha1"
 	clientset "github.com/knative/serving/pkg/client/clientset/versioned"
 	servinginformers "github.com/knative/serving/pkg/client/informers/externalversions"
+	"github.com/knative/serving/pkg/goversion"
 	"github.com/knative/serving/pkg/http/h2c"
 	"github.com/knative/serving/pkg/logging"
 	"github.com/knative/serving/pkg/metrics"
@@ -53,18 +54,22 @@ import (
 	"github.com/knative/serving/pkg/utils"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 	kubeinformers "k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 )
 
-const (
-	maxUploadBytes = 32e6 // 32MB - same as app engine
-	component      = "activator"
+// Fail if using unsupported go version
+var _ = goversion.IsSupported()
 
-	maxRetries             = 18 // the sum of all retries would add up to 1 minute
-	minRetryInterval       = 100 * time.Millisecond
-	exponentialBackoffBase = 1.3
+const (
+	component = "activator"
+
+	// This is the number of times we will perform network probes to
+	// see if the Revision is accessible before forwarding the actual
+	// request.
+	maxRetries = 18
 
 	// Add a little buffer space between request handling and stat
 	// reporting so that latency in the stat pipeline doesn't
@@ -82,33 +87,31 @@ const (
 	// As new endpoints show up, the Breakers concurrency increases up to this value.
 	breakerMaxConcurrency = 1000
 
+	// The port on which autoscaler WebSocket server listens.
+	autoscalerPort = 8080
+
 	defaultResyncInterval = 10 * time.Hour
 )
 
 var (
 	masterURL  = flag.String("master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
 	kubeconfig = flag.String("kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-
-	logger *zap.SugaredLogger
-
-	statSink *websocket.ManagedConnection
-	statChan = make(chan *autoscaler.StatMessage, statReportingQueueLength)
-	reqChan  = make(chan activatorhandler.ReqEvent, requestCountingQueueLength)
 )
 
-func statReporter(stopCh <-chan struct{}) {
+func statReporter(statSink *websocket.ManagedConnection, stopCh <-chan struct{}, statChan <-chan *autoscaler.StatMessage, logger *zap.SugaredLogger) {
 	for {
 		select {
 		case sm := <-statChan:
 			if statSink == nil {
-				logger.Error("Stat sink not connected")
+				logger.Error("Stat sink is not connected")
 				continue
 			}
-			err := statSink.Send(sm)
-			if err != nil {
+			if err := statSink.Send(sm); err != nil {
 				logger.Errorw("Error while sending stat", zap.Error(err))
 			}
 		case <-stopCh:
+			// It's a sending connection, so no drainage required.
+			statSink.Shutdown()
 			return
 		}
 	}
@@ -125,7 +128,7 @@ func main() {
 		log.Fatalf("Error parsing logging configuration: %v", err)
 	}
 	createdLogger, atomicLevel := logging.NewLoggerFromConfig(config, component)
-	logger = createdLogger.With(zap.String(logkey.ControllerType, "activator"))
+	logger := createdLogger.With(zap.String(logkey.ControllerType, "activator"))
 	defer logger.Sync()
 
 	logger.Info("Starting the knative activator")
@@ -143,8 +146,14 @@ func main() {
 		logger.Fatalw("Error building serving clientset", zap.Error(err))
 	}
 
-	if err := version.CheckMinimumVersion(kubeClient.Discovery()); err != nil {
-		logger.Fatalf("Version check failed: %v", err)
+	// We sometimes startup faster than we can reach kube-api. Poll on failure to prevent us terminating
+	if perr := wait.PollImmediate(time.Second, 60*time.Second, func() (bool, error) {
+		if err = version.CheckMinimumVersion(kubeClient.Discovery()); err != nil {
+			logger.Errorw("Failed to get k8s version", zap.Error(err))
+		}
+		return err == nil, nil
+	}); perr != nil {
+		logger.Fatalw("Timed out attempting to get k8s version", zap.Error(err))
 	}
 
 	reporter, err := activator.NewStatsReporter()
@@ -154,21 +163,29 @@ func main() {
 
 	// Set up signals so we handle the first shutdown signal gracefully.
 	stopCh := signals.SetupSignalHandler()
+	statChan := make(chan *autoscaler.StatMessage, statReportingQueueLength)
+	defer close(statChan)
+
+	reqChan := make(chan activatorhandler.ReqEvent, requestCountingQueueLength)
+	defer close(reqChan)
 
 	kubeInformerFactory := kubeinformers.NewSharedInformerFactory(kubeClient, defaultResyncInterval)
 	servingInformerFactory := servinginformers.NewSharedInformerFactory(servingClient, defaultResyncInterval)
 	endpointInformer := kubeInformerFactory.Core().V1().Endpoints()
+	serviceInformer := kubeInformerFactory.Core().V1().Services()
 	revisionInformer := servingInformerFactory.Serving().V1alpha1().Revisions()
 
 	// Run informers instead of starting them from the factory to prevent the sync hanging because of empty handler.
 	go revisionInformer.Informer().Run(stopCh)
 	go endpointInformer.Informer().Run(stopCh)
+	go serviceInformer.Informer().Run(stopCh)
 
 	logger.Info("Waiting for informer caches to sync")
 
 	informerSyncs := []cache.InformerSynced{
 		endpointInformer.Informer().HasSynced,
 		revisionInformer.Informer().HasSynced,
+		serviceInformer.Informer().HasSynced,
 	}
 	// Make sure the caches are in sync before we add the actual handler.
 	// This will prevent from missing endpoint 'Add' events during startup, e.g. when the endpoints informer
@@ -199,6 +216,10 @@ func main() {
 		return revisionInformer.Lister().Revisions(revID.Namespace).Get(revID.Name)
 	}
 
+	serviceGetter := func(namespace, name string) (*v1.Service, error) {
+		return serviceInformer.Lister().Services(namespace).Get(name)
+	}
+
 	throttlerParams := activator.ThrottlerParams{
 		BreakerParams: params,
 		Logger:        logger,
@@ -220,52 +241,38 @@ func main() {
 		Handler:    handler,
 	})
 
-	a := activator.NewRevisionActivator(kubeClient, servingClient, logger)
-	a = activator.NewDedupingActivator(a)
-
-	// Retry on 503's for up to 60 seconds. The reason is there is
-	// a small delay for k8s to include the ready IP in service.
-	// https://github.com/knative/serving/issues/660#issuecomment-384062553
-	shouldRetry := activatorutil.RetryStatus(http.StatusServiceUnavailable)
-	backoffSettings := wait.Backoff{
-		Duration: minRetryInterval,
-		Factor:   exponentialBackoffBase,
-		Steps:    maxRetries,
-	}
-	rt := activatorutil.NewRetryRoundTripper(activatorutil.AutoTransport, logger, backoffSettings, shouldRetry)
-
 	// Open a websocket connection to the autoscaler
-	autoscalerEndpoint := fmt.Sprintf("ws://%s.%s.svc.%s:%s", "autoscaler", system.Namespace(), utils.GetClusterDomainName(), "8080")
-	logger.Infof("Connecting to autoscaler at %s", autoscalerEndpoint)
-	statSink = websocket.NewDurableSendingConnection(autoscalerEndpoint, logger)
-	go statReporter(stopCh)
+	autoscalerEndpoint := fmt.Sprintf("ws://%s.%s.svc.%s:%d", "autoscaler", system.Namespace(), utils.GetClusterDomainName(), autoscalerPort)
+	logger.Info("Connecting to autoscaler at", autoscalerEndpoint)
+	statSink := websocket.NewDurableSendingConnection(autoscalerEndpoint, logger)
+	go statReporter(statSink, stopCh, statChan, logger)
 
 	podName := util.GetRequiredEnvOrFatal("POD_NAME", logger)
 
 	// Create and run our concurrency reporter
-	cr := activatorhandler.NewConcurrencyReporter(podName, reqChan, time.NewTicker(time.Second).C, statChan)
+	reportTicker := time.NewTicker(time.Second)
+	defer reportTicker.Stop()
+	cr := activatorhandler.NewConcurrencyReporter(podName, reqChan, reportTicker.C, statChan)
 	go cr.Run(stopCh)
 
-	ah := &activatorhandler.ProbeHandler{
-		NextHandler: &activatorhandler.FilteringHandler{
-			NextHandler: activatorhandler.NewRequestEventHandler(reqChan,
-				&activatorhandler.EnforceMaxContentLengthHandler{
-					MaxContentLengthBytes: maxUploadBytes,
-					NextHandler: &activatorhandler.ActivationHandler{
-						Activator: a,
-						Transport: rt,
-						Logger:    logger,
-						Reporter:  reporter,
-						Throttler: throttler,
-					},
-				},
-			),
-		},
+	// Create activation handler chain
+	// Note: innermost handlers are specified first, ie. the last handler in the chain will be executed first
+	var ah http.Handler = &activatorhandler.ActivationHandler{
+		Transport:     activatorutil.AutoTransport,
+		Logger:        logger,
+		Reporter:      reporter,
+		Throttler:     throttler,
+		GetProbeCount: maxRetries,
+		GetRevision:   revisionGetter,
+		GetService:    serviceGetter,
 	}
+	ah = activatorhandler.NewRequestEventHandler(reqChan, ah)
+	ah = &activatorhandler.HealthHandler{HealthCheck: statSink.Status, NextHandler: ah}
+	ah = &activatorhandler.ProbeHandler{NextHandler: ah}
 
 	// Watch the logging config map and dynamically update logging levels.
 	configMapWatcher := configmap.NewInformedWatcher(kubeClient, system.Namespace())
-	configMapWatcher.Watch(logging.ConfigName, logging.UpdateLevelFromConfigMap(logger, atomicLevel, component))
+	configMapWatcher.Watch(logging.ConfigMapName(), logging.UpdateLevelFromConfigMap(logger, atomicLevel, component))
 	// Watch the observability config map and dynamically update metrics exporter.
 	configMapWatcher.Watch(metrics.ObservabilityConfigName, metrics.UpdateExporterFromConfigMap(component, logger))
 	if err = configMapWatcher.Start(stopCh); err != nil {
@@ -287,7 +294,6 @@ func main() {
 	}()
 
 	<-stopCh
-	a.Shutdown()
-	http1Srv.Shutdown(context.TODO())
-	h2cSrv.Shutdown(context.TODO())
+	http1Srv.Shutdown(context.Background())
+	h2cSrv.Shutdown(context.Background())
 }

@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/knative/pkg/controller"
 	"github.com/knative/pkg/kmp"
 	"github.com/knative/pkg/logging"
@@ -78,28 +79,16 @@ func NewController(
 	impl := controller.NewImpl(c, c.Logger, ReconcilerName, reconciler.MustNewStatsReporter(ReconcilerName, c.Logger))
 
 	c.Logger.Info("Setting up event handlers")
-	serviceInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    impl.Enqueue,
-		UpdateFunc: controller.PassNew(impl.Enqueue),
-		DeleteFunc: impl.Enqueue,
-	})
+	serviceInformer.Informer().AddEventHandler(reconciler.Handler(impl.Enqueue))
 
 	configurationInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("Service")),
-		Handler: cache.ResourceEventHandlerFuncs{
-			AddFunc:    impl.EnqueueControllerOf,
-			UpdateFunc: controller.PassNew(impl.EnqueueControllerOf),
-			DeleteFunc: impl.EnqueueControllerOf,
-		},
+		Handler:    reconciler.Handler(impl.EnqueueControllerOf),
 	})
 
 	routeInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("Service")),
-		Handler: cache.ResourceEventHandlerFuncs{
-			AddFunc:    impl.EnqueueControllerOf,
-			UpdateFunc: controller.PassNew(impl.EnqueueControllerOf),
-			DeleteFunc: impl.EnqueueControllerOf,
-		},
+		Handler:    reconciler.Handler(impl.EnqueueControllerOf),
 	})
 
 	return impl
@@ -147,13 +136,16 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		// to status with this stale state.
 
 	} else if _, uErr := c.updateStatus(service); uErr != nil {
-		logger.Warn("Failed to update service status", zap.Error(uErr))
+		logger.Warnw("Failed to update service status", zap.Error(uErr))
 		c.Recorder.Eventf(service, corev1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Service %q: %v", service.Name, uErr)
 		return uErr
 	} else if err == nil {
 		// If there was a difference and there was no error.
 		c.Recorder.Eventf(service, corev1.EventTypeNormal, "Updated", "Updated Service %q", service.GetName())
+	}
+	if err != nil {
+		c.Recorder.Event(service, corev1.EventTypeWarning, "InternalError", err.Error())
 	}
 	return err
 }
@@ -168,7 +160,7 @@ func (c *Reconciler) reconcile(ctx context.Context, service *v1alpha1.Service) e
 	// and may not have had all of the assumed defaults specified.  This won't result
 	// in this getting written back to the API Server, but lets downstream logic make
 	// assumptions about defaulting.
-	service.SetDefaults()
+	service.SetDefaults(ctx)
 
 	service.Status.InitializeConditions()
 
@@ -183,14 +175,18 @@ func (c *Reconciler) reconcile(ctx context.Context, service *v1alpha1.Service) e
 		}
 		c.Recorder.Eventf(service, corev1.EventTypeNormal, "Created", "Created Configuration %q", configName)
 	} else if err != nil {
-		logger.Errorf("Failed to reconcile Service: %q failed to Get Configuration: %q; %v", service.Name, configName, zap.Error(err))
+		logger.Errorw(
+			fmt.Sprintf("Failed to reconcile Service: %q failed to Get Configuration: %q", service.Name, configName),
+			zap.Error(err))
 		return err
 	} else if !metav1.IsControlledBy(config, service) {
 		// Surface an error in the service's status,and return an error.
 		service.Status.MarkConfigurationNotOwned(configName)
 		return fmt.Errorf("Service: %q does not own Configuration: %q", service.Name, configName)
 	} else if config, err = c.reconcileConfiguration(ctx, service, config); err != nil {
-		logger.Errorf("Failed to reconcile Service: %q failed to reconcile Configuration: %q; %v", service.Name, configName, zap.Error(err))
+		logger.Errorw(
+			fmt.Sprintf("Failed to reconcile Service: %q failed to reconcile Configuration: %q",
+				service.Name, configName), zap.Error(err))
 		return err
 	}
 
@@ -233,7 +229,13 @@ func (c *Reconciler) reconcile(ctx context.Context, service *v1alpha1.Service) e
 				want[idx].ConfigurationName = ""
 			}
 		}
-		if eq, err := kmp.SafeEqual(got, want); !eq || err != nil {
+		ignoreURLs := cmp.FilterPath(
+			func(p cmp.Path) bool {
+				return p.String() == "URL"
+			},
+			cmp.Ignore(),
+		)
+		if eq, err := kmp.SafeEqual(got, want, ignoreURLs); !eq || err != nil {
 			service.Status.MarkRouteNotYetReady()
 		}
 	}
@@ -258,7 +260,7 @@ func (c *Reconciler) updateStatus(desired *v1alpha1.Service) (*v1alpha1.Service,
 
 	svc, err := c.ServingClientSet.ServingV1alpha1().Services(desired.Namespace).UpdateStatus(existing)
 	if err == nil && becomesReady {
-		duration := time.Now().Sub(svc.ObjectMeta.CreationTimestamp.Time)
+		duration := time.Since(svc.ObjectMeta.CreationTimestamp.Time)
 		c.Logger.Infof("Service %q became ready after %v", service.Name, duration)
 		c.StatsReporter.ReportServiceReady(service.Namespace, service.Name, duration)
 	}

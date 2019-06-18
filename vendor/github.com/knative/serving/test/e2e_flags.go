@@ -21,7 +21,6 @@ package test
 
 import (
 	"flag"
-	"os"
 
 	"github.com/knative/pkg/test"
 	"github.com/knative/pkg/test/logging"
@@ -30,6 +29,9 @@ import (
 const (
 	// ServingNamespace is the default namespace for serving e2e tests
 	ServingNamespace = "serving-tests"
+
+	// E2EMetricExporter is the name for the metrics exporter logger
+	E2EMetricExporter = "e2e-metrics"
 )
 
 // ServingFlags holds the flags or defaults for knative/serving settings in the user's environment.
@@ -37,9 +39,7 @@ var ServingFlags = initializeServingFlags()
 
 // ServingEnvironmentFlags holds the e2e flags needed only by the serving repo.
 type ServingEnvironmentFlags struct {
-	ResolvableDomain bool   // Resolve Route controller's `domainSuffix`
-	DockerRepo       string // Docker repo (defaults to $DOCKER_REPO_OVERRIDE)
-	Tag              string // Test images version tag
+	ResolvableDomain bool // Resolve Route controller's `domainSuffix`
 }
 
 func initializeServingFlags() *ServingEnvironmentFlags {
@@ -48,18 +48,14 @@ func initializeServingFlags() *ServingEnvironmentFlags {
 	flag.BoolVar(&f.ResolvableDomain, "resolvabledomain", false,
 		"Set this flag to true if you have configured the `domainSuffix` on your Route controller to a domain that will resolve to your test cluster.")
 
-	flag.StringVar(&f.DockerRepo, "dockerrepo", os.Getenv("DOCKER_REPO_OVERRIDE"),
-		"Provide the uri of the docker repo you have uploaded the test image to using `upload-test-images.sh`. Defaults to $DOCKER_REPO_OVERRIDE")
-
-	flag.StringVar(&f.Tag, "tag", "latest",
-		"Provide the version tag for the test images.")
-
 	flag.Parse()
 	flag.Set("alsologtostderr", "true")
 	logging.InitializeLogger(test.Flags.LogVerbose)
 
+	// TODO(srinivashegde86): remove this once pkg is updated.
+	test.Flags.Tag = "latest"
 	if test.Flags.EmitMetrics {
-		logging.InitializeMetricExporter()
+		logging.InitializeMetricExporter(E2EMetricExporter)
 	}
 
 	return &f

@@ -39,7 +39,6 @@ import (
 
 const (
 	threadsPerController = 2
-	logLevelKey          = "controller"
 )
 
 var (
@@ -49,7 +48,7 @@ var (
 
 func main() {
 	flag.Parse()
-	logger := logging.FromContext(context.TODO()).Named("controller")
+	logger := logging.FromContext(context.Background()).Named("controller")
 
 	// set up signals so we handle the first shutdown signal gracefully
 	stopCh := signals.SetupSignalHandler()
