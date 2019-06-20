@@ -63,8 +63,12 @@ required = [
   version = "=v0.7.0" #osdk_version_annotation
 
 [[constraint]]
-  name = "github.com/gobuffalo/packr"
-  version = "=v2.2.0"
+  name = "github.com/openshift/api"
+  branch = "release-4.1"
+
+[[constraint]]
+  name = "github.com/openshift/client-go"
+  branch = "release-4.1"
 
 [prune]
   go-tests = true

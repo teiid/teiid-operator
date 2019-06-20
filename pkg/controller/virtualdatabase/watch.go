@@ -22,7 +22,7 @@ import (
 	obuildv1 "github.com/openshift/api/build/v1"
 	oimagev1 "github.com/openshift/api/image/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	buildv1 "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
+	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -54,12 +54,11 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		log.Errorf("Error getting image client: %v", err)
 		return &ReconcileVirtualDatabase{}
 	}
-	buildClient, err := buildv1.NewForConfig(mgr.GetConfig())
+	buildClient, err := buildv1client.NewForConfig(mgr.GetConfig())
 	if err != nil {
 		log.Errorf("Error getting build client: %v", err)
 		return &ReconcileVirtualDatabase{}
 	}
-
 	return &ReconcileVirtualDatabase{
 		client:      mgr.GetClient(),
 		scheme:      mgr.GetScheme(),
@@ -78,9 +77,18 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	}
 
 	// Watch for changes to primary resource VirtualDatabase
-	err = c.Watch(&source.Kind{Type: &v1alpha1.VirtualDatabase{}}, &handler.EnqueueRequestForObject{})
-	if err != nil {
-		return err
+	watchObjects := []runtime.Object{
+		// Watch for changes to primary resource KieApp
+		&v1alpha1.VirtualDatabase{},
+		&obuildv1.BuildConfig{},
+		&obuildv1.Build{},
+	}
+	objectHandler := &handler.EnqueueRequestForObject{}
+	for _, watchObject := range watchObjects {
+		err = c.Watch(&source.Kind{Type: watchObject}, objectHandler)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Watch for changes to secondary resource Pods and requeue the owner VirtualDatabase
@@ -109,6 +117,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		&corev1.Service{},
 		&routev1.Route{},
 		&obuildv1.BuildConfig{},
+		&obuildv1.Build{},
 		&oimagev1.ImageStream{},
 	}
 	ownerHandler := &handler.EnqueueRequestForOwner{

@@ -22,36 +22,58 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/knative/pkg/tracing"
 	"go.uber.org/zap"
 	"k8s.io/apimachinery/pkg/util/sets"
 )
 
-// MessageReceiver starts a server to receive new messages for the channel dispatcher. The new
-// message is emitted via the receiver function.
 const (
+	// MessageReceiverPort is the port that MessageReceiver opens an HTTP server on.
 	MessageReceiverPort = 8080
 )
 
-// Message receiver receives messages.
+// MessageReceiver starts a server to receive new messages for the channel dispatcher. The new
+// message is emitted via the receiver function.
 type MessageReceiver struct {
-	receiverFunc    func(ChannelReference, *Message) error
-	forwardHeaders  sets.String
-	forwardPrefixes []string
+	receiverFunc      func(ChannelReference, *Message) error
+	forwardHeaders    sets.String
+	forwardPrefixes   []string
+	logger            *zap.SugaredLogger
+	hostToChannelFunc ResolveChannelFromHostFunc
+}
 
-	logger *zap.SugaredLogger
+// ReceiverOptions provides functional options to MessageReceiver function.
+type ReceiverOptions func(*MessageReceiver) error
+
+// ResolveChannelFromHostFunc function enables MessageReceiver to get the Channel Reference from incoming request HostHeader
+// before calling receiverFunc.
+type ResolveChannelFromHostFunc func(string) (ChannelReference, error)
+
+// ResolveChannelFromHostHeader is a ReceiverOption for NewMessageReceiver which enables the caller to overwrite the
+// default behaviour defined by ParseChannel function.
+func ResolveChannelFromHostHeader(hostToChannelFunc ResolveChannelFromHostFunc) ReceiverOptions {
+	return func(r *MessageReceiver) error {
+		r.hostToChannelFunc = hostToChannelFunc
+		return nil
+	}
 }
 
 // NewMessageReceiver creates a message receiver passing new messages to the
 // receiverFunc.
-func NewMessageReceiver(receiverFunc func(ChannelReference, *Message) error, logger *zap.SugaredLogger) *MessageReceiver {
+func NewMessageReceiver(receiverFunc func(ChannelReference, *Message) error, logger *zap.SugaredLogger, opts ...ReceiverOptions) (*MessageReceiver, error) {
 	receiver := &MessageReceiver{
-		receiverFunc:    receiverFunc,
-		forwardHeaders:  sets.NewString(forwardHeaders...),
-		forwardPrefixes: forwardPrefixes,
-
-		logger: logger,
+		receiverFunc:      receiverFunc,
+		forwardHeaders:    sets.NewString(forwardHeaders...),
+		forwardPrefixes:   forwardPrefixes,
+		hostToChannelFunc: ResolveChannelFromHostFunc(ParseChannel),
+		logger:            logger,
 	}
-	return receiver
+	for _, opt := range opts {
+		if err := opt(receiver); err != nil {
+			return nil, err
+		}
+	}
+	return receiver, nil
 }
 
 // Start begings to receive messages for the receiver.
@@ -77,7 +99,7 @@ func (r *MessageReceiver) start() *http.Server {
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != http.ErrServerClosed {
-			r.logger.Errorf("HttpServer: ListenAndServe() error: %v", err)
+			r.logger.Errorf("HTTPServer: ListenAndServe() error: %v", err)
 		}
 	}()
 	return srv
@@ -92,7 +114,7 @@ func (r *MessageReceiver) stop(srv *http.Server) {
 
 // handler creates the http.Handler used by the http.Server started in MessageReceiver.Run.
 func (r *MessageReceiver) handler() http.Handler {
-	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+	return tracing.HTTPSpanMiddleware(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if req.URL.Path != "/" {
 			res.WriteHeader(http.StatusNotFound)
 			return
@@ -103,7 +125,7 @@ func (r *MessageReceiver) handler() http.Handler {
 		}
 
 		r.HandleRequest(res, req)
-	})
+	}))
 }
 
 // HandleRequest is an http.Handler function. The request is converted to a
@@ -116,13 +138,13 @@ func (r *MessageReceiver) handler() http.Handler {
 func (r *MessageReceiver) HandleRequest(res http.ResponseWriter, req *http.Request) {
 	host := req.Host
 	r.logger.Infof("Received request for %s", host)
-	channel, err := ParseChannel(host)
+	channel, err := r.hostToChannelFunc(host)
 	if err != nil {
-		r.logger.Info("Could not extract channel", zap.Error(err))
+		r.logger.Infow("Could not extract channel", zap.Error(err))
 		res.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-
+	r.logger.Infof("Request mapped to channel: %s", channel.String())
 	message, err := r.fromRequest(req)
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)

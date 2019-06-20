@@ -12,9 +12,9 @@ func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		v1alpha1.SchemeBuilder.AddToScheme,
-		oappsv1.SchemeBuilder.AddToScheme,
-		routev1.SchemeBuilder.AddToScheme,
-		oimagev1.SchemeBuilder.AddToScheme,
-		buildv1.SchemeBuilder.AddToScheme,
+		oappsv1.AddToScheme,
+		routev1.AddToScheme,
+		oimagev1.AddToScheme,
+		buildv1.AddToScheme,
 	)
 }

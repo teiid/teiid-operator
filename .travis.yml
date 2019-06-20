@@ -1,0 +1,21 @@
+language: go
+go_import_path: github.com/teiid/teiid-operator
+
+go:
+  - 1.10.x
+  - 1.11.x
+  - 1.12.x
+
+env:
+  - DEP_RELEASE_TAG="v0.5.1"
+
+before_install:
+  # Setup dependency management tool
+  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+  - dep version
+
+script:
+- dep ensure -v
+- go fmt ./...
+- go vet ./...
+- go test ./...

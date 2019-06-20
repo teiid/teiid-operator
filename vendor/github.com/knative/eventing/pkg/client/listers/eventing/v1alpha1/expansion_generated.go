@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Knative Authors
+Copyright 2019 The Knative Authors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1alpha1
 
+// BrokerListerExpansion allows custom methods to be added to
+// BrokerLister.
+type BrokerListerExpansion interface{}
+
+// BrokerNamespaceListerExpansion allows custom methods to be added to
+// BrokerNamespaceLister.
+type BrokerNamespaceListerExpansion interface{}
+
 // ChannelListerExpansion allows custom methods to be added to
 // ChannelLister.
 type ChannelListerExpansion interface{}
@@ -30,6 +38,14 @@ type ChannelNamespaceListerExpansion interface{}
 // ClusterChannelProvisionerLister.
 type ClusterChannelProvisionerListerExpansion interface{}
 
+// EventTypeListerExpansion allows custom methods to be added to
+// EventTypeLister.
+type EventTypeListerExpansion interface{}
+
+// EventTypeNamespaceListerExpansion allows custom methods to be added to
+// EventTypeNamespaceLister.
+type EventTypeNamespaceListerExpansion interface{}
+
 // SubscriptionListerExpansion allows custom methods to be added to
 // SubscriptionLister.
 type SubscriptionListerExpansion interface{}
@@ -37,3 +53,11 @@ type SubscriptionListerExpansion interface{}
 // SubscriptionNamespaceListerExpansion allows custom methods to be added to
 // SubscriptionNamespaceLister.
 type SubscriptionNamespaceListerExpansion interface{}
+
+// TriggerListerExpansion allows custom methods to be added to
+// TriggerLister.
+type TriggerListerExpansion interface{}
+
+// TriggerNamespaceListerExpansion allows custom methods to be added to
+// TriggerNamespaceLister.
+type TriggerNamespaceListerExpansion interface{}

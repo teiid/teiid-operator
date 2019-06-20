@@ -1,5 +1,6 @@
 /*
 Copyright 2018 The Knative Authors
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -19,104 +20,30 @@ package test
 
 import (
 	"github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
-	servingv1alpha1 "github.com/knative/serving/pkg/apis/serving/v1alpha1"
+	pkgTest "github.com/knative/pkg/test"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-// Route returns a Route object in namespace
-func Route(name string, namespace string, configName string) *servingv1alpha1.Route {
-	return &servingv1alpha1.Route{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      name,
-		},
-		Spec: servingv1alpha1.RouteSpec{
-			Traffic: []servingv1alpha1.TrafficTarget{
-				{
-					ConfigurationName: configName,
-					Percent:           100,
-				},
-			},
-		},
-	}
-}
+const (
+	eventsAPIVersion = "eventing.knative.dev/v1alpha1"
+)
 
-// Configuration returns a Configuration object in namespace with the name names.Config
-// that uses the image specified by imagePath.
-func Configuration(name string, namespace string, imagePath string) *servingv1alpha1.Configuration {
-	return &servingv1alpha1.Configuration{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-		Spec: servingv1alpha1.ConfigurationSpec{
-			RevisionTemplate: servingv1alpha1.RevisionTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"knative.dev/type": "container"},
-				},
-				Spec: servingv1alpha1.RevisionSpec{
-					Container: corev1.Container{
-						Image: imagePath,
-					},
-				},
-			},
-		},
-	}
-}
-
-// ServiceAccount returns ServiceAccount object in given namespace
-func ServiceAccount(name string, namespace string) *corev1.ServiceAccount {
-	return &corev1.ServiceAccount{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
-	}
-}
-
-// ClusterRoleBinding returns ClusterRoleBinding for given subject and role
-func ClusterRoleBinding(name string, namespace string, serviceAccount string, role string) *rbacv1.ClusterRoleBinding {
-	return &rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      serviceAccount,
-				Namespace: namespace,
-			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind:     "ClusterRole",
-			Name:     role,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}
-}
-
-// ClusterChannelProvisioner returns a ClusterChannelProvisioner for a given name
+// ClusterChannelProvisioner returns a ClusterChannelProvisioner for a given name.
 func ClusterChannelProvisioner(name string) *corev1.ObjectReference {
-	return &corev1.ObjectReference{
-		Kind:       "ClusterChannelProvisioner",
-		APIVersion: "eventing.knative.dev/v1alpha1",
-		Name:       name,
+	if name == "" {
+		return nil
 	}
+	return pkgTest.CoreV1ObjectReference("ClusterChannelProvisioner", eventsAPIVersion, name)
 }
 
-// ChannelRef returns an ObjectReference for a given Channel Name
+// ChannelRef returns an ObjectReference for a given Channel Name.
 func ChannelRef(name string) *corev1.ObjectReference {
-	return &corev1.ObjectReference{
-		Kind:       "Channel",
-		APIVersion: "eventing.knative.dev/v1alpha1",
-		Name:       name,
-	}
+	return pkgTest.CoreV1ObjectReference("Channel", eventsAPIVersion, name)
 }
 
-// Channel returns a Channel with the specified provisioner
+// Channel returns a Channel with the specified provisioner.
 func Channel(name string, namespace string, provisioner *corev1.ObjectReference) *v1alpha1.Channel {
 	return &v1alpha1.Channel{
 		ObjectMeta: metav1.ObjectMeta{
@@ -129,29 +56,21 @@ func Channel(name string, namespace string, provisioner *corev1.ObjectReference)
 	}
 }
 
-// SubscriberSpecForRoute returns a SubscriberSpec for a given Knative Service.
-func SubscriberSpecForRoute(name string) *v1alpha1.SubscriberSpec {
-	return &v1alpha1.SubscriberSpec{
-		Ref: &corev1.ObjectReference{
-			Kind:       "Route",
-			APIVersion: "serving.knative.dev/v1alpha1",
-			Name:       name,
-		},
-	}
-}
-
 // SubscriberSpecForService returns a SubscriberSpec for a given Knative Service.
 func SubscriberSpecForService(name string) *v1alpha1.SubscriberSpec {
 	return &v1alpha1.SubscriberSpec{
-		Ref: &corev1.ObjectReference{
-			Kind:       "Service",
-			APIVersion: "v1",
-			Name:       name,
-		},
+		Ref: pkgTest.CoreV1ObjectReference("Service", "v1", name),
 	}
 }
 
-// Subscription returns a Subscription
+// ReplyStrategyForChannel returns a ReplyStrategy for a given Channel.
+func ReplyStrategyForChannel(name string) *v1alpha1.ReplyStrategy {
+	return &v1alpha1.ReplyStrategy{
+		Channel: pkgTest.CoreV1ObjectReference("Channel", eventsAPIVersion, name),
+	}
+}
+
+// Subscription returns a Subscription.
 func Subscription(name string, namespace string, channel *corev1.ObjectReference, subscriber *v1alpha1.SubscriberSpec, reply *v1alpha1.ReplyStrategy) *v1alpha1.Subscription {
 	return &v1alpha1.Subscription{
 		ObjectMeta: metav1.ObjectMeta{
@@ -166,6 +85,21 @@ func Subscription(name string, namespace string, channel *corev1.ObjectReference
 	}
 }
 
+// Broker returns a Broker.
+func Broker(name, namespace string, provisioner *corev1.ObjectReference) *v1alpha1.Broker {
+	return &v1alpha1.Broker{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: v1alpha1.BrokerSpec{
+			ChannelTemplate: &v1alpha1.ChannelSpec{
+				Provisioner: provisioner,
+			},
+		},
+	}
+}
+
 // CloudEvent specifies the arguments for a CloudEvent sent by the sendevent
 // binary.
 type CloudEvent struct {
@@ -176,27 +110,35 @@ type CloudEvent struct {
 	Encoding string // binary or structured
 }
 
+// TypeAndSource specifies the type and source of an Event.
+type TypeAndSource struct {
+	Type   string
+	Source string
+}
+
+// CloudEvent related constants.
 const (
 	CloudEventEncodingBinary     = "binary"
 	CloudEventEncodingStructured = "structured"
+	CloudEventDefaultEncoding    = CloudEventEncodingBinary
+	CloudEventDefaultType        = "dev.knative.test.event"
 )
 
 // EventSenderPod creates a Pod that sends a single event to the given address.
-func EventSenderPod(name string, namespace string, sink string, event CloudEvent) *corev1.Pod {
+func EventSenderPod(name string, namespace string, sink string, event *CloudEvent) *corev1.Pod {
 	if event.Encoding == "" {
 		event.Encoding = CloudEventEncodingBinary
 	}
 
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
-			Annotations: map[string]string{"sidecar.istio.io/inject": "true"},
+			Name:      name,
+			Namespace: namespace,
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
 				Name:            "sendevent",
-				Image:           ImagePath("sendevent"),
+				Image:           pkgTest.ImagePath("sendevent"),
 				ImagePullPolicy: corev1.PullAlways, // TODO: this might not be wanted for local.
 				Args: []string{
 					"-event-id",
@@ -223,16 +165,42 @@ func EventSenderPod(name string, namespace string, sink string, event CloudEvent
 func EventLoggerPod(name string, namespace string, selector map[string]string) *corev1.Pod {
 	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        name,
-			Namespace:   namespace,
-			Labels:      selector,
-			Annotations: map[string]string{"sidecar.istio.io/inject": "true"},
+			Name:      name,
+			Namespace: namespace,
+			Labels:    selector,
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
 				Name:            "logevents",
-				Image:           ImagePath("logevents"),
+				Image:           pkgTest.ImagePath("logevents"),
 				ImagePullPolicy: corev1.PullAlways, // TODO: this might not be wanted for local.
+			}},
+			RestartPolicy: corev1.RestartPolicyAlways,
+		},
+	}
+}
+
+// EventTransformationPod creates a Pod that transforms events received.
+func EventTransformationPod(name string, namespace string, selector map[string]string, event *CloudEvent) *corev1.Pod {
+	return &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+			Labels:    selector,
+		},
+		Spec: corev1.PodSpec{
+			Containers: []corev1.Container{{
+				Name:            "transformevents",
+				Image:           pkgTest.ImagePath("transformevents"),
+				ImagePullPolicy: corev1.PullAlways, // TODO: this might not be wanted for local.
+				Args: []string{
+					"-event-type",
+					event.Type,
+					"-event-source",
+					event.Source,
+					"-event-data",
+					event.Data,
+				},
 			}},
 			RestartPolicy: corev1.RestartPolicyAlways,
 		},

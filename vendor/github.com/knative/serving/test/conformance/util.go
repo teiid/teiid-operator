@@ -84,7 +84,7 @@ func waitForExpectedResponse(t *testing.T, clients *test.Clients, domain, expect
 	if err != nil {
 		return err
 	}
-	_, err = client.Poll(req, pkgTest.EventuallyMatchesBody(expectedResponse))
+	_, err = client.Poll(req, test.RetryingRouteInconsistency(pkgTest.MatchesAllOf(pkgTest.IsStatusOK, pkgTest.EventuallyMatchesBody(expectedResponse))))
 	return err
 }
 
@@ -100,6 +100,14 @@ func validateDomains(
 	// We don't have a good way to check if the route is updated so we will wait until a subdomain has
 	// started returning at least one expected result to key that we should validate percentage splits.
 	// In order for tests to succeed reliably, we need to make sure that all domains succeed.
+	for _, resp := range baseExpected {
+		// Check for each of the responses we expect from the base domain.
+		resp := resp
+		g.Go(func() error {
+			t.Logf("Waiting for route to update domain: %s", baseDomain)
+			return waitForExpectedResponse(t, clients, baseDomain, resp)
+		})
+	}
 	for i, s := range subdomains {
 		i, s := i, s
 		g.Go(func() error {
@@ -133,7 +141,7 @@ func validateDomains(
 }
 
 func validateImageDigest(imageName string, imageDigest string) (bool, error) {
-	imageDigestRegex := fmt.Sprintf("%s/%s@sha256:[0-9a-f]{64}", test.ServingFlags.DockerRepo, imageName)
+	imageDigestRegex := fmt.Sprintf("%s/%s@sha256:[0-9a-f]{64}", pkgTest.Flags.DockerRepo, imageName)
 	return regexp.MatchString(imageDigestRegex, imageDigest)
 }
 

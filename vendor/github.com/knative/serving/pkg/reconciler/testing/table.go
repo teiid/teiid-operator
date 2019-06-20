@@ -101,7 +101,7 @@ func (r *TableRow) Test(t *testing.T, factory Factory) {
 	c, recorderList, eventList, statsReporter := factory(t, r)
 
 	// Run the Reconcile we're testing.
-	if err := c.Reconcile(context.TODO(), r.Key); (err != nil) != r.WantErr {
+	if err := c.Reconcile(context.Background(), r.Key); (err != nil) != r.WantErr {
 		t.Errorf("Reconcile() error = %v, WantErr %v", err, r.WantErr)
 	}
 
@@ -153,7 +153,7 @@ func (r *TableRow) Test(t *testing.T, factory Factory) {
 				continue
 			}
 			t.Errorf("Missing update for %s (-want, +prevState): %s", key,
-				cmp.Diff(oldObj, wo, ignoreLastTransitionTime, safeDeployDiff, cmpopts.EquateEmpty()))
+				cmp.Diff(wo, oldObj, ignoreLastTransitionTime, safeDeployDiff, cmpopts.EquateEmpty()))
 			continue
 		}
 
@@ -188,7 +188,7 @@ func (r *TableRow) Test(t *testing.T, factory Factory) {
 				continue
 			}
 			t.Errorf("Missing status update for %s (-want, +prevState): %s", key,
-				cmp.Diff(oldObj, wo, ignoreLastTransitionTime, safeDeployDiff, cmpopts.EquateEmpty()))
+				cmp.Diff(wo, oldObj, ignoreLastTransitionTime, safeDeployDiff, cmpopts.EquateEmpty()))
 			continue
 		}
 

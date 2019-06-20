@@ -81,19 +81,11 @@ func NewController(
 	impl := controller.NewImpl(c, c.Logger, "Configurations", reconciler.MustNewStatsReporter("Configurations", c.Logger))
 
 	c.Logger.Info("Setting up event handlers")
-	configurationInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    impl.Enqueue,
-		UpdateFunc: controller.PassNew(impl.Enqueue),
-		DeleteFunc: impl.Enqueue,
-	})
+	configurationInformer.Informer().AddEventHandler(reconciler.Handler(impl.Enqueue))
 
 	revisionInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("Configuration")),
-		Handler: cache.ResourceEventHandlerFuncs{
-			AddFunc:    impl.EnqueueControllerOf,
-			UpdateFunc: controller.PassNew(impl.EnqueueControllerOf),
-			DeleteFunc: impl.EnqueueControllerOf,
-		},
+		Handler:    reconciler.Handler(impl.EnqueueControllerOf),
 	})
 
 	c.Logger.Info("Setting up ConfigMap receivers")
@@ -138,10 +130,13 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		// cache may be stale and we don't want to overwrite a prior update
 		// to status with this stale state.
 	} else if _, err := c.updateStatus(config); err != nil {
-		logger.Warn("Failed to update configuration status", zap.Error(err))
+		logger.Warnw("Failed to update configuration status", zap.Error(err))
 		c.Recorder.Eventf(config, corev1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Configuration %q: %v", config.Name, err)
 		return err
+	}
+	if err != nil {
+		c.Recorder.Event(config, corev1.EventTypeWarning, "InternalError", err.Error())
 	}
 	return err
 }
@@ -156,7 +151,7 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 	// and may not have had all of the assumed defaults specified.  This won't result
 	// in this getting written back to the API Server, but lets downstream logic make
 	// assumptions about defaulting.
-	config.SetDefaults()
+	config.SetDefaults(ctx)
 
 	config.Status.InitializeConditions()
 
@@ -167,8 +162,8 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 		if err != nil {
 			errMsg := fmt.Sprintf("Failed to create Revision for Configuration %q: %v", config.Name, err)
 
-			logger.Errorf(errMsg)
-			c.Recorder.Eventf(config, corev1.EventTypeWarning, "CreationFailed", errMsg)
+			logger.Error(errMsg)
+			c.Recorder.Event(config, corev1.EventTypeWarning, "CreationFailed", errMsg)
 
 			// Mark the Configuration as not-Ready since creating
 			// its latest revision failed.
@@ -234,8 +229,7 @@ func (c *Reconciler) reconcile(ctx context.Context, config *v1alpha1.Configurati
 func (c *Reconciler) latestCreatedRevision(config *v1alpha1.Configuration) (*v1alpha1.Revision, error) {
 	lister := c.revisionLister.Revisions(config.Namespace)
 
-	// TODO(#643) - in serving 0.5 switch to serving.ConfigurationGenerationLabelKey
-	generationKey := serving.DeprecatedConfigurationMetadataGenerationLabelKey
+	generationKey := serving.ConfigurationGenerationLabelKey
 
 	list, err := lister.List(labels.SelectorFromSet(map[string]string{
 		generationKey:                 resources.RevisionLabelValueForKey(generationKey, config),
@@ -273,7 +267,7 @@ func (c *Reconciler) createRevision(ctx context.Context, config *v1alpha1.Config
 			result = &ul.Items[0]
 		} else {
 			// Otherwise, create a build and reference that.
-			result, err = c.DynamicClientSet.Resource(gvr).Namespace(build.GetNamespace()).Create(build)
+			result, err = c.DynamicClientSet.Resource(gvr).Namespace(build.GetNamespace()).Create(build, metav1.CreateOptions{})
 			if err != nil {
 				return nil, errutil.Wrapf(err, "Failed to create Build for Configuration %q", config.GetName())
 			}
@@ -293,7 +287,7 @@ func (c *Reconciler) createRevision(ctx context.Context, config *v1alpha1.Config
 		return nil, err
 	}
 	c.Recorder.Eventf(config, corev1.EventTypeNormal, "Created", "Created Revision %q", rev.Name)
-	logger.Infof("Created Revision:\n%+v", created)
+	logger.Infof("Created Revision: %+v", created)
 
 	return created, nil
 }

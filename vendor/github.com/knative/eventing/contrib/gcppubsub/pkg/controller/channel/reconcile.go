@@ -22,13 +22,14 @@ import (
 
 	ccpcontroller "github.com/knative/eventing/contrib/gcppubsub/pkg/controller/clusterchannelprovisioner"
 	pubsubutil "github.com/knative/eventing/contrib/gcppubsub/pkg/util"
-	"github.com/knative/eventing/contrib/gcppubsub/pkg/util/logging"
+	"github.com/knative/eventing/pkg/apis/duck/v1alpha1"
 	eventingv1alpha1 "github.com/knative/eventing/pkg/apis/eventing/v1alpha1"
+	"github.com/knative/eventing/pkg/logging"
 	util "github.com/knative/eventing/pkg/provisioners"
 	"github.com/knative/eventing/pkg/reconciler/names"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2/google"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/types"
@@ -48,21 +49,20 @@ const (
 	noNeedToPersist
 
 	// Name of the corev1.Events emitted from the reconciliation process
-	channelReconciled          = "ChannelReconciled"
-	channelUpdateStatusFailed  = "ChannelUpdateStatusFailed"
-	channelReadStatusFailed    = "ChannelReadStatusFailed"
-	gcpCredentialsReadFailed   = "GcpCredentialsReadFailed"
-	gcpResourcesPlanFailed     = "GcpResourcesPlanFailed"
-	gcpResourcesPersistFailed  = "GcpResourcesPersistFailed"
-	virtualServiceCreateFailed = "VirtualServiceCreateFailed"
-	k8sServiceCreateFailed     = "K8sServiceCreateFailed"
-	topicCreateFailed          = "TopicCreateFailed"
-	topicDeleteFailed          = "TopicDeleteFailed"
-	subscriptionSyncFailed     = "SubscriptionSyncFailed"
-	subscriptionDeleteFailed   = "SubscriptionDeleteFailed"
+	channelReconciled         = "ChannelReconciled"
+	channelUpdateStatusFailed = "ChannelUpdateStatusFailed"
+	channelReadStatusFailed   = "ChannelReadStatusFailed"
+	gcpCredentialsReadFailed  = "GcpCredentialsReadFailed"
+	gcpResourcesPlanFailed    = "GcpResourcesPlanFailed"
+	gcpResourcesPersistFailed = "GcpResourcesPersistFailed"
+	k8sServiceCreateFailed    = "K8sServiceCreateFailed"
+	topicCreateFailed         = "TopicCreateFailed"
+	topicDeleteFailed         = "TopicDeleteFailed"
+	subscriptionSyncFailed    = "SubscriptionSyncFailed"
+	subscriptionDeleteFailed  = "SubscriptionDeleteFailed"
 )
 
-// reconciler reconciles GCP-PubSub Channels by creating the K8s Service and Istio VirtualService
+// reconciler reconciles GCP-PubSub Channels by creating the K8s Service (ExternalName)
 // allowing other processes to send data to them. It also creates the GCP PubSub Topics (one per
 // Channel) and GCP PubSub Subscriptions (one per Subscriber).
 type reconciler struct {
@@ -82,7 +82,7 @@ type reconciler struct {
 	// defaultSecret and defaultSecretKey are the K8s Secret and key in that secret that contain a
 	// JSON format GCP service account token, see
 	// https://cloud.google.com/iam/docs/creating-managing-service-account-keys#iam-service-account-keys-create-gcloud
-	defaultSecret    *v1.ObjectReference
+	defaultSecret    *corev1.ObjectReference
 	defaultSecretKey string
 }
 
@@ -115,7 +115,7 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}
 
 	// Does this Controller control this Channel?
-	if !r.shouldReconcile(c) {
+	if !ShouldReconcile(c) {
 		logging.FromContext(ctx).Info("Not reconciling Channel, it is not controlled by this Controller", zap.Any("ref", c.Spec))
 		return reconcile.Result{}, nil
 	}
@@ -132,12 +132,12 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 		// regardless of the error.
 	} else {
 		logging.FromContext(ctx).Info("Channel reconciled")
-		r.recorder.Eventf(c, v1.EventTypeNormal, channelReconciled, "Channel reconciled: %q", c.Name)
+		r.recorder.Eventf(c, corev1.EventTypeNormal, channelReconciled, "Channel reconciled: %q", c.Name)
 	}
 
 	if err = util.UpdateChannel(ctx, r.client, c); err != nil {
 		logging.FromContext(ctx).Info("Error updating Channel Status", zap.Error(err))
-		r.recorder.Eventf(c, v1.EventTypeWarning, channelUpdateStatusFailed, "Failed to update Channel's status: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, channelUpdateStatusFailed, "Failed to update Channel's status: %v", err)
 		return reconcile.Result{}, err
 	}
 
@@ -146,9 +146,9 @@ func (r *reconciler) Reconcile(request reconcile.Request) (reconcile.Result, err
 	}, reconcileErr
 }
 
-// shouldReconcile determines if this Controller should control (and therefore reconcile) a given
+// ShouldReconcile determines if this Controller should control (and therefore reconcile) a given
 // Channel. This Controller only handles gcp-pubsub channels.
-func (r *reconciler) shouldReconcile(c *eventingv1alpha1.Channel) bool {
+func ShouldReconcile(c *eventingv1alpha1.Channel) bool {
 	if c.Spec.Provisioner != nil {
 		return ccpcontroller.IsControlled(c.Spec.Provisioner)
 	}
@@ -161,11 +161,10 @@ func (r *reconciler) shouldReconcile(c *eventingv1alpha1.Channel) bool {
 func (r *reconciler) reconcile(ctx context.Context, c *eventingv1alpha1.Channel) (bool, error) {
 	c.Status.InitializeConditions()
 
-	// We are syncing four things:
-	// 1. The K8s Service to talk to this Channel.
-	// 2. The Istio VirtualService to talk to this Channel.
-	// 3. The GCP PubSub Topic (one for the Channel).
-	// 4. The GCP PubSub Subscriptions (one for each Subscriber of the Channel).
+	// We are syncing the following:
+	// - The K8s Service to talk to this Channel.
+	// - The GCP PubSub Topic (one for the Channel).
+	// - The GCP PubSub Subscriptions (one for each Subscriber of the Channel).
 
 	// First we will plan all the names out for steps 3 and 4 persist them to status.internal. Then, on a
 	// subsequent reconcile, we manipulate all the GCP resources in steps 3 and 4.
@@ -173,7 +172,7 @@ func (r *reconciler) reconcile(ctx context.Context, c *eventingv1alpha1.Channel)
 	originalPCS, err := pubsubutil.GetInternalStatus(c)
 	if err != nil {
 		logging.FromContext(ctx).Error("Unable to read the status.internal", zap.Error(err))
-		r.recorder.Eventf(c, v1.EventTypeWarning, channelReadStatusFailed, "Failed to read Channel's status.internal: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, channelReadStatusFailed, "Failed to read Channel's status.internal: %v", err)
 		return false, err
 	}
 
@@ -181,12 +180,12 @@ func (r *reconciler) reconcile(ctx context.Context, c *eventingv1alpha1.Channel)
 	gcpCreds, err := pubsubutil.GetCredentials(ctx, r.client, r.defaultSecret, r.defaultSecretKey)
 	if err != nil {
 		logging.FromContext(ctx).Info("Unable to generate GCP creds", zap.Error(err))
-		r.recorder.Eventf(c, v1.EventTypeWarning, gcpCredentialsReadFailed, "Failed to generate GCP credentials: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, gcpCredentialsReadFailed, "Failed to generate GCP credentials: %v", err)
 		return false, err
 	}
 
 	if c.DeletionTimestamp != nil {
-		// K8s garbage collection will delete the K8s service and VirtualService for this channel.
+		// K8s garbage collection will delete the K8s service for this channel.
 		// All the subs should be deleted.
 		subsToSync := &syncSubs{
 			subsToDelete: originalPCS.Subscriptions,
@@ -194,12 +193,12 @@ func (r *reconciler) reconcile(ctx context.Context, c *eventingv1alpha1.Channel)
 		// Topic is nil because it is only used for sub creation, not deletion.
 		err = r.syncSubscriptions(ctx, originalPCS, gcpCreds, nil, subsToSync)
 		if err != nil {
-			r.recorder.Eventf(c, v1.EventTypeWarning, subscriptionSyncFailed, "Failed to sync Subscription for the Channel: %v", err)
+			r.recorder.Eventf(c, corev1.EventTypeWarning, subscriptionSyncFailed, "Failed to sync Subscription for the Channel: %v", err)
 			return false, err
 		}
 		err = r.deleteTopic(ctx, originalPCS, gcpCreds)
 		if err != nil {
-			r.recorder.Eventf(c, v1.EventTypeWarning, topicDeleteFailed, "Failed to delete Topic for the Channel: %v", err)
+			r.recorder.Eventf(c, corev1.EventTypeWarning, topicDeleteFailed, "Failed to delete Topic for the Channel: %v", err)
 			return false, err
 		}
 		util.RemoveFinalizer(c, finalizerName)
@@ -219,45 +218,39 @@ func (r *reconciler) reconcile(ctx context.Context, c *eventingv1alpha1.Channel)
 	// only at the status, not the spec.
 	persist, plannedPCS, subsToSync, err := r.planGcpResources(ctx, c, originalPCS)
 	if err != nil {
-		r.recorder.Eventf(c, v1.EventTypeWarning, gcpResourcesPlanFailed, "Failed to plan Channel's resources: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, gcpResourcesPlanFailed, "Failed to plan Channel's resources: %v", err)
 		return false, err
 	}
 	if persist == persistStatus {
 		if err = pubsubutil.SetInternalStatus(ctx, c, plannedPCS); err != nil {
-			r.recorder.Eventf(c, v1.EventTypeWarning, gcpResourcesPersistFailed, "Failed to persist Channel's resources: %v", err)
+			r.recorder.Eventf(c, corev1.EventTypeWarning, gcpResourcesPersistFailed, "Failed to persist Channel's resources: %v", err)
 			return false, err
 		}
 		// Persist this and run another reconcile loop to enact it.
 		return true, nil
 	}
 
-	svc, err := r.createK8sService(ctx, c)
+	_, err = r.createK8sService(ctx, c)
 	if err != nil {
-		r.recorder.Eventf(c, v1.EventTypeWarning, k8sServiceCreateFailed, "Failed to reconcile Channel's K8s Service: %v", err)
-		return false, err
-	}
-
-	err = r.createVirtualService(ctx, c, svc)
-	if err != nil {
-		r.recorder.Eventf(c, v1.EventTypeWarning, virtualServiceCreateFailed, "Failed to reconcile Virtual Service for the Channel: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, k8sServiceCreateFailed, "Failed to reconcile Channel's K8s Service: %v", err)
 		return false, err
 	}
 
 	topic, err := r.createTopic(ctx, plannedPCS, gcpCreds)
 	if err != nil {
-		r.recorder.Eventf(c, v1.EventTypeWarning, topicCreateFailed, "Failed to reconcile Topic for the Channel: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, topicCreateFailed, "Failed to reconcile Topic for the Channel: %v", err)
 		return false, err
 	}
 
 	err = r.syncSubscriptions(ctx, plannedPCS, gcpCreds, topic, subsToSync)
 	if err != nil {
-		r.recorder.Eventf(c, v1.EventTypeWarning, subscriptionSyncFailed, "Failed to reconcile Subscription for the Channel: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, subscriptionSyncFailed, "Failed to reconcile Subscription for the Channel: %v", err)
 		return false, err
 	}
 	// Now that the subs have synced successfully, remove the old ones from the status.
 	plannedPCS.Subscriptions = subsToSync.subsToCreate
 	if err = pubsubutil.SetInternalStatus(ctx, c, plannedPCS); err != nil {
-		r.recorder.Eventf(c, v1.EventTypeWarning, subscriptionDeleteFailed, "Failed to delete old Subscriptions from the Channel's status: %v", err)
+		r.recorder.Eventf(c, corev1.EventTypeWarning, subscriptionDeleteFailed, "Failed to delete old Subscriptions from the Channel's status: %v", err)
 		return false, err
 	}
 
@@ -308,13 +301,13 @@ func (r *reconciler) planGcpResources(ctx context.Context, c *eventingv1alpha1.C
 	existingSubs := make(map[types.UID]pubsubutil.GcpPubSubSubscriptionStatus, len(originalPCS.Subscriptions))
 	for _, existingSub := range originalPCS.Subscriptions {
 		// I don't think this can ever happen, but let's just be sure.
-		if existingSub.Ref != nil && existingSub.Ref.UID != "" {
-			existingSubs[existingSub.Ref.UID] = existingSub
+		if existingSub.UID != "" {
+			existingSubs[existingSub.UID] = existingSub
 		}
 	}
 	if c.Spec.Subscribable != nil {
 		for _, subscriber := range c.Spec.Subscribable.Subscribers {
-			if subscriber.Ref == nil || subscriber.Ref.UID == "" {
+			if subscriber.UID == "" {
 				return noNeedToPersist, nil, nil, fmt.Errorf("empty reference UID: %v", subscriber)
 			}
 			// Have we already synced this Subscription before? If so, reuse its existing
@@ -322,18 +315,21 @@ func (r *reconciler) planGcpResources(ctx context.Context, c *eventingv1alpha1.C
 			// to be persisted before processing (as it only affects the dispatcher, not anything in
 			// GCP).
 			var subscription string
-			if existingSub, present := existingSubs[subscriber.Ref.UID]; present {
-				delete(existingSubs, subscriber.Ref.UID)
+			if existingSub, present := existingSubs[subscriber.UID]; present {
+				delete(existingSubs, subscriber.UID)
 				subscription = existingSub.Subscription
 			} else {
 				persist = persistStatus
 				subscription = generateSubName(&subscriber)
 			}
 			subsToSync.subsToCreate = append(subsToSync.subsToCreate, pubsubutil.GcpPubSubSubscriptionStatus{
-				Ref:           subscriber.Ref,
-				SubscriberURI: subscriber.SubscriberURI,
-				ReplyURI:      subscriber.ReplyURI,
-				Subscription:  subscription,
+				ChannelSubscriberSpec: v1alpha1.ChannelSubscriberSpec{
+					DeprecatedRef: subscriber.DeprecatedRef,
+					UID:           subscriber.UID,
+					SubscriberURI: subscriber.SubscriberURI,
+					ReplyURI:      subscriber.ReplyURI,
+				},
+				Subscription: subscription,
 			})
 		}
 	}
@@ -355,8 +351,8 @@ func (r *reconciler) planGcpResources(ctx context.Context, c *eventingv1alpha1.C
 	return persist, newPCS, subsToSync, nil
 }
 
-func (r *reconciler) createK8sService(ctx context.Context, c *eventingv1alpha1.Channel) (*v1.Service, error) {
-	svc, err := util.CreateK8sService(ctx, r.client, c)
+func (r *reconciler) createK8sService(ctx context.Context, c *eventingv1alpha1.Channel) (*corev1.Service, error) {
+	svc, err := util.CreateK8sService(ctx, r.client, c, util.ExternalService(c))
 	if err != nil {
 		logging.FromContext(ctx).Info("Error creating the Channel's K8s Service", zap.Error(err))
 		return nil, err
@@ -364,15 +360,6 @@ func (r *reconciler) createK8sService(ctx context.Context, c *eventingv1alpha1.C
 
 	c.Status.SetAddress(names.ServiceHostName(svc.Name, svc.Namespace))
 	return svc, nil
-}
-
-func (r *reconciler) createVirtualService(ctx context.Context, c *eventingv1alpha1.Channel, svc *v1.Service) error {
-	_, err := util.CreateVirtualService(ctx, r.client, c, svc)
-	if err != nil {
-		logging.FromContext(ctx).Info("Error creating the Virtual Service for the Channel", zap.Error(err))
-		return err
-	}
-	return nil
 }
 
 func (r *reconciler) createTopic(ctx context.Context, plannedPCS *pubsubutil.GcpPubSubChannelStatus, gcpCreds *google.Credentials) (pubsubutil.PubSubTopic, error) {

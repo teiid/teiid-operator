@@ -17,9 +17,11 @@ limitations under the License.
 package route
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"text/template"
 
 	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
@@ -69,6 +71,16 @@ var (
 type configStore interface {
 	ToContext(ctx context.Context) context.Context
 	WatchConfigs(w configmap.Watcher)
+}
+
+// DomainTemplateValues are the available properties people can choose from
+// in their Route's "DomainTemplate" golang template sting.
+// We could add more over time - e.g. RevisionName if we thought that
+// might be of interest to people.
+type DomainTemplateValues struct {
+	Name      string
+	Namespace string
+	Domain    string
 }
 
 // Reconciler implements controller.Reconciler for Route resources.
@@ -131,40 +143,38 @@ func NewControllerWithClock(
 	impl := controller.NewImpl(c, c.Logger, "Routes", reconciler.MustNewStatsReporter("Routes", c.Logger))
 
 	c.Logger.Info("Setting up event handlers")
-	routeInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    impl.Enqueue,
-		UpdateFunc: controller.PassNew(impl.Enqueue),
-		DeleteFunc: impl.Enqueue,
-	})
+	routeInformer.Informer().AddEventHandler(reconciler.Handler(impl.Enqueue))
 
 	serviceInformer.Informer().AddEventHandler(cache.FilteringResourceEventHandler{
 		FilterFunc: controller.Filter(v1alpha1.SchemeGroupVersion.WithKind("Route")),
-		Handler: cache.ResourceEventHandlerFuncs{
-			AddFunc:    impl.EnqueueControllerOf,
-			UpdateFunc: controller.PassNew(impl.EnqueueControllerOf),
-			DeleteFunc: impl.EnqueueControllerOf,
-		},
+		Handler:    reconciler.Handler(impl.EnqueueControllerOf),
 	})
 
-	clusterIngressInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    impl.EnqueueLabelOfNamespaceScopedResource(serving.RouteNamespaceLabelKey, serving.RouteLabelKey),
-		UpdateFunc: controller.PassNew(impl.EnqueueLabelOfNamespaceScopedResource(serving.RouteNamespaceLabelKey, serving.RouteLabelKey)),
-		DeleteFunc: impl.EnqueueLabelOfNamespaceScopedResource(serving.RouteNamespaceLabelKey, serving.RouteLabelKey),
-	})
+	clusterIngressInformer.Informer().AddEventHandler(reconciler.Handler(
+		impl.EnqueueLabelOfNamespaceScopedResource(
+			serving.RouteNamespaceLabelKey, serving.RouteLabelKey)))
 
 	c.tracker = tracker.New(impl.EnqueueKey, opt.GetTrackerLease())
-	gvk := v1alpha1.SchemeGroupVersion.WithKind("Configuration")
-	configInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    controller.EnsureTypeMeta(c.tracker.OnChanged, gvk),
-		UpdateFunc: controller.PassNew(controller.EnsureTypeMeta(c.tracker.OnChanged, gvk)),
-		DeleteFunc: controller.EnsureTypeMeta(c.tracker.OnChanged, gvk),
-	})
-	gvk = v1alpha1.SchemeGroupVersion.WithKind("Revision")
-	revisionInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc:    controller.EnsureTypeMeta(c.tracker.OnChanged, gvk),
-		UpdateFunc: controller.PassNew(controller.EnsureTypeMeta(c.tracker.OnChanged, gvk)),
-		DeleteFunc: controller.EnsureTypeMeta(c.tracker.OnChanged, gvk),
-	})
+
+	configInformer.Informer().AddEventHandler(reconciler.Handler(
+		// Call the tracker's OnChanged method, but we've seen the objects
+		// coming through this path missing TypeMeta, so ensure it is properly
+		// populated.
+		controller.EnsureTypeMeta(
+			c.tracker.OnChanged,
+			v1alpha1.SchemeGroupVersion.WithKind("Configuration"),
+		),
+	))
+
+	revisionInformer.Informer().AddEventHandler(reconciler.Handler(
+		// Call the tracker's OnChanged method, but we've seen the objects
+		// coming through this path missing TypeMeta, so ensure it is properly
+		// populated.
+		controller.EnsureTypeMeta(
+			c.tracker.OnChanged,
+			v1alpha1.SchemeGroupVersion.WithKind("Revision"),
+		),
+	))
 
 	c.Logger.Info("Setting up ConfigMap receivers")
 	configsToResync := []interface{}{
@@ -218,16 +228,19 @@ func (c *Reconciler) Reconcile(ctx context.Context, key string) error {
 		// cache may be stale and we don't want to overwrite a prior update
 		// to status with this stale state.
 	} else if _, err := c.updateStatus(route); err != nil {
-		logger.Warn("Failed to update route status", zap.Error(err))
+		logger.Warnw("Failed to update route status", zap.Error(err))
 		c.Recorder.Eventf(route, corev1.EventTypeWarning, "UpdateFailed",
 			"Failed to update status for Route %q: %v", route.Name, err)
 		return err
+	}
+	if err != nil {
+		c.Recorder.Event(route, corev1.EventTypeWarning, "InternalError", err.Error())
 	}
 	return err
 }
 
 func ingressClassForRoute(ctx context.Context, r *v1alpha1.Route) string {
-	if ingressClass, _ := r.Annotations[networking.IngressClassAnnotationKey]; ingressClass != "" {
+	if ingressClass := r.Annotations[networking.IngressClassAnnotationKey]; ingressClass != "" {
 		return ingressClass
 	}
 	return config.FromContext(ctx).Network.DefaultClusterIngressClass
@@ -244,11 +257,20 @@ func (c *Reconciler) reconcile(ctx context.Context, r *v1alpha1.Route) error {
 	// and may not have had all of the assumed defaults specified.  This won't result
 	// in this getting written back to the API Server, but lets downstream logic make
 	// assumptions about defaulting.
-	r.SetDefaults()
+	r.SetDefaults(ctx)
 
 	r.Status.InitializeConditions()
 
 	logger.Infof("Reconciling route: %v", r)
+
+	// Update the information that makes us Addressable. This is needed to configure traffic and
+	// make the cluster ingress.
+	var err error
+	r.Status.Domain, err = routeDomain(ctx, r)
+	if err != nil {
+		return err
+	}
+
 	// Configure traffic based on the RouteSpec.
 	traffic, err := c.configureTraffic(ctx, r)
 	if traffic == nil || err != nil {
@@ -263,8 +285,6 @@ func (c *Reconciler) reconcile(ctx context.Context, r *v1alpha1.Route) error {
 		return err
 	}
 
-	// Update the information that makes us Addressable.
-	r.Status.Domain = routeDomain(ctx, r)
 	r.Status.DeprecatedDomainInternal = resourcenames.K8sServiceFullname(r)
 	r.Status.Address = &duckv1alpha1.Addressable{
 		Hostname: resourcenames.K8sServiceFullname(r),
@@ -360,7 +380,8 @@ func (c *Reconciler) configureTraffic(ctx context.Context, r *v1alpha1.Route) (*
 	}
 
 	logger.Info("All referred targets are routable, marking AllTrafficAssigned with traffic information.")
-	r.Status.Traffic = t.GetRevisionTrafficTargets()
+	// Domain should already be present
+	r.Status.Traffic = t.GetRevisionTrafficTargets(r.Status.Domain)
 	r.Status.MarkTrafficAssigned()
 
 	return t, nil
@@ -371,11 +392,9 @@ func (c *Reconciler) ensureFinalizer(route *v1alpha1.Route) error {
 	if finalizers.Has(routeFinalizer) {
 		return nil
 	}
-	finalizers.Insert(routeFinalizer)
-
 	mergePatch := map[string]interface{}{
 		"metadata": map[string]interface{}{
-			"finalizers":      finalizers.List(),
+			"finalizers":      append(route.Finalizers, routeFinalizer),
 			"resourceVersion": route.ResourceVersion,
 		},
 	}
@@ -413,8 +432,33 @@ func objectRef(a accessor, gvk schema.GroupVersionKind) corev1.ObjectReference {
 	}
 }
 
-func routeDomain(ctx context.Context, route *v1alpha1.Route) string {
+// routeDeomain will generate the Route's Domain(host) for the Service based on
+// the "DomainTemplateKey" from the "config-network" configMap.
+func routeDomain(ctx context.Context, route *v1alpha1.Route) (string, error) {
 	domainConfig := config.FromContext(ctx).Domain
 	domain := domainConfig.LookupDomainForLabels(route.ObjectMeta.Labels)
-	return fmt.Sprintf("%s.%s.%s", route.Name, route.Namespace, domain)
+
+	// These are the available properties they can choose from.
+	// We could add more over time - e.g. RevisionName if we thought that
+	// might be of interest to people.
+	data := DomainTemplateValues{
+		Name:      route.Name,
+		Namespace: route.Namespace,
+		Domain:    domain,
+	}
+
+	networkConfig := config.FromContext(ctx).Network
+	text := networkConfig.DomainTemplate
+
+	// It's ok if we keep using the same name
+	templ, err := template.New("knTemplate").Parse(text)
+	if err != nil {
+		return "", fmt.Errorf("Error parsing the DomainTemplate(%s): %s", text, err)
+	}
+
+	buf := bytes.Buffer{}
+	if err := templ.Execute(&buf, data); err != nil {
+		return "", fmt.Errorf("Error executing the DomainTemplate(%s): %s", text, err)
+	}
+	return buf.String(), nil
 }

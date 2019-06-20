@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -31,7 +32,8 @@ import (
 	dockerv10 "github.com/openshift/api/image/docker10"
 	oimagev1 "github.com/openshift/api/image/v1"
 	oroutev1 "github.com/openshift/api/route/v1"
-	buildv1 "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
+	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
+	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
@@ -61,7 +63,7 @@ type ReconcileVirtualDatabase struct {
 	scheme      *runtime.Scheme
 	cache       cachev1.Cache
 	imageClient *imagev1.ImageV1Client
-	buildClient *buildv1.BuildV1Client
+	buildClient *buildv1client.BuildV1Client
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read
@@ -103,30 +105,36 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	// Define new BuildConfig objects
 	buildConfigs := newBCsForCR(instance)
 	for imageType, buildConfig := range buildConfigs {
-		if _, err := r.ensureImageStream(
-			buildConfig.Name,
-			instance,
-		); err != nil {
+		var setOwner bool
+		// set ownerreference for service BC only
+		if imageType == "service" {
+			setOwner = true
+			err := controllerutil.SetControllerReference(instance, &buildConfig, r.scheme)
+			if err != nil {
+				log.Error(err)
+			}
+		}
+		if _, err := r.ensureImageStream(buildConfig.Name, instance, setOwner); err != nil {
 			return reconcile.Result{}, err
 		}
 
 		// Check if this BC already exists
-		_, err = r.buildClient.BuildConfigs(buildConfig.Namespace).Get(buildConfig.Name, metav1.GetOptions{})
+		bc, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Get(buildConfig.Name, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
 			log.Info("Creating a new BuildConfig ", buildConfig.Name, " in namespace ", buildConfig.Namespace)
-			bc, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Create(&buildConfig)
+			bc, err = r.buildClient.BuildConfigs(buildConfig.Namespace).Create(&buildConfig)
 			if err != nil {
 				return reconcile.Result{}, err
 			}
-
-			// Trigger first build of new builder BC
-			if imageType == "builder" {
-				if err = r.triggerBuild(*bc, instance); err != nil {
-					return reconcile.Result{}, err
-				}
-			}
 		} else if err != nil {
 			return reconcile.Result{}, err
+		}
+
+		// Trigger first build of "builder" and binary BCs
+		if (imageType == "builder" || bc.Spec.Source.Type == obuildv1.BuildSourceBinary) && bc.Status.LastVersion == 0 {
+			if err = r.triggerBuild(*bc, instance); err != nil {
+				return reconcile.Result{}, err
+			}
 		}
 	}
 
@@ -302,7 +310,6 @@ func newBCsForCR(cr *v1alpha1.VirtualDatabase) map[string]obuildv1.BuildConfig {
 				},
 			}
 			serviceBC.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BuildConfig"))
-			serviceBC.Spec.Source.Type = obuildv1.BuildSourceImage
 			serviceBC.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{cr.Spec.Name, "latest"}, ":"), Kind: "ImageStreamTag"}
 			serviceBC.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
 		}
@@ -312,24 +319,17 @@ func newBCsForCR(cr *v1alpha1.VirtualDatabase) map[string]obuildv1.BuildConfig {
 		From:      *buildConfigs["builder"].Spec.Output.To,
 		ForcePull: false,
 	}
-	/*
-		serviceBC.Spec.Source.Images = []obuildv1.ImageSource{
+	if len(cr.Spec.Build.SourceFileChanges) > 0 {
+		serviceBC.Spec.Source.Type = obuildv1.BuildSourceBinary
+		//serviceBC.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
+	} else {
+		serviceBC.Spec.Source.Type = obuildv1.BuildSourceImage
+		serviceBC.Spec.Triggers = []obuildv1.BuildTriggerPolicy{
 			{
-				From: *buildConfigs["builder"].Spec.Output.To,
-				Paths: []obuildv1.ImageSourcePath{
-					{
-						DestinationDir: ".",
-						SourcePath:     "/home/teiid/bin",
-					},
-				},
+				Type:        obuildv1.ImageChangeBuildTriggerType,
+				ImageChange: &obuildv1.ImageChangeTrigger{From: buildConfigs["builder"].Spec.Output.To},
 			},
 		}
-	*/
-	serviceBC.Spec.Triggers = []obuildv1.BuildTriggerPolicy{
-		{
-			Type:        obuildv1.ImageChangeBuildTriggerType,
-			ImageChange: &obuildv1.ImageChangeTrigger{From: buildConfigs["builder"].Spec.Output.To},
-		},
 	}
 	buildConfigs["service"] = serviceBC
 
@@ -540,15 +540,11 @@ func (r *ReconcileVirtualDatabase) hasStatusChanges(instance, cached *v1alpha1.V
 	return false
 }
 
-// checkImageStreamTag checks for ImageStream
-func (r *ReconcileVirtualDatabase) checkImageStreamTag(name, namespace string) bool {
-	log := log.With("kind", "ImageStreamTag", "name", name, "namespace", namespace)
+// checkImageStream checks for ImageStream
+func (r *ReconcileVirtualDatabase) checkImageStream(name, namespace string) bool {
+	log := log.With("kind", "ImageStream", "name", name, "namespace", namespace)
 	result := strings.Split(name, ":")
-	if len(result) == 1 {
-		result = append(result, "latest")
-	}
-	tagName := fmt.Sprintf("%s:%s", result[0], result[1])
-	_, err := r.imageClient.ImageStreamTags(namespace).Get(tagName, metav1.GetOptions{})
+	_, err := r.imageClient.ImageStreams(namespace).Get(result[0], metav1.GetOptions{})
 	if err != nil {
 		log.Debug("Object does not exist")
 		return false
@@ -557,65 +553,105 @@ func (r *ReconcileVirtualDatabase) checkImageStreamTag(name, namespace string) b
 }
 
 // ensureImageStream ...
-func (r *ReconcileVirtualDatabase) ensureImageStream(name string, cr *v1alpha1.VirtualDatabase) (string, error) {
-	if r.checkImageStreamTag(name, cr.Namespace) {
+func (r *ReconcileVirtualDatabase) ensureImageStream(name string, cr *v1alpha1.VirtualDatabase, setOwner bool) (string, error) {
+	if r.checkImageStream(name, cr.Namespace) {
 		return cr.Namespace, nil
 	}
-	err := r.createLocalImageTag(name, cr)
+	err := r.createLocalImageStream(name, cr, setOwner)
 	if err != nil {
-		log.Error(err)
 		return cr.Namespace, err
 	}
 	return cr.Namespace, nil
 }
 
-// createLocalImageTag creates local ImageStreamTag
-func (r *ReconcileVirtualDatabase) createLocalImageTag(tagRefName string, cr *v1alpha1.VirtualDatabase) error {
+// createLocalImageStream creates local ImageStream
+func (r *ReconcileVirtualDatabase) createLocalImageStream(tagRefName string, cr *v1alpha1.VirtualDatabase, setOwner bool) error {
 	result := strings.Split(tagRefName, ":")
 	if len(result) == 1 {
 		result = append(result, "latest")
 	}
 
-	isnew := &oimagev1.ImageStreamTag{
+	isnew := &oimagev1.ImageStream{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s:%s", result[0], result[1]),
+			Name:      result[0],
 			Namespace: cr.Namespace,
 		},
-		Tag: &oimagev1.TagReference{
-			Name: result[1],
-			ReferencePolicy: oimagev1.TagReferencePolicy{
-				Type: oimagev1.LocalTagReferencePolicy,
+		Spec: oimagev1.ImageStreamSpec{
+			LookupPolicy: oimagev1.ImageLookupPolicy{
+				Local: true,
 			},
 		},
 	}
-	isnew.SetGroupVersionKind(oimagev1.SchemeGroupVersion.WithKind("ImageStreamTag"))
+	isnew.SetGroupVersionKind(oimagev1.SchemeGroupVersion.WithKind("ImageStream"))
+	if setOwner {
+		err := controllerutil.SetControllerReference(cr, isnew, r.scheme)
+		if err != nil {
+			log.Error("Error setting controller reference for ImageStream. ", err)
+			return err
+		}
+	}
 
 	log := log.With("kind", isnew.GetObjectKind().GroupVersionKind().Kind, "name", isnew.Name, "namespace", isnew.Namespace)
 	log.Info("Creating")
 
-	_, err := r.imageClient.ImageStreamTags(isnew.Namespace).Create(isnew)
+	_, err := r.imageClient.ImageStreams(isnew.Namespace).Create(isnew)
 	if err != nil && !errors.IsAlreadyExists(err) {
-		log.Error("Issue creating object. ", err)
-		return err
+		log.Info("Already exists.")
 	}
 	return nil
 }
 
 // triggerBuild triggers a BuildConfig to start a new build
 func (r *ReconcileVirtualDatabase) triggerBuild(bc obuildv1.BuildConfig, cr *v1alpha1.VirtualDatabase) error {
+	log := log.With("kind", "BuildConfig", "name", bc.GetName(), "namespace", bc.GetNamespace())
 	buildConfig, err := r.buildClient.BuildConfigs(bc.Namespace).Get(bc.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
-	buildRequest := obuildv1.BuildRequest{ObjectMeta: metav1.ObjectMeta{Name: buildConfig.Name}}
-	buildRequest.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BuildRequest"))
-	buildRequest.TriggeredBy = []obuildv1.BuildTriggerCause{{Message: fmt.Sprintf("Triggered by %s operator", cr.Kind)}}
-	build, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Instantiate(buildConfig.Name, &buildRequest)
-	if err != nil {
-		return err
+	if buildConfig.Spec.Source.Type == obuildv1.BuildSourceBinary {
+		files := map[string]string{}
+		// Create list of files to archive
+		for _, file := range cr.Spec.Build.SourceFileChanges {
+			files[file.RelativePath] = file.Contents
+		}
+		tarReader, err := shared.Tar(files)
+		if err != nil {
+			return err
+		}
+		isFrom := buildConfig.Spec.Strategy.SourceStrategy.From
+		_, err = r.imageClient.ImageStreamTags(buildConfig.Namespace).Get(isFrom.Name, metav1.GetOptions{})
+		if err != nil && errors.IsNotFound(err) {
+			log.Warn(isFrom.Name, " ImageStreamTag does not exist yet and is required for this build.")
+		} else if err != nil {
+			return err
+		} else {
+			binaryBuildRequest := obuildv1.BinaryBuildRequestOptions{ObjectMeta: metav1.ObjectMeta{Name: buildConfig.Name}}
+			binaryBuildRequest.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BinaryBuildRequestOptions"))
+			log.Info("Triggering binary build ", buildConfig.Name)
+			err = r.buildClient.RESTClient().Post().
+				Namespace(cr.Namespace).
+				Resource("buildconfigs").
+				Name(buildConfig.Name).
+				SubResource("instantiatebinary").
+				Body(tarReader).
+				VersionedParams(&binaryBuildRequest, scheme.ParameterCodec).
+				Do().
+				Into(&obuildv1.Build{})
+			if err != nil {
+				return err
+			}
+		}
+	} else {
+		buildRequest := obuildv1.BuildRequest{ObjectMeta: metav1.ObjectMeta{Name: buildConfig.Name}}
+		buildRequest.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BuildRequest"))
+		buildRequest.TriggeredBy = []obuildv1.BuildTriggerCause{{Message: fmt.Sprintf("Triggered by %s operator", cr.Kind)}}
+		log.Info("Triggering build ", buildConfig.Name)
+		_, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Instantiate(buildConfig.Name, &buildRequest)
+		if err != nil {
+			return err
+		}
 	}
 
-	log.Info("Name of the triggered build is ", build.Name)
 	return nil
 }
 
@@ -673,6 +709,20 @@ func (r *ReconcileVirtualDatabase) updateDeploymentConfigs(instance *v1alpha1.Vi
 	return false, nil
 }
 
+func sliceExists(slice interface{}, item interface{}) bool {
+	s := reflect.ValueOf(slice)
+	if s.Kind() != reflect.Slice {
+		panic("SliceExists() given a non-slice type")
+	}
+	for i := 0; i < s.Len(); i++ {
+		if s.Index(i).Interface() == item {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (r *ReconcileVirtualDatabase) dcUpdateCheck(current, new oappsv1.DeploymentConfig, dcUpdates []oappsv1.DeploymentConfig, cr *v1alpha1.VirtualDatabase) []oappsv1.DeploymentConfig {
 	log := log.With("kind", new.GetObjectKind().GroupVersionKind().Kind, "name", current.Name, "namespace", current.Namespace)
 	update := false
@@ -695,6 +745,12 @@ func (r *ReconcileVirtualDatabase) dcUpdateCheck(current, new oappsv1.Deployment
 		log.Debug("Changes detected in 'Resource' config.", " OLD - ", cContainer.Resources, " NEW - ", nContainer.Resources)
 		update = true
 	}
+	sort.Slice(cContainer.Ports, func(i, j int) bool {
+		return cContainer.Ports[i].Name < cContainer.Ports[j].Name
+	})
+	sort.Slice(nContainer.Ports, func(i, j int) bool {
+		return nContainer.Ports[i].Name < nContainer.Ports[j].Name
+	})
 	if !reflect.DeepEqual(cContainer.Ports, nContainer.Ports) {
 		log.Debug("Changes detected in 'Ports' config.", " OLD - ", cContainer.Ports, " NEW - ", nContainer.Ports)
 		update = true

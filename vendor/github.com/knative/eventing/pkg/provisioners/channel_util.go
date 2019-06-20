@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/knative/pkg/kmeta"
+
 	"k8s.io/apimachinery/pkg/labels"
 
-	istiov1alpha3 "github.com/knative/pkg/apis/istio/v1alpha3"
 	corev1 "k8s.io/api/core/v1"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -38,52 +39,76 @@ const (
 	OldEventingProvisionerLabel = "provisioner"
 )
 
-// AddFinalizerResult is used indicate whether a finalizer was added or already present.
+// AddFinalizerResult is used to indicate whether a finalizer was added or already present.
 type AddFinalizerResult bool
 
+// RemoveFinalizerResult is used to indicate whether a finalizer was found and removed (FinalizerRemoved), or finalizer not found (FinalizerNotFound).
+type RemoveFinalizerResult bool
+
 const (
-	FinalizerAlreadyPresent AddFinalizerResult = false
-	FinalizerAdded          AddFinalizerResult = true
+	FinalizerAlreadyPresent AddFinalizerResult    = false
+	FinalizerAdded          AddFinalizerResult    = true
+	FinalizerRemoved        RemoveFinalizerResult = true
+	FinalizerNotFound       RemoveFinalizerResult = false
 )
 
-// AddFinalizer adds finalizerName to the Channel.
-func AddFinalizer(c *eventingv1alpha1.Channel, finalizerName string) AddFinalizerResult {
-	finalizers := sets.NewString(c.Finalizers...)
+// AddFinalizer adds finalizerName to the Object.
+func AddFinalizer(o metav1.Object, finalizerName string) AddFinalizerResult {
+	finalizers := sets.NewString(o.GetFinalizers()...)
 	if finalizers.Has(finalizerName) {
 		return FinalizerAlreadyPresent
 	}
 	finalizers.Insert(finalizerName)
-	c.Finalizers = finalizers.List()
+	o.SetFinalizers(finalizers.List())
 	return FinalizerAdded
 }
 
-func RemoveFinalizer(c *eventingv1alpha1.Channel, finalizerName string) {
-	finalizers := sets.NewString(c.Finalizers...)
-	finalizers.Delete(finalizerName)
-	c.Finalizers = finalizers.List()
+// RemoveFinalizer removes the finalizer(finalizerName) from the object(o) if the finalizer is present.
+// Returns: - FinalizerRemoved, if the finalizer was found and removed.
+//          - FinalizerNotFound, if the finalizer was not found.
+func RemoveFinalizer(o metav1.Object, finalizerName string) RemoveFinalizerResult {
+	finalizers := sets.NewString(o.GetFinalizers()...)
+	if finalizers.Has(finalizerName) {
+		finalizers.Delete(finalizerName)
+		o.SetFinalizers(finalizers.List())
+		return FinalizerRemoved
+	}
+	return FinalizerNotFound
 }
 
-func CreateK8sService(ctx context.Context, client runtimeClient.Client, c *eventingv1alpha1.Channel) (*corev1.Service, error) {
+// K8sServiceOption is a functional option that can modify the K8s Service in CreateK8sService
+type K8sServiceOption func(*corev1.Service) error
+
+// ExternalService is a functional option for CreateK8sService to create a K8s service of type ExternalName.
+func ExternalService(c *eventingv1alpha1.Channel) K8sServiceOption {
+	return func(svc *corev1.Service) error {
+		svc.Spec = corev1.ServiceSpec{
+			Type:         corev1.ServiceTypeExternalName,
+			ExternalName: names.ServiceHostName(channelDispatcherServiceName(c.Spec.Provisioner.Name), system.Namespace()),
+		}
+		return nil
+	}
+}
+
+func CreateK8sService(ctx context.Context, client runtimeClient.Client, c *eventingv1alpha1.Channel, opts ...K8sServiceOption) (*corev1.Service, error) {
 	getSvc := func() (*corev1.Service, error) {
 		return getK8sService(ctx, client, c)
 	}
-	return createK8sService(ctx, client, getSvc, newK8sService(c))
+	svc, err := newK8sService(c, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return createK8sService(ctx, client, getSvc, svc)
 }
 
 func getK8sService(ctx context.Context, client runtimeClient.Client, c *eventingv1alpha1.Channel) (*corev1.Service, error) {
 	list := &corev1.ServiceList{}
 	opts := &runtimeClient.ListOptions{
-		Namespace: c.Namespace,
-		// TODO After the full release start selecting on new set of labels by using k8sServiceLabels(c)
-		LabelSelector: labels.SelectorFromSet(k8sOldServiceLabels(c)),
-		// TODO this is here because the fake client needs it. Remove this when it's no longer
-		// needed.
-		Raw: &metav1.ListOptions{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: corev1.SchemeGroupVersion.String(),
-				Kind:       "Service",
-			},
-		},
+		Namespace:     c.Namespace,
+		LabelSelector: labels.SelectorFromSet(k8sServiceLabels(c)),
+		// Set Raw because if we need to get more than one page, then we will put the continue token
+		// into opts.Raw.Continue.
+		Raw: &metav1.ListOptions{},
 	}
 
 	err := client.List(ctx, opts, list)
@@ -112,12 +137,17 @@ func createK8sService(ctx context.Context, client runtimeClient.Client, getSvc g
 	} else if err != nil {
 		return nil, err
 	}
-
 	// spec.clusterIP is immutable and is set on existing services. If we don't set this
 	// to the same value, we will encounter an error while updating.
-	svc.Spec.ClusterIP = current.Spec.ClusterIP
+	if svc.Spec.Type != corev1.ServiceTypeExternalName {
+		svc.Spec.ClusterIP = current.Spec.ClusterIP
+	}
 	if !equality.Semantic.DeepDerivative(svc.Spec, current.Spec) ||
-		!expectedLabelsPresent(current.ObjectMeta.Labels, svc.ObjectMeta.Labels) {
+		!expectedLabelsPresent(current.ObjectMeta.Labels, svc.ObjectMeta.Labels) ||
+		// This DeepEqual is necessary to force update dispatcher services when upgrading from 0.5 to 0.6.
+		// Above DeepDerivative will not work because we have removed an optional field (name) from ports
+		// TODO: Remove this check in 0.7+
+		!equality.Semantic.DeepEqual(svc.Spec.Ports, current.Spec.Ports) {
 		current.Spec = svc.Spec
 		current.ObjectMeta.Labels = addExpectedLabels(current.ObjectMeta.Labels, svc.ObjectMeta.Labels)
 		err = client.Update(ctx, current)
@@ -126,66 +156,6 @@ func createK8sService(ctx context.Context, client runtimeClient.Client, getSvc g
 		}
 	}
 	return current, nil
-}
-
-func getVirtualService(ctx context.Context, client runtimeClient.Client, c *eventingv1alpha1.Channel) (*istiov1alpha3.VirtualService, error) {
-	list := &istiov1alpha3.VirtualServiceList{}
-	opts := &runtimeClient.ListOptions{
-		Namespace: c.Namespace,
-		// TODO After the full release start selecting on new set of labels by using virtualServiceLabels(c)
-		LabelSelector: labels.SelectorFromSet(virtualOldServiceLabels(c)),
-		// TODO this is here because the fake client needs it. Remove this when it's no longer
-		// needed.
-		Raw: &metav1.ListOptions{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: istiov1alpha3.SchemeGroupVersion.String(),
-				Kind:       "VirtualService",
-			},
-		},
-	}
-
-	err := client.List(ctx, opts, list)
-	if err != nil {
-		return nil, err
-	}
-	for _, vs := range list.Items {
-		if metav1.IsControlledBy(&vs, c) {
-			return &vs, nil
-		}
-	}
-
-	return nil, k8serrors.NewNotFound(schema.GroupResource{}, "")
-}
-
-func CreateVirtualService(ctx context.Context, client runtimeClient.Client, channel *eventingv1alpha1.Channel, svc *corev1.Service) (*istiov1alpha3.VirtualService, error) {
-	virtualService, err := getVirtualService(ctx, client, channel)
-
-	// If the resource doesn't exist, we'll create it
-	if k8serrors.IsNotFound(err) {
-		virtualService = newVirtualService(channel, svc)
-		err = client.Create(ctx, virtualService)
-		if err != nil {
-			return nil, err
-		}
-		return virtualService, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	// Update VirtualService if it has changed. This is possible since in version 0.2.0, the destinationHost in
-	// spec.HTTP.Route for the dispatcher was changed from *-clusterbus to *-dispatcher. Even otherwise, this
-	// reconciliation is useful for the future mutations to the object.
-	expected := newVirtualService(channel, svc)
-	if !equality.Semantic.DeepDerivative(expected.Spec, virtualService.Spec) ||
-		!expectedLabelsPresent(virtualService.ObjectMeta.Labels, expected.ObjectMeta.Labels) {
-		virtualService.Spec = expected.Spec
-		virtualService.ObjectMeta.Labels = addExpectedLabels(virtualService.ObjectMeta.Labels, expected.ObjectMeta.Labels)
-		err := client.Update(ctx, virtualService)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return virtualService, nil
 }
 
 // checkExpectedLabels checks the presence of expected labels and its values and return true
@@ -258,29 +228,33 @@ func UpdateChannel(ctx context.Context, client runtimeClient.Client, u *eventing
 // newK8sService creates a new Service for a Channel resource. It also sets the appropriate
 // OwnerReferences on the resource so handleObject can discover the Channel resource that 'owns' it.
 // As well as being garbage collected when the Channel is deleted.
-func newK8sService(c *eventingv1alpha1.Channel) *corev1.Service {
-	return &corev1.Service{
+func newK8sService(c *eventingv1alpha1.Channel, opts ...K8sServiceOption) (*corev1.Service, error) {
+	// Add annotations
+	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: channelServiceName(c.ObjectMeta.Name),
 			Namespace:    c.Namespace,
 			Labels:       k8sServiceLabels(c),
 			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(c, schema.GroupVersionKind{
-					Group:   eventingv1alpha1.SchemeGroupVersion.Group,
-					Version: eventingv1alpha1.SchemeGroupVersion.Version,
-					Kind:    "Channel",
-				}),
+				*kmeta.NewControllerRef(c),
 			},
 		},
 		Spec: corev1.ServiceSpec{
 			Ports: []corev1.ServicePort{
 				{
-					Name: PortName,
-					Port: PortNumber,
+					Name:     PortName,
+					Protocol: corev1.ProtocolTCP,
+					Port:     PortNumber,
 				},
 			},
 		},
 	}
+	for _, opt := range opts {
+		if err := opt(svc); err != nil {
+			return nil, err
+		}
+	}
+	return svc, nil
 }
 
 // k8sOldServiceLabels returns a map with only old eventing channel and provisioner labels
@@ -301,64 +275,29 @@ func k8sServiceLabels(c *eventingv1alpha1.Channel) map[string]string {
 	}
 }
 
-func virtualServiceLabels(c *eventingv1alpha1.Channel) map[string]string {
-	// Use the same labels as the K8s service.
-	return k8sServiceLabels(c)
-}
-
-func virtualOldServiceLabels(c *eventingv1alpha1.Channel) map[string]string {
-	// Use the same labels as the K8s service.
-	return k8sOldServiceLabels(c)
-}
-
-// newVirtualService creates a new VirtualService for a Channel resource. It also sets the
-// appropriate OwnerReferences on the resource so handleObject can discover the Channel resource
-// that 'owns' it. As well as being garbage collected when the Channel is deleted.
-func newVirtualService(channel *eventingv1alpha1.Channel, svc *corev1.Service) *istiov1alpha3.VirtualService {
-	destinationHost := names.ServiceHostName(channelDispatcherServiceName(channel.Spec.Provisioner.Name), system.Namespace())
-	return &istiov1alpha3.VirtualService{
-		ObjectMeta: metav1.ObjectMeta{
-			GenerateName: channelVirtualServiceName(channel.Name),
-			Namespace:    channel.Namespace,
-			Labels:       virtualServiceLabels(channel),
-			OwnerReferences: []metav1.OwnerReference{
-				*metav1.NewControllerRef(channel, schema.GroupVersionKind{
-					Group:   eventingv1alpha1.SchemeGroupVersion.Group,
-					Version: eventingv1alpha1.SchemeGroupVersion.Version,
-					Kind:    "Channel",
-				}),
-			},
-		},
-		Spec: istiov1alpha3.VirtualServiceSpec{
-			Hosts: []string{
-				names.ServiceHostName(svc.Name, channel.Namespace),
-				channelHostName(channel.Name, channel.Namespace),
-			},
-			Http: []istiov1alpha3.HTTPRoute{{
-				Rewrite: &istiov1alpha3.HTTPRewrite{
-					Authority: channelHostName(channel.Name, channel.Namespace),
-				},
-				Route: []istiov1alpha3.DestinationWeight{{
-					Destination: istiov1alpha3.Destination{
-						Host: destinationHost,
-						Port: istiov1alpha3.PortSelector{
-							Number: PortNumber,
-						},
-					}},
-				}},
-			},
-		},
-	}
-}
-
-func channelVirtualServiceName(channelName string) string {
-	return fmt.Sprintf("%s-channel-", channelName)
-}
-
 func channelServiceName(channelName string) string {
 	return fmt.Sprintf("%s-channel-", channelName)
 }
 
 func channelHostName(channelName, namespace string) string {
 	return fmt.Sprintf("%s.%s.channels.%s", channelName, namespace, utils.GetClusterDomainName())
+}
+
+// NewHostNameToChannelRefMap parses each channel from cList and creates a map[string(Status.Address.HostName)]ChannelReference
+func NewHostNameToChannelRefMap(cList []eventingv1alpha1.Channel) (map[string]ChannelReference, error) {
+	hostToChanMap := make(map[string]ChannelReference, len(cList))
+	for _, c := range cList {
+		hostName := c.Status.Address.Hostname
+		if cr, ok := hostToChanMap[hostName]; ok {
+			return nil, fmt.Errorf(
+				"Duplicate hostName found. Each channel must have a unique host header. HostName:%s, channel:%s.%s, channel:%s.%s",
+				hostName,
+				c.Namespace,
+				c.Name,
+				cr.Namespace,
+				cr.Name)
+		}
+		hostToChanMap[hostName] = ChannelReference{Name: c.Name, Namespace: c.Namespace}
+	}
+	return hostToChanMap, nil
 }

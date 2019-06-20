@@ -1,37 +1,51 @@
 package test
 
 import (
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/RHsyseng/operator-utils/pkg/validation"
 	"github.com/ghodss/yaml"
-	packr "github.com/gobuffalo/packr/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 )
 
 func TestSampleCustomResources(t *testing.T) {
 	schema := getSchema(t)
-	box := packr.New("deploy/crs", "../../../../deploy/crs")
-	for _, file := range box.List() {
-		yamlString, err := box.FindString(file)
-		assert.NoError(t, err, "Error reading %v CR yaml", file)
+	fileList := fileList("../../../../deploy/crs")
+	for _, filePath := range fileList {
+		file, err := os.Open(filePath)
+		if err != nil {
+			log.Println(err)
+		}
+		defer file.Close()
+		yamlString, err := ioutil.ReadAll(file)
+		assert.NoError(t, err, "Error reading %v CR yaml", filePath)
 		var input map[string]interface{}
-		assert.NoError(t, yaml.Unmarshal([]byte(yamlString), &input))
-		assert.NoError(t, schema.Validate(input), "File %v does not validate against the CRD schema", file)
+		assert.NoError(t, yaml.Unmarshal(yamlString, &input))
+		assert.NoError(t, schema.Validate(input), "File %v does not validate against the CRD schema", filePath)
 	}
 }
 
 func TestExampleCustomResources(t *testing.T) {
 	schema := getSchema(t)
-	box := packr.New("deploy/examples", "../../../../deploy/examples")
-	for _, file := range box.List() {
-		yamlString, err := box.FindString(file)
-		assert.NoError(t, err, "Error reading %v CR yaml", file)
+	fileList := fileList("../../../../deploy/examples")
+	for _, filePath := range fileList {
+		file, err := os.Open(filePath)
+		if err != nil {
+			log.Println(err)
+		}
+		defer file.Close()
+		yamlString, err := ioutil.ReadAll(file)
+		assert.NoError(t, err, "Error reading %v CR yaml", filePath)
 		var input map[string]interface{}
-		assert.NoError(t, yaml.Unmarshal([]byte(yamlString), &input))
-		assert.NoError(t, schema.Validate(input), "File %v does not validate against the CRD schema", file)
+		assert.NoError(t, yaml.Unmarshal(yamlString, &input))
+		assert.NoError(t, schema.Validate(input), "File %v does not validate against the CRD schema", filePath)
 	}
 }
 
@@ -86,12 +100,35 @@ func deleteNestedMapEntry(object map[string]interface{}, keys ...string) {
 }
 
 func getSchema(t *testing.T) validation.Schema {
-	box := packr.New("deploy/crds", "../../../../deploy/crds")
-	crdFile := "virtualdatabase.crd.yaml"
-	assert.True(t, box.Has(crdFile))
-	yamlString, err := box.FindString(crdFile)
+	crdFile := "../../../../deploy/crds/virtualdatabase.crd.yaml"
+	file, err := os.Open(crdFile)
+	if err != nil {
+		log.Println(err)
+	}
+	defer file.Close()
+	yamlString, err := ioutil.ReadAll(file)
 	assert.NoError(t, err, "Error reading CRD yaml %v", yamlString)
-	schema, err := validation.New([]byte(yamlString))
+	schema, err := validation.New(yamlString)
 	assert.NoError(t, err)
 	return schema
+}
+
+func fileList(dir string) []string {
+	var fileList []string
+	err := filepath.Walk(dir,
+		func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() {
+				fileList = append(fileList, path)
+			}
+			return nil
+		})
+	if err != nil {
+		log.Println(err)
+		return fileList
+	}
+	fmt.Println(fileList)
+	return fileList
 }

@@ -18,7 +18,6 @@ package e2e
 
 import (
 	"fmt"
-	"net/http"
 	"testing"
 	"time"
 
@@ -26,6 +25,7 @@ import (
 	"github.com/knative/serving/pkg/apis/serving/v1alpha1"
 	serviceresourcenames "github.com/knative/serving/pkg/reconciler/v1alpha1/service/resources/names"
 	"github.com/knative/serving/test"
+	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -49,28 +49,6 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 	cleanupCh := make(chan test.ResourceNames, scale)
 	defer close(cleanupCh)
 
-	fopt := []ServiceOption{
-		// We set a small resource alloc so that we can pack more pods into the cluster.
-		func(svc *v1alpha1.Service) {
-			svc.Spec.RunLatest.Configuration.RevisionTemplate.Spec.Container.Resources = corev1.ResourceRequirements{
-				Limits: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("10m"),
-					corev1.ResourceMemory: resource.MustParse("50Mi"),
-				},
-				Requests: corev1.ResourceList{
-					corev1.ResourceCPU:    resource.MustParse("10m"),
-					corev1.ResourceMemory: resource.MustParse("20Mi"),
-				},
-			}
-		},
-		// See #2946 for why we do this.
-		func(svc *v1alpha1.Service) {
-			svc.Spec.RunLatest.Configuration.RevisionTemplate.ObjectMeta.Annotations = map[string]string{
-				"autoscaling.knative.dev/minScale": "1",
-				"autoscaling.knative.dev/maxScale": "1",
-			}
-		},
-	}
 	// These are the local (per-probe) and global (all probes) targets for the scale test.
 	// 90 = 18/20, so allow two failures with the minimum number of probes, but expect
 	// us to have 2.5 9s overall.
@@ -115,10 +93,27 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 			// Record the overall completion time regardless of success/failure.
 			defer latencies.Add("time-to-done", start)
 
-			svc, err := test.CreateLatestService(t, clients, names, options, fopt...)
+			svc, err := test.CreateLatestService(t, clients, names, options,
+				WithResourceRequirements(corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("50Mi"),
+					},
+					Requests: corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse("10m"),
+						corev1.ResourceMemory: resource.MustParse("20Mi"),
+					},
+				}),
+				// See #2946 for why we do this.
+				// turns off auto scaling by setting max and min scale to 1
+				WithConfigAnnotations(map[string]string{
+					"autoscaling.knative.dev/minScale": "1",
+					"autoscaling.knative.dev/maxScale": "1",
+				}))
+
 			if err != nil {
 				t.Errorf("CreateLatestService() = %v", err)
-				return nil
+				return errors.Wrap(err, "CreateLatestService() failed")
 			}
 			// Record the time it took to create the service.
 			latencies.Add("time-to-create", start)
@@ -139,7 +134,7 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 			}, "ServiceUpdatedWithDomain")
 			if err != nil {
 				t.Errorf("WaitForServiceState(w/ Domain) = %v", err)
-				return nil
+				return errors.Wrap(err, "WaitForServiceState(w/ Domain) failed")
 			}
 			// Record the time it took to become ready.
 			latencies.Add("time-to-ready", start)
@@ -148,12 +143,12 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 				clients.KubeClient,
 				t.Logf,
 				domain,
-				pkgTest.Retrying(pkgTest.EventuallyMatchesBody(helloWorldExpectedOutput), http.StatusNotFound),
+				test.RetryingRouteInconsistency(pkgTest.MatchesAllOf(pkgTest.IsStatusOK, pkgTest.MatchesBody(helloWorldExpectedOutput))),
 				"WaitForEndpointToServeText",
 				test.ServingFlags.ResolvableDomain)
 			if err != nil {
 				t.Errorf("WaitForEndpointState(expected text) = %v", err)
-				return nil
+				return errors.Wrap(err, "WaitForEndpointState(expected text) failed")
 			}
 			// Record the time it took to get back a 200 with the expected text.
 			latencies.Add("time-to-200", start)
@@ -189,6 +184,9 @@ func ScaleToWithin(t *testing.T, scale int, duration time.Duration, latencies La
 
 		case err := <-doneCh:
 			if err != nil {
+				// If we don't do this first, then we'll see tons of 503s from the ongoing probes
+				// as we tear down the things they are probing.
+				defer pm.Stop()
 				t.Fatalf("Unexpected error: %v", err)
 			}
 

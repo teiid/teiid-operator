@@ -57,22 +57,6 @@ var ProgressDeadlineSeconds int32 = 120
 var (
 	// See https://github.com/knative/serving/pull/1124#issuecomment-397120430
 	// for how CPU and memory values were calculated.
-
-	// Each Knative Serving pod gets 500m cpu initially.
-	userContainerCPU    = resource.MustParse("400m")
 	fluentdContainerCPU = resource.MustParse("25m")
-	envoyContainerCPU   = resource.MustParse("50m")
 	queueContainerCPU   = resource.MustParse("25m")
-
-	// Limit CPU recommendation to 2000m
-	userContainerMaxCPU    = resource.MustParse("1700m")
-	fluentdContainerMaxCPU = resource.MustParse("100m")
-	envoyContainerMaxCPU   = resource.MustParse("200m")
-	queueContainerMaxCPU   = resource.MustParse("200m")
-
-	// Limit memory recommendation to 4G
-	userContainerMaxMemory    = resource.MustParse("3700M")
-	fluentdContainerMaxMemory = resource.MustParse("100M")
-	envoyContainerMaxMemory   = resource.MustParse("100M")
-	queueContainerMaxMemory   = resource.MustParse("100M")
 )
