@@ -82,6 +82,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		&v1alpha1.VirtualDatabase{},
 		&obuildv1.BuildConfig{},
 		&obuildv1.Build{},
+		&oimagev1.ImageStream{},
 	}
 	objectHandler := &handler.EnqueueRequestForObject{}
 	for _, watchObject := range watchObjects {
