@@ -618,10 +618,10 @@ func (r *ReconcileVirtualDatabase) triggerBuild(bc obuildv1.BuildConfig, cr *v1a
 		if err != nil {
 			return err
 		}
-		isFrom := buildConfig.Spec.Strategy.SourceStrategy.From
-		_, err = r.imageClient.ImageStreamTags(buildConfig.Namespace).Get(isFrom.Name, metav1.GetOptions{})
+		isName := buildConfig.Spec.Strategy.SourceStrategy.From.Name
+		_, err = r.imageClient.ImageStreamTags(buildConfig.Namespace).Get(isName, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
-			log.Warn(isFrom.Name, " ImageStreamTag does not exist yet and is required for this build.")
+			log.Warn(isName, " ImageStreamTag does not exist yet and is required for this build.")
 		} else if err != nil {
 			return err
 		} else {
