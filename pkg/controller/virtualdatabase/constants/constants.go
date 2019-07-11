@@ -15,19 +15,6 @@ const (
 
 // RuntimeImageDefaults ...
 var RuntimeImageDefaults = map[v1alpha1.RuntimeType][]v1alpha1.Image{
-	v1alpha1.KarafRuntimeType: {
-		{
-			ImageStreamName:      "s2i-karaf",
-			ImageStreamNamespace: ImageStreamNamespace,
-			ImageStreamTag:       ImageStreamTag,
-			ImageRegistry:        ImageRegistry,
-			ImageRepo:            ImageRepo,
-			BuilderImage:         true,
-		},
-		{
-			BuilderImage: false,
-		},
-	},
 	v1alpha1.SpringbootRuntimeType: {
 		{
 			ImageStreamName:      "s2i-java",

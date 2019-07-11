@@ -88,8 +88,6 @@ type WebhookSecret struct {
 type RuntimeType string
 
 const (
-	// KarafRuntimeType - the virtualdatabase is deployed
-	KarafRuntimeType RuntimeType = "karaf"
 	// SpringbootRuntimeType - the virtualdatabase is being provisioned
 	SpringbootRuntimeType RuntimeType = "springboot"
 )

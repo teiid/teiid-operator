@@ -19,17 +19,14 @@ package virtualdatabase
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
 	oappsv1 "github.com/openshift/api/apps/v1"
 	obuildv1 "github.com/openshift/api/build/v1"
-	dockerv10 "github.com/openshift/api/image/docker10"
 	oimagev1 "github.com/openshift/api/image/v1"
 	oroutev1 "github.com/openshift/api/route/v1"
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
@@ -40,8 +37,10 @@ import (
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/logs"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/shared"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/status"
+	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -94,7 +93,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	if len(instance.Spec.Name) == 0 {
 		instance.Spec.Name = instance.Name
 	}
-	if instance.Spec.Runtime == "" || (instance.Spec.Runtime != v1alpha1.KarafRuntimeType && instance.Spec.Runtime != v1alpha1.SpringbootRuntimeType) {
+	if instance.Spec.Runtime == "" || instance.Spec.Runtime != v1alpha1.SpringbootRuntimeType {
 		instance.Spec.Runtime = v1alpha1.SpringbootRuntimeType
 	}
 	if instance.Spec.Build.Incremental == nil {
@@ -344,43 +343,74 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 		replicas = *cr.Spec.Replicas
 	}
 	labels := map[string]string{
-		"app": cr.Name,
-	}
-	ports := []corev1.ContainerPort{}
-	bcNamespace := cr.Namespace
-	if serviceBC.Spec.Output.To.Namespace != "" {
-		bcNamespace = serviceBC.Spec.Output.To.Namespace
+		"app":              cr.Name,
+		"syndesis.io/type": "datavirtualization",
 	}
 
-	isTag, err := r.imageClient.ImageStreamTags(bcNamespace).Get(serviceBC.Spec.Output.To.Name, metav1.GetOptions{})
-	if err != nil {
-		log.Warn(cr.Spec.Name, " DeploymentConfig will start when ImageStream build completes.")
+	// environment variables
+	defaultEnv := []corev1.EnvVar{
+		{
+			Name:  "JAVA_APP_DIR",
+			Value: "/deployments",
+		},
+		{
+			Name:  "JAVA_OPTIONS",
+			Value: "-Djava.net.preferIPv4Stack=true -Duser.home=/tmp -Djava.net.preferIPv4Addresses=true",
+		},
+		{
+			Name:  "JAVA_DEBUG",
+			Value: "false",
+		},
+		{
+			Name: "NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "metadata.namespace",
+				},
+			},
+		},
 	}
-	if len(isTag.Image.DockerImageMetadata.Raw) != 0 {
-		obj := &dockerv10.DockerImage{}
-		err = json.Unmarshal(isTag.Image.DockerImageMetadata.Raw, obj)
-		if err != nil {
-			log.Error(err)
+
+	// merge/update env with user defined
+	for _, v := range defaultEnv {
+		if envvar.Get(cr.Spec.Env, v.Name) == nil {
+			envvar.SetVar(&cr.Spec.Env, v)
 		}
-		for p := range obj.Config.ExposedPorts {
-			portResults := strings.Split(p, "/")
-			port, err := strconv.Atoi(portResults[0])
-			if err != nil {
-				log.Error(err)
-			}
-			ports = append(ports, corev1.ContainerPort{Name: strings.Join([]string{portResults[0], portResults[1]}, ""), ContainerPort: int32(port), Protocol: corev1.ProtocolTCP})
-			if port == 8080 {
-				probe = &corev1.Probe{
-					TimeoutSeconds:   int32(1),
-					PeriodSeconds:    int32(10),
-					SuccessThreshold: int32(1),
-					FailureThreshold: int32(3),
-				}
-				probe.Handler.TCPSocket = &corev1.TCPSocketAction{
-					Port: intstr.FromInt(port),
-				}
-			}
+	}
+
+	ports := []corev1.ContainerPort{}
+	ports = append(ports, corev1.ContainerPort{Name: "http", ContainerPort: int32(8080), Protocol: corev1.ProtocolTCP})
+	ports = append(ports, corev1.ContainerPort{Name: "jolokia", ContainerPort: int32(8778), Protocol: corev1.ProtocolTCP})
+	ports = append(ports, corev1.ContainerPort{Name: "promenthus", ContainerPort: int32(9779), Protocol: corev1.ProtocolTCP})
+	ports = append(ports, corev1.ContainerPort{Name: "teiid", ContainerPort: int32(31000), Protocol: corev1.ProtocolTCP})
+	ports = append(ports, corev1.ContainerPort{Name: "pg", ContainerPort: int32(35432), Protocol: corev1.ProtocolTCP})
+	log.Info("ports:", ports)
+
+	// resources for the container
+	if &cr.Spec.Resources == nil {
+		cr.Spec.Resources = corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				"memory": resource.MustParse("512Mi"),
+				"cpu":    resource.MustParse("1.0"),
+			},
+			Requests: corev1.ResourceList{
+				"memory": resource.MustParse("256Mi"),
+				"cpu":    resource.MustParse("0.2"),
+			},
 		}
+	}
+
+	// liveness and readiness probes
+	probe = &corev1.Probe{
+		TimeoutSeconds:      int32(5),
+		PeriodSeconds:       int32(20),
+		SuccessThreshold:    int32(1),
+		FailureThreshold:    int32(3),
+		InitialDelaySeconds: int32(60),
+	}
+	probe.Handler.HTTPGet = &corev1.HTTPGetAction{
+		Path: "/actuator/health",
+		Port: intstr.FromInt(8080),
 	}
 
 	depConfig := oappsv1.DeploymentConfig{
@@ -398,6 +428,11 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 			Template: &corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
+					Name:   cr.Spec.Name,
+					Annotations: map[string]string{
+						"prometheus.io/scrape": "true",
+						"prometheus.io/port":   "9779",
+					},
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
@@ -407,6 +442,10 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 							Resources:       cr.Spec.Resources,
 							Image:           serviceBC.Spec.Output.To.Name,
 							ImagePullPolicy: corev1.PullAlways,
+							Ports:           ports,
+							LivenessProbe:   probe,
+							ReadinessProbe:  probe,
+							WorkingDir:      "/deployments",
 						},
 					},
 				},
@@ -424,15 +463,9 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 			},
 		},
 	}
-	if len(ports) != 0 {
-		depConfig.Spec.Template.Spec.Containers[0].Ports = ports
-		if probe != nil {
-			depConfig.Spec.Template.Spec.Containers[0].LivenessProbe = probe
-			depConfig.Spec.Template.Spec.Containers[0].ReadinessProbe = probe
-		}
-	}
+
 	depConfig.SetGroupVersionKind(oappsv1.SchemeGroupVersion.WithKind("DeploymentConfig"))
-	err = controllerutil.SetControllerReference(cr, &depConfig, r.scheme)
+	var err = controllerutil.SetControllerReference(cr, &depConfig, r.scheme)
 	if err != nil {
 		log.Error(err)
 		return oappsv1.DeploymentConfig{}, err
