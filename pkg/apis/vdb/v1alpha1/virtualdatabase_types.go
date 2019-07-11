@@ -12,22 +12,17 @@ import (
 // VirtualDatabaseSpec defines the desired state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseSpec struct {
-	Name         string                      `json:"name,omitempty"`
-	Image        ImageSpec                   `json:"image,omitempty"`
-	Replicas     *int32                      `json:"replicas,omitempty"`
-	Content      string                      `json:"content,omitempty"`
-	Dependencies []string                    `json:"dependencies,omitempty"`
-	Env          []corev1.EnvVar             `json:"env,omitempty"`
-	Runtime      RuntimeType                 `json:"runtime,omitempty"`
-	Resources    corev1.ResourceRequirements `json:"resources,omitempty"`
-	Build        VirtualDatabaseBuildObject  `json:"build"` // S2I Build configuration
+	Replicas  *int32                      `json:"replicas,omitempty"`
+	Env       []corev1.EnvVar             `json:"env,omitempty"`
+	Runtime   RuntimeType                 `json:"runtime,omitempty"`
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	Build     VirtualDatabaseBuildObject  `json:"build"` // S2I Build configuration
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
 	Phase          PublishingPhase `json:"phase,omitempty"`
-	Digest         string          `json:"digest,omitempty"`
 	Failure        string          `json:"failure,omitempty"`
 	Image          string          `json:"image,omitempty"`
 	RuntimeVersion string          `json:"runtimeVersion,omitempty"`
@@ -48,6 +43,7 @@ type VirtualDatabaseBuildObject struct {
 	Incremental       *bool               `json:"incremental,omitempty"`
 	Env               []corev1.EnvVar     `json:"env,omitempty"`
 	GitSource         GitSource           `json:"gitSource,omitempty"`
+	DDLSource         DDLSource           `json:"ddlSource,omitempty"`
 	Webhooks          []WebhookSecret     `json:"webhooks,omitempty"`
 	SourceFileChanges []SourceFileChanges `json:"sourceFileChanges,omitempty"`
 }
@@ -65,6 +61,14 @@ type GitSource struct {
 	URI        string `json:"uri,omitempty"`
 	Reference  string `json:"reference,omitempty"`
 	ContextDir string `json:"contextDir,omitempty"`
+}
+
+// DDLSource Git coordinates to locate the source code to build
+// +k8s:openapi-gen=true
+type DDLSource struct {
+	URI          string   `json:"uri,omitempty"`
+	Contents     string   `json:"contents,omitempty"`
+	Dependencies []string `json:"dependencies,omitempty"`
 }
 
 // WebhookType literal type to distinguish between different types of Webhooks
@@ -99,7 +103,7 @@ type Image struct {
 	ImageStreamTag       string `json:"imageStreamTag,omitempty"`
 	ImageStreamNamespace string `json:"imageStreamNamespace,omitempty"`
 	ImageRegistry        string `json:"imageRegistry,omitempty"`
-	ImageRepo            string `json:"imageRepo,omitempty"`
+	ImageRepository      string `json:"imageRepository,omitempty"`
 	BuilderImage         bool   `json:"builderImage,omitempty"`
 }
 
@@ -170,35 +174,35 @@ type VirtualDatabaseList struct {
 	Items           []VirtualDatabase `json:"items"`
 }
 
-// IntegrationPhase --
+// PublishingPhase --
 type PublishingPhase string
 
 const (
-	// IntegrationKind --
+	// VirtualDatabaseKind --
 	VirtualDatabaseKind string = "VirtualDatabase"
 
-	// IntegrationPhaseInitial --
+	// PublishingPhaseInitial --
 	PublishingPhaseInitial PublishingPhase = ""
 
-	// Code generation
+	// PublishingPhaseCodeGeneration Code generation
 	PublishingPhaseCodeGeneration PublishingPhase = "Code Generation"
-	// Code generation completed
+	// PublishingPhaseCodeGenerationCompleted Code generation completed
 	PublishingPhaseCodeGenerationCompleted PublishingPhase = "Code Generation Completed"
-	// IntegrationPhaseBuildImageSubmitted --
+	// PublishingPhaseBuildImageSubmitted --
 	PublishingPhaseBuildImageSubmitted PublishingPhase = "Build Image Submitted"
-	// IntegrationPhaseBuildImageRunning --
+	// PublishingPhaseBuildImageRunning --
 	PublishingPhaseBuildImageRunning PublishingPhase = "Build Image Running"
-	// IntegrationPhaseBuildImageRunning --
+	// PublishingPhaseBuildImageComplete --
 	PublishingPhaseBuildImageComplete PublishingPhase = "Build Image Completed"
-	// IntegrationPhaseDeploying --
+	// PublishingPhaseDeploying --
 	PublishingPhaseDeploying PublishingPhase = "Deploying"
-	// IntegrationPhaseRunning --
+	// PublishingPhaseRunning --
 	PublishingPhaseRunning PublishingPhase = "Running"
-	// IntegrationPhaseError --
+	// PublishingPhaseError --
 	PublishingPhaseError PublishingPhase = "Error"
-	// IntegrationPhaseBuildFailureRecovery --
+	// PublishingPhaseBuildFailureRecovery --
 	PublishingPhaseBuildFailureRecovery PublishingPhase = "Building Failure Recovery"
-	// IntegrationPhaseDeleting --
+	// PublishingPhaseDeleting --
 	PublishingPhaseDeleting PublishingPhase = "Deleting"
 
 	// DeploymentFailedReason - Unable to deploy the application

@@ -20,6 +20,8 @@ package virtualdatabase
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -40,6 +42,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -90,9 +93,6 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	}
 
 	// Set some CR defaults
-	if len(instance.Spec.Name) == 0 {
-		instance.Spec.Name = instance.Name
-	}
 	if instance.Spec.Runtime == "" || instance.Spec.Runtime != v1alpha1.SpringbootRuntimeType {
 		instance.Spec.Runtime = v1alpha1.SpringbootRuntimeType
 	}
@@ -269,7 +269,7 @@ func newBCsForCR(cr *v1alpha1.VirtualDatabase) map[string]obuildv1.BuildConfig {
 
 	for _, imageDefaults := range images {
 		if imageDefaults.BuilderImage {
-			builderName := strings.Join([]string{cr.Spec.Name, "builder"}, "-")
+			builderName := strings.Join([]string{cr.ObjectMeta.Name, "builder"}, "-")
 			builderBC := obuildv1.BuildConfig{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      builderName,
@@ -301,7 +301,7 @@ func newBCsForCR(cr *v1alpha1.VirtualDatabase) map[string]obuildv1.BuildConfig {
 		} else {
 			serviceBC = obuildv1.BuildConfig{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      cr.Spec.Name,
+					Name:      cr.ObjectMeta.Name,
 					Namespace: cr.Namespace,
 					Labels: map[string]string{
 						"app": cr.Name,
@@ -309,7 +309,7 @@ func newBCsForCR(cr *v1alpha1.VirtualDatabase) map[string]obuildv1.BuildConfig {
 				},
 			}
 			serviceBC.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BuildConfig"))
-			serviceBC.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{cr.Spec.Name, "latest"}, ":"), Kind: "ImageStreamTag"}
+			serviceBC.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{cr.ObjectMeta.Name, "latest"}, ":"), Kind: "ImageStreamTag"}
 			serviceBC.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
 		}
 	}
@@ -384,7 +384,6 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 	ports = append(ports, corev1.ContainerPort{Name: "promenthus", ContainerPort: int32(9779), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "teiid", ContainerPort: int32(31000), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "pg", ContainerPort: int32(35432), Protocol: corev1.ProtocolTCP})
-	log.Info("ports:", ports)
 
 	// resources for the container
 	if &cr.Spec.Resources == nil {
@@ -415,7 +414,7 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 
 	depConfig := oappsv1.DeploymentConfig{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Spec.Name,
+			Name:      cr.ObjectMeta.Name,
 			Namespace: cr.Namespace,
 			Labels:    labels,
 		},
@@ -428,7 +427,7 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 			Template: &corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
-					Name:   cr.Spec.Name,
+					Name:   cr.ObjectMeta.Name,
 					Annotations: map[string]string{
 						"prometheus.io/scrape": "true",
 						"prometheus.io/port":   "9779",
@@ -437,7 +436,7 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
 						{
-							Name:            cr.Spec.Name,
+							Name:            cr.ObjectMeta.Name,
 							Env:             cr.Spec.Env,
 							Resources:       cr.Spec.Resources,
 							Image:           serviceBC.Spec.Output.To.Name,
@@ -456,7 +455,7 @@ func (r *ReconcileVirtualDatabase) newDCForCR(cr *v1alpha1.VirtualDatabase, serv
 					Type: oappsv1.DeploymentTriggerOnImageChange,
 					ImageChangeParams: &oappsv1.DeploymentTriggerImageChangeParams{
 						Automatic:      true,
-						ContainerNames: []string{cr.Spec.Name},
+						ContainerNames: []string{cr.ObjectMeta.Name},
 						From:           *serviceBC.Spec.Output.To,
 					},
 				},
@@ -863,15 +862,24 @@ func (r *ReconcileVirtualDatabase) GetRouteHost(route oroutev1.Route, cr *v1alph
 	return found.Spec.Host
 }
 
-/*
+func addDefaultsToCR(cr *v1alpha1.VirtualDatabase) {
+	// Set some CR defaults
+	if cr.Spec.Runtime == "" || cr.Spec.Runtime != v1alpha1.SpringbootRuntimeType {
+		cr.Spec.Runtime = v1alpha1.SpringbootRuntimeType
+	}
+	if cr.Spec.Build.Incremental == nil {
+		inc := true
+		cr.Spec.Build.Incremental = &inc
+	}
+}
+
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read
 // and what is in the VirtualDatabase.Spec
 // Note:
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
-func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	logger := log.Log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
-	logger.Info("Reconciling VirtualDatabase")
+func (r *ReconcileVirtualDatabase) Reconcile2(request reconcile.Request) (reconcile.Result, error) {
+	log.Info("Reconciling VirtualDatabase")
 
 	buildStatus := &v1alpha1.BuildStatus{}
 	tempDir, err := ioutil.TempDir(os.TempDir(), "builder-")
@@ -894,11 +902,12 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+	addDefaultsToCR(instance)
 
 	// // Define a new Pod object
 	// pod := newPodForCR(instance)
 
-	// // Set VirtualDatabase instance as the owner and controller
+	// Set VirtualDatabase instance as the owner and controller
 	// if err := controllerutil.SetControllerReference(instance, pod, r.scheme); err != nil {
 	// 	return reconcile.Result{}, err
 	// }
@@ -913,15 +922,14 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		instance.Status.Phase = v1alpha1.PublishingPhaseDeleting
 	}
 
-	ilog := logger.ForVirtualDatabase(instance)
 	for _, a := range buildSteps {
 		a.InjectClient(r.client)
-		a.InjectLogger(ilog)
+		a.InjectLogger(log)
 		if a.CanHandle(instance) {
-			ilog.Infof("Invoking action %s", a.Name())
+			log.Infof("Invoking action %s", a.Name())
 			if err := a.Handle(ctx, instance); err != nil {
 				if k8serrors.IsConflict(err) {
-					ilog.Error(err, "conflict")
+					log.Error(err, "conflict")
 					return reconcile.Result{
 						Requeue: true,
 					}, nil
@@ -949,27 +957,3 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		RequeueAfter: 5 * time.Second,
 	}, nil
 }
-
-// newPodForCR returns a busybox pod with the same name/namespace as the cr
-func newPodForCR(cr *v1alpha1.VirtualDatabase) *corev1.Pod {
-	labels := map[string]string{
-		"app": cr.Name,
-	}
-	return &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cr.Name + "-pod",
-			Namespace: cr.Namespace,
-			Labels:    labels,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    "busybox",
-					Image:   "busybox",
-					Command: []string{"sleep", "3600"},
-				},
-			},
-		},
-	}
-}
-*/

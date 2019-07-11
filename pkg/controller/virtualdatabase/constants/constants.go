@@ -21,7 +21,7 @@ var RuntimeImageDefaults = map[v1alpha1.RuntimeType][]v1alpha1.Image{
 			ImageStreamNamespace: ImageStreamNamespace,
 			ImageStreamTag:       "latest-java11",
 			ImageRegistry:        ImageRegistry,
-			ImageRepo:            ImageRepo,
+			ImageRepository:      ImageRepo,
 			BuilderImage:         true,
 		},
 		{

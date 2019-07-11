@@ -96,7 +96,7 @@ func createTarFileForBuild(tarFileName string, pom string, vdb *v1alpha1.Virtual
 	}
 	defer tarAppender.Close()
 	tarAppender.AddData([]byte(pom), "pom.xml")
-	tarAppender.AddData([]byte(vdb.Spec.Content), "src/main/resources/teiid-vdb.ddl")
+	tarAppender.AddData([]byte(vdb.Spec.Build.DDLSource.Contents), "src/main/resources/teiid-vdb.ddl")
 	return tarAppender, nil
 }
 

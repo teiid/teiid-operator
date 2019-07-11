@@ -49,7 +49,7 @@ func CreateBuildConfiguration(vdb *v1alpha1.VirtualDatabase) buildv1.BuildConfig
 					SourceStrategy: &buildv1.SourceBuildStrategy{
 						From: corev1.ObjectReference{
 							Kind: "ImageStreamTag",
-							Name: vdb.Spec.Image.BaseImage,
+							Name: "s2i-image",
 						},
 					},
 				},

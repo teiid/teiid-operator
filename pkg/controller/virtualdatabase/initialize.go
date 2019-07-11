@@ -21,7 +21,6 @@ import (
 	"context"
 
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/util/digest"
 )
 
 // NewInitializeAction creates a new initialize action
@@ -46,18 +45,12 @@ func (action *initializeAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
 // Handle handles the virtualdatabase
 func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error {
 
-	dgst, err := digest.ComputeForVirtualDatabase(vdb)
-	if err != nil {
-		return err
-	}
-
 	// better not changing the spec section of the target because it may be used for comparison by a
 	// higher level controller
 
 	target := vdb.DeepCopy()
 
 	target.Status.Phase = v1alpha1.PublishingPhaseCodeGeneration
-	target.Status.Digest = dgst
 	target.Status.Image = ""
 
 	action.Log.Info("VDB state transition", "phase", target.Status.Phase)
