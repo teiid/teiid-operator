@@ -21,14 +21,10 @@ import (
 	"context"
 
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
-	teiidclient "github.com/teiid/teiid-operator/pkg/client"
-	logt "github.com/teiid/teiid-operator/pkg/util/log"
 )
 
 // Action --
 type Action interface {
-	teiidclient.Injectable
-
 	// a user friendly name for the action
 	Name() string
 
@@ -36,21 +32,8 @@ type Action interface {
 	CanHandle(vdb *v1alpha1.VirtualDatabase) bool
 
 	// executes the handling function
-	Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error
-
-	// Inject virtualization logger
-	InjectLogger(logt.Logger)
+	Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error
 }
 
 type baseAction struct {
-	client teiidclient.Client
-	Log    logt.Logger
-}
-
-func (action *baseAction) InjectClient(client teiidclient.Client) {
-	action.client = client
-}
-
-func (action *baseAction) InjectLogger(log logt.Logger) {
-	action.Log = log
 }

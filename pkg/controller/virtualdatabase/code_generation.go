@@ -29,6 +29,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util/tar"
 )
 
+// NewCodeGenerationAction --
 func NewCodeGenerationAction() Action {
 	return &codeGenerationAction{}
 }
@@ -39,16 +40,16 @@ type codeGenerationAction struct {
 
 // Name returns a common name of the action
 func (action *codeGenerationAction) Name() string {
-	return "code generation"
+	return "CodeGenerationAction"
 }
 
 // CanHandle tells whether this action can handle the virtualdatabase
 func (action *codeGenerationAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.PublishingPhaseCodeGeneration
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseCodeGeneration
 }
 
 // Handle handles the virtualdatabase
-func (action *codeGenerationAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error {
+func (action *codeGenerationAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 	// update the status
 	target := vdb.DeepCopy()
 
@@ -62,25 +63,25 @@ func (action *codeGenerationAction) Handle(ctx context.Context, vdb *v1alpha1.Vi
 		ArtifactID: "postgresql",
 	})
 
-	target.Status.Phase = v1alpha1.PublishingPhaseCodeGenerationCompleted
+	target.Status.Phase = v1alpha1.ReconcilerPhaseCodeGenerationCompleted
 	pom, err := maven.GeneratePomContent(project)
 	if err != nil {
-		target.Status.Phase = v1alpha1.PublishingPhaseInitial
+		target.Status.Phase = v1alpha1.ReconcilerPhaseInitial
 		target.Status.Failure = "Failed to generate the pom.xml"
-		action.Log.Info("Failed to generate the pom.xml", "phase", target.Status.Phase)
+		log.Info("Failed to generate the pom.xml", "phase", target.Status.Phase)
 	} else {
 		v := ctx.Value(v1alpha1.BuildStatusKey)
 		_, err := createTarFileForBuild((v.(v1alpha1.BuildStatus)).TarFile, pom, vdb)
 		if err != nil {
-			target.Status.Phase = v1alpha1.PublishingPhaseInitial
+			target.Status.Phase = v1alpha1.ReconcilerPhaseInitial
 			target.Status.Failure = "Failed to build Tar file for build"
-			action.Log.Info("Failed to build Tar file for build", "phase", target.Status.Phase)
+			log.Info("Failed to build Tar file for build", "phase", target.Status.Phase)
 		}
 		// // Need to do the build tomorrow.
 		// action.client.Delete(ctx)
 	}
-	action.Log.Info("VDB state transition", "phase", target.Status.Phase)
-	return action.client.Status().Update(ctx, target)
+	log.Info("VDB state transition", "phase", target.Status.Phase)
+	return r.client.Status().Update(ctx, target)
 }
 
 func createTarFileForBuild(tarFileName string, pom string, vdb *v1alpha1.VirtualDatabase) (*tar.Appender, error) {

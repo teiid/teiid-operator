@@ -11,6 +11,8 @@ const (
 	ImageRepo = "fabric8"
 	// ImageStreamTag default tag name for the ImageStreams
 	ImageStreamTag = "latest" // "latest-java11"
+	// BuilderImageTargetName target build image name
+	BuilderImageTargetName = "virtualdatabase-builder"
 )
 
 // RuntimeImageDefaults ...

@@ -20,13 +20,12 @@ package customclient
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 // GetClientFor returns a RESTClient for the given group and version
-func GetClientFor(c kubernetes.Interface, group string, version string) (*rest.RESTClient, error) {
+func GetClientFor(group string, version string) (*rest.RESTClient, error) {
 	inConfig, err := config.GetConfig()
 	if err != nil {
 		return nil, err

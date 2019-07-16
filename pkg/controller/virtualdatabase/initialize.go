@@ -21,6 +21,9 @@ import (
 	"context"
 
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // NewInitializeAction creates a new initialize action
@@ -39,21 +42,71 @@ func (action *initializeAction) Name() string {
 
 // CanHandle tells whether this action can handle the virtualdatabase
 func (action *initializeAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.PublishingPhaseInitial
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseInitial
 }
 
 // Handle handles the virtualdatabase
-func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase) error {
+func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+	if &vdb.Status.Phase == nil || vdb.Status.Phase == "" {
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
+	}
 
-	// better not changing the spec section of the target because it may be used for comparison by a
-	// higher level controller
+	if vdb.Spec.Runtime == "" || vdb.Spec.Runtime != v1alpha1.SpringbootRuntimeType {
+		vdb.Spec.Runtime = v1alpha1.SpringbootRuntimeType
+	}
+	if vdb.Spec.Build.Incremental == nil {
+		inc := true
+		vdb.Spec.Build.Incremental = &inc
+	}
 
-	target := vdb.DeepCopy()
+	replicas := int32(1)
+	if vdb.Spec.Replicas == nil {
+		vdb.Spec.Replicas = &replicas
+	}
 
-	target.Status.Phase = v1alpha1.PublishingPhaseCodeGeneration
-	target.Status.Image = ""
+	// environment variables
+	defaultEnv := []corev1.EnvVar{
+		{
+			Name:  "JAVA_APP_DIR",
+			Value: "/deployments",
+		},
+		{
+			Name:  "JAVA_OPTIONS",
+			Value: "-Djava.net.preferIPv4Stack=true -Duser.home=/tmp -Djava.net.preferIPv4Addresses=true",
+		},
+		{
+			Name:  "JAVA_DEBUG",
+			Value: "false",
+		},
+		{
+			Name: "NAMESPACE",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "metadata.namespace",
+				},
+			},
+		},
+	}
 
-	action.Log.Info("VDB state transition", "phase", target.Status.Phase)
+	// merge/update env with user defined
+	for _, v := range defaultEnv {
+		if envvar.Get(vdb.Spec.Env, v.Name) == nil {
+			envvar.SetVar(&vdb.Spec.Env, v)
+		}
+	}
 
-	return action.client.Status().Update(ctx, target)
+	// resources for the container
+	if &vdb.Spec.Resources == nil {
+		vdb.Spec.Resources = corev1.ResourceRequirements{
+			Limits: corev1.ResourceList{
+				"memory": resource.MustParse("512Mi"),
+				"cpu":    resource.MustParse("1.0"),
+			},
+			Requests: corev1.ResourceList{
+				"memory": resource.MustParse("256Mi"),
+				"cpu":    resource.MustParse("0.2"),
+			},
+		}
+	}
+	return nil
 }

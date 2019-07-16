@@ -12,23 +12,20 @@ import (
 // VirtualDatabaseSpec defines the desired state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseSpec struct {
-	Replicas  *int32                      `json:"replicas,omitempty"`
-	Env       []corev1.EnvVar             `json:"env,omitempty"`
-	Runtime   RuntimeType                 `json:"runtime,omitempty"`
-	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
-	Build     VirtualDatabaseBuildObject  `json:"build"` // S2I Build configuration
+	Replicas        *int32                      `json:"replicas,omitempty"`
+	ExposeVia3Scale bool                        `json:"exposeVia3scale,omitempty"`
+	Env             []corev1.EnvVar             `json:"env,omitempty"`
+	Runtime         RuntimeType                 `json:"runtime,omitempty"`
+	Resources       corev1.ResourceRequirements `json:"resources,omitempty"`
+	Build           VirtualDatabaseBuildObject  `json:"build"` // S2I Build configuration
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
-	Phase          PublishingPhase `json:"phase,omitempty"`
-	Failure        string          `json:"failure,omitempty"`
-	Image          string          `json:"image,omitempty"`
-	RuntimeVersion string          `json:"runtimeVersion,omitempty"`
-	Conditions     []Condition     `json:"conditions"`
-	Route          string          `json:"route,omitempty"`
-	Deployments    Deployments     `json:"deployments"`
+	Phase   ReconcilerPhase `json:"phase,omitempty"`
+	Failure string          `json:"failure,omitempty"`
+	Route   string          `json:"route,omitempty"`
 }
 
 // OpenShiftObject ...
@@ -107,52 +104,6 @@ type Image struct {
 	BuilderImage         bool   `json:"builderImage,omitempty"`
 }
 
-// ConditionType - type of condition
-type ConditionType string
-
-const (
-	// DeployedConditionType - the virtualdatabase is deployed
-	DeployedConditionType ConditionType = "Deployed"
-	// ProvisioningConditionType - the virtualdatabase is being provisioned
-	ProvisioningConditionType ConditionType = "Provisioning"
-	// FailedConditionType - the virtualdatabase is in a failed state
-	FailedConditionType ConditionType = "Failed"
-)
-
-// ReasonType - type of reason
-type ReasonType string
-
-// Condition - The condition for the teiid-operator
-// +k8s:openapi-gen=true
-type Condition struct {
-	Type               ConditionType          `json:"type"`
-	Status             corev1.ConditionStatus `json:"status"`
-	LastTransitionTime metav1.Time            `json:"lastTransitionTime,omitempty"`
-	Reason             ReasonType             `json:"reason,omitempty"`
-	Message            string                 `json:"message,omitempty"`
-}
-
-// Deployments ...
-// +k8s:openapi-gen=true
-type Deployments struct {
-	// Deployments are ready to serve requests
-	Ready []string `json:"ready,omitempty"`
-	// Deployments are starting, may or may not succeed
-	Starting []string `json:"starting,omitempty"`
-	// Deployments are not starting, unclear what next step will be
-	Stopped []string `json:"stopped,omitempty"`
-	// Deployments failed
-	Failed []string `json:"failed,omitempty"`
-}
-
-// ImageSpec ...
-// +k8s:openapi-gen=true
-type ImageSpec struct {
-	BaseImage  string `json:"baseImage,omitempty"`
-	DiskSize   string `json:"diskSize,omitempty"`
-	MemorySize string `json:"memorySize,omitempty"`
-}
-
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VirtualDatabase is the Schema for the virtualdatabases API
@@ -174,43 +125,53 @@ type VirtualDatabaseList struct {
 	Items           []VirtualDatabase `json:"items"`
 }
 
-// PublishingPhase --
-type PublishingPhase string
+// ReconcilerPhase --
+type ReconcilerPhase string
 
 const (
 	// VirtualDatabaseKind --
 	VirtualDatabaseKind string = "VirtualDatabase"
 
-	// PublishingPhaseInitial --
-	PublishingPhaseInitial PublishingPhase = ""
+	// ReconcilerPhaseInitial --
+	ReconcilerPhaseInitial ReconcilerPhase = ""
 
-	// PublishingPhaseCodeGeneration Code generation
-	PublishingPhaseCodeGeneration PublishingPhase = "Code Generation"
-	// PublishingPhaseCodeGenerationCompleted Code generation completed
-	PublishingPhaseCodeGenerationCompleted PublishingPhase = "Code Generation Completed"
-	// PublishingPhaseBuildImageSubmitted --
-	PublishingPhaseBuildImageSubmitted PublishingPhase = "Build Image Submitted"
-	// PublishingPhaseBuildImageRunning --
-	PublishingPhaseBuildImageRunning PublishingPhase = "Build Image Running"
-	// PublishingPhaseBuildImageComplete --
-	PublishingPhaseBuildImageComplete PublishingPhase = "Build Image Completed"
-	// PublishingPhaseDeploying --
-	PublishingPhaseDeploying PublishingPhase = "Deploying"
-	// PublishingPhaseRunning --
-	PublishingPhaseRunning PublishingPhase = "Running"
-	// PublishingPhaseError --
-	PublishingPhaseError PublishingPhase = "Error"
-	// PublishingPhaseBuildFailureRecovery --
-	PublishingPhaseBuildFailureRecovery PublishingPhase = "Building Failure Recovery"
-	// PublishingPhaseDeleting --
-	PublishingPhaseDeleting PublishingPhase = "Deleting"
+	// ReconcilerPhaseS2IReady --
+	ReconcilerPhaseS2IReady ReconcilerPhase = "Ready For S2I"
 
-	// DeploymentFailedReason - Unable to deploy the application
-	DeploymentFailedReason ReasonType = "DeploymentFailed"
-	// ConfigurationErrorReason - An invalid configuration caused an error
-	ConfigurationErrorReason ReasonType = "ConfigurationError"
-	// UnknownReason - Unable to determine the error
-	UnknownReason ReasonType = "Unknown"
+	// ReconcilerPhaseBuilderImage --
+	ReconcilerPhaseBuilderImage ReconcilerPhase = "Building Base Builder Image"
+	// ReconcilerPhaseBuilderImageFinished --
+	ReconcilerPhaseBuilderImageFinished ReconcilerPhase = "Builder Image Finished"
+	// ReconcilerPhaseBuilderImageFailed --
+	ReconcilerPhaseBuilderImageFailed ReconcilerPhase = "Builder Image Failed"
+
+	// ReconcilerPhaseServiceImage --
+	ReconcilerPhaseServiceImage ReconcilerPhase = "Building Service Image"
+	// ReconcilerPhaseServiceImageFinished --
+	ReconcilerPhaseServiceImageFinished ReconcilerPhase = "Service Image Finished"
+	// ReconcilerPhaseServiceImageFailed --
+	ReconcilerPhaseServiceImageFailed ReconcilerPhase = "Service Image Failed"
+
+	// ReconcilerPhaseCodeGeneration Code generation
+	ReconcilerPhaseCodeGeneration ReconcilerPhase = "Code Generation"
+	// ReconcilerPhaseCodeGenerationCompleted Code generation completed
+	ReconcilerPhaseCodeGenerationCompleted ReconcilerPhase = "Code Generation Completed"
+	// ReconcilerPhaseBuildImageSubmitted --
+	ReconcilerPhaseBuildImageSubmitted ReconcilerPhase = "Build Image Submitted"
+	// ReconcilerPhaseBuildImageRunning --
+	ReconcilerPhaseBuildImageRunning ReconcilerPhase = "Build Image Running"
+	// ReconcilerPhaseBuildImageComplete --
+	ReconcilerPhaseBuildImageComplete ReconcilerPhase = "Build Image Completed"
+	// ReconcilerPhaseDeploying --
+	ReconcilerPhaseDeploying ReconcilerPhase = "Deploying"
+	// ReconcilerPhaseRunning --
+	ReconcilerPhaseRunning ReconcilerPhase = "Running"
+	// ReconcilerPhaseError --
+	ReconcilerPhaseError ReconcilerPhase = "Error"
+	// ReconcilerPhaseBuildFailureRecovery --
+	ReconcilerPhaseBuildFailureRecovery ReconcilerPhase = "Building Failure Recovery"
+	// ReconcilerPhaseDeleting --
+	ReconcilerPhaseDeleting ReconcilerPhase = "Deleting"
 )
 
 func init() {
