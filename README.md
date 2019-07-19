@@ -52,7 +52,7 @@ Use the OLM console to subscribe to the `Teiid Operators` Operator Catalog Sourc
 $ oc tag --source=docker docker.io/fabric8/s2i-java:latest-java11 openshift/s2i-java:latest-java11 -n openshift
 $ oc new-app -e POSTGRESQL_USER=user -e POSTGRESQL_PASSWORD=mypassword -e POSTGRESQL_DATABASE=sampledb postgresql:9.5
 $ oc apply -f deploy/crs/vdb_v1alpha1_virtualdatabase_cr.yaml
-virtualdatabase.vdb.teiid.io/rdbms-springboot created
+virtualdatabase.core.teiid.io/rdbms-springboot created
 ```
 
 ### Clean up a VirtualDatabase deployment

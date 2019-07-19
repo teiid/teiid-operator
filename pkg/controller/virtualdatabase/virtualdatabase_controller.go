@@ -60,8 +60,7 @@ type ReconcileVirtualDatabase struct {
 func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	log.Debug("Reconciling VirtualDatabase")
 
-	buildStatus := &v1alpha1.BuildStatus{}
-	ctx := context.WithValue(context.TODO(), v1alpha1.BuildStatusKey, buildStatus)
+	ctx := context.TODO()
 
 	// Fetch the VirtualDatabase instance
 	instance := &v1alpha1.VirtualDatabase{}
@@ -76,7 +75,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 
 	buildSteps := []Action{
 		NewInitializeAction(),
-		NewBuilderImageAction(),
+		News2IBuilderImageAction(),
 		NewServiceImageAction(),
 		NewDeploymentAction(),
 	}

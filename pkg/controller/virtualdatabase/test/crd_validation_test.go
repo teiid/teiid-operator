@@ -51,7 +51,7 @@ func TestExampleCustomResources(t *testing.T) {
 
 func TestTrialEnvMinimum(t *testing.T) {
 	var inputYaml = `
-apiVersion: vdb.teiid.io/v1alpha1
+apiVersion: core.teiid.io/v1alpha1
 kind: VirtualDatabase
 metadata:
   name: trial

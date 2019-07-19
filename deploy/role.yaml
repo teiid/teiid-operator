@@ -5,7 +5,7 @@ metadata:
 rules:
 - apiGroups:
   - ""
-  - vdb.teiid.io
+  - core.teiid.io
   - apps.openshift.io
   - image.openshift.io
   - build.openshift.io

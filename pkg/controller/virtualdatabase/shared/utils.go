@@ -69,7 +69,7 @@ func Tar(files map[string]string) (io.Reader, error) {
 	for name, body := range files {
 		hdr := &tar.Header{
 			Name: name,
-			Mode: 0600,
+			Mode: 0644,
 			Size: int64(len(body)),
 		}
 		if err := tw.WriteHeader(hdr); err != nil {

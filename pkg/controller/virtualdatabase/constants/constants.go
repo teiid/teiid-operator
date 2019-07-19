@@ -3,6 +3,22 @@ package constants
 import "github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 
 const (
+	// Version --
+	Version = "0.0.1-SNAPSHOT"
+
+	// TeiidSpringBootVersion --
+	TeiidSpringBootVersion = "1.2.0-SNAPSHOT"
+
+	// SpringBootVersion --
+	SpringBootVersion = "2.1.3.RELEASE"
+
+	// PostgreSQLVersion --
+	PostgreSQLVersion = "42.1.4"
+	// MySQLVersion --
+	MySQLVersion = "5.1.40"
+	// MongoDBVersion --
+	MongoDBVersion = "3.6.3"
+
 	// ImageStreamNamespace default namespace for the ImageStreams
 	ImageStreamNamespace = "openshift"
 	// ImageRegistry ...

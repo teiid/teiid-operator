@@ -27,12 +27,12 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/logs"
 	"github.com/teiid/teiid-operator/pkg/util"
-	"github.com/teiid/teiid-operator/pkg/util/log"
 )
 
 // Log --
-var Log = log.WithName("maven")
+var Log = logs.GetLogger("maven")
 
 // GeneratePomContent generate a pom.xml file from the given project definition
 func GeneratePomContent(project Project) (string, error) {

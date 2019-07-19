@@ -37,19 +37,11 @@ type OpenShiftObject interface {
 // VirtualDatabaseBuildObject Data to define how to build an application from source
 // +k8s:openapi-gen=true
 type VirtualDatabaseBuildObject struct {
-	Incremental       *bool               `json:"incremental,omitempty"`
-	Env               []corev1.EnvVar     `json:"env,omitempty"`
-	GitSource         GitSource           `json:"gitSource,omitempty"`
-	DDLSource         DDLSource           `json:"ddlSource,omitempty"`
-	Webhooks          []WebhookSecret     `json:"webhooks,omitempty"`
-	SourceFileChanges []SourceFileChanges `json:"sourceFileChanges,omitempty"`
-}
-
-// SourceFileChanges ...
-// +k8s:openapi-gen=true
-type SourceFileChanges struct {
-	RelativePath string `json:"relativePath,omitempty"`
-	Contents     string `json:"contents,omitempty"`
+	Incremental *bool           `json:"incremental,omitempty"`
+	Env         []corev1.EnvVar `json:"env,omitempty"`
+	GitSource   GitSource       `json:"gitSource,omitempty"`
+	DDLSource   DDLSource       `json:"ddlSource,omitempty"`
+	Webhooks    []WebhookSecret `json:"webhooks,omitempty"`
 }
 
 // GitSource Git coordinates to locate the source code to build
@@ -63,7 +55,6 @@ type GitSource struct {
 // DDLSource Git coordinates to locate the source code to build
 // +k8s:openapi-gen=true
 type DDLSource struct {
-	URI          string   `json:"uri,omitempty"`
 	Contents     string   `json:"contents,omitempty"`
 	Dependencies []string `json:"dependencies,omitempty"`
 }
