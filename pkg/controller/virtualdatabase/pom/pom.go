@@ -27,7 +27,7 @@ import (
 )
 
 // GeneratePom -- Generate the POM file based on the VDb provided
-func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
+func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool) (string, error) {
 	// do code generation.
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
@@ -45,7 +45,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 
 	// be smarter and look for implicit dependencies?
 	lowerDDL := strings.ToLower(ddl)
-	if strings.Contains(lowerDDL, "postgresql") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "postgresql") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.postgresql",
 			ArtifactID: "postgresql",
@@ -53,7 +53,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if strings.Contains(lowerDDL, "mysql") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "mysql") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "mysql",
 			ArtifactID: "mysql-connector-java",
@@ -61,11 +61,11 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if strings.Contains(lowerDDL, "mongodb") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "mongodb") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.mongodb",
 			ArtifactID: "mongo-java-driver",
-			Version:    constants.MySQLVersion,
+			Version:    constants.MongoDBVersion,
 		})
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
@@ -74,7 +74,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if strings.Contains(lowerDDL, "google") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "google") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-google",
@@ -82,7 +82,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if strings.Contains(lowerDDL, "salesforce") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "salesforce") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-salesforce",
@@ -90,7 +90,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if strings.Contains(lowerDDL, "excel") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "excel") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-excel",
@@ -98,7 +98,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if strings.Contains(lowerDDL, "rest") || strings.Contains(lowerDDL, "ws") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "rest") || strings.Contains(lowerDDL, "ws") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-rest",
@@ -106,7 +106,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		})
 	}
 
-	if vdb.Spec.ExposeVia3Scale {
+	if includeAllDependencies || vdb.Spec.ExposeVia3Scale {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-keycloak",
@@ -127,6 +127,7 @@ func createMavenProject(name string) maven.Project {
 		GroupID:           "io.integration",
 		ArtifactID:        name,
 		Version:           "1.0.0",
+		Packaging:         "jar",
 
 		Dependencies: []maven.Dependency{
 			{
@@ -148,6 +149,11 @@ func createMavenProject(name string) maven.Project {
 				GroupID:    "io.opentracing.contrib",
 				ArtifactID: "opentracing-spring-jaeger-web-starter",
 				Version:    "1.0.1",
+			},
+			{
+				GroupID:    "com.h2database",
+				ArtifactID: "h2",
+				Version:    "1.4.199",
 			},
 		},
 		Repositories: []maven.Repository{

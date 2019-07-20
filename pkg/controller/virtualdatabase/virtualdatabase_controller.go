@@ -130,19 +130,6 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	}, nil
 }
 
-// UpdateObj reconciles the given object
-// func (r *ReconcileVirtualDatabase) UpdateObj(obj v1alpha1.OpenShiftObject) (reconcile.Result, error) {
-// 	log := log.With("kind", obj.GetObjectKind().GroupVersionKind().Kind, "name", obj.GetName(), "namespace", obj.GetNamespace())
-// 	log.Info("Updating")
-// 	err := r.client.Update(context.TODO(), obj)
-// 	if err != nil {
-// 		log.Warn("Failed to update object. ", err)
-// 		return reconcile.Result{}, err
-// 	}
-// 	// Object updated - return and requeue
-// 	return reconcile.Result{Requeue: true}, nil
-// }
-
 func (r *ReconcileVirtualDatabase) hasChanges(instance, cached *v1alpha1.VirtualDatabase) bool {
 	if !reflect.DeepEqual(instance.Spec, cached.Spec) {
 		return true

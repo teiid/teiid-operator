@@ -68,11 +68,6 @@ func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.Virt
 
 		// Define new BuildConfig objects
 		buildConfig := action.serviceBC(vdb)
-		// set ownerreference for service BC only
-		err := controllerutil.SetControllerReference(vdb, &buildConfig, r.scheme)
-		if err != nil {
-			log.Error(err)
-		}
 		if _, err := r.ensureImageStream(buildConfig.Name, vdb, true); err != nil {
 			return err
 		}
@@ -81,6 +76,11 @@ func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.Virt
 		bc, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Get(buildConfig.Name, metav1.GetOptions{})
 		if err != nil && apierr.IsNotFound(err) {
 			log.Info("Creating a new BuildConfig ", buildConfig.Name, " in namespace ", buildConfig.Namespace)
+			// set ownerreference for service BC only
+			err := controllerutil.SetControllerReference(vdb, &buildConfig, r.scheme)
+			if err != nil {
+				log.Error(err)
+			}
 			bc, err = r.buildClient.BuildConfigs(buildConfig.Namespace).Create(&buildConfig)
 			if err != nil {
 				return err
@@ -187,11 +187,11 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 		files := map[string]string{}
 
 		//Binary build, generate the pom file
-		ddl, err := pom.GeneratePom(vdb)
+		pom, err := pom.GeneratePom(vdb, false)
 		if err != nil {
 			return nil
 		}
-		files["/pom.xml"] = ddl
+		files["/pom.xml"] = pom
 		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.DDLSource.Contents
 
 		tarReader, err := shared.Tar(files)
