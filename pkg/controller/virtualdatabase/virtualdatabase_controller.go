@@ -20,22 +20,17 @@ package virtualdatabase
 import (
 	"context"
 	"reflect"
-	"strings"
 	"time"
 
-	oimagev1 "github.com/openshift/api/image/v1"
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/logs"
+	"github.com/teiid/teiid-operator/pkg/util/logs"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	cachev1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -139,65 +134,4 @@ func (r *ReconcileVirtualDatabase) hasChanges(instance, cached *v1alpha1.Virtual
 		return true
 	}
 	return false
-}
-
-// checkImageStream checks for ImageStream
-func (r *ReconcileVirtualDatabase) checkImageStream(name, namespace string) bool {
-	log := log.With("kind", "ImageStream", "name", name, "namespace", namespace)
-	result := strings.Split(name, ":")
-	_, err := r.imageClient.ImageStreams(namespace).Get(result[0], metav1.GetOptions{})
-	if err != nil {
-		log.Debug("Object does not exist")
-		return false
-	}
-	return true
-}
-
-// ensureImageStream ...
-func (r *ReconcileVirtualDatabase) ensureImageStream(name string, namespace string, setOwner bool, owner v1.Object) (string, error) {
-	if r.checkImageStream(name, namespace) {
-		return namespace, nil
-	}
-	err := r.createLocalImageStream(name, namespace, setOwner, owner)
-	if err != nil {
-		return namespace, err
-	}
-	return namespace, nil
-}
-
-// createLocalImageStream creates local ImageStream
-func (r *ReconcileVirtualDatabase) createLocalImageStream(tagRefName string, namespace string, setOwner bool, owner v1.Object) error {
-	result := strings.Split(tagRefName, ":")
-	if len(result) == 1 {
-		result = append(result, "latest")
-	}
-
-	isnew := &oimagev1.ImageStream{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      result[0],
-			Namespace: namespace,
-		},
-		Spec: oimagev1.ImageStreamSpec{
-			LookupPolicy: oimagev1.ImageLookupPolicy{
-				Local: true,
-			},
-		},
-	}
-	isnew.SetGroupVersionKind(oimagev1.SchemeGroupVersion.WithKind("ImageStream"))
-	if setOwner {
-		err := controllerutil.SetControllerReference(owner, isnew, r.scheme)
-		if err != nil {
-			log.Error("Error setting controller reference for ImageStream. ", err)
-			return err
-		}
-	}
-
-	log := log.With("kind", isnew.GetObjectKind().GroupVersionKind().Kind, "name", isnew.Name, "namespace", isnew.Namespace)
-	log.Info("Creating")
-
-	_, err := r.imageClient.ImageStreams(isnew.Namespace).Create(isnew)
-	if err != nil && !errors.IsAlreadyExists(err) {
-		log.Info("Already exists.")
-	}
-	return nil
 }

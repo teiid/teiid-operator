@@ -30,6 +30,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/pom"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/shared"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/image"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,7 +73,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		// Define new BuildConfig objects
 		buildConfig := action.buildBC(vdb)
 		// set ownerreference for service BC only
-		if _, err := r.ensureImageStream(buildConfig.Name, vdb.Namespace, true, opDeployment); err != nil {
+		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.Namespace, true, opDeployment, r.imageClient, r.scheme); err != nil {
 			return err
 		}
 

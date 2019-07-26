@@ -12,11 +12,13 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
+// Logger --
 type Logger struct {
 	Logger        logr.Logger
 	SugaredLogger *zap.SugaredLogger
 }
 
+// GetLogger --
 func GetLogger(name string) *zap.SugaredLogger {
 	// Set log level... override default w/ command-line variable if set.
 	debugBool := GetBoolEnv("DEBUG") // info, debug

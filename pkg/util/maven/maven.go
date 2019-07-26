@@ -27,8 +27,8 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/logs"
 	"github.com/teiid/teiid-operator/pkg/util"
+	"github.com/teiid/teiid-operator/pkg/util/logs"
 )
 
 // Log --
