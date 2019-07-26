@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	cachev1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -153,19 +154,19 @@ func (r *ReconcileVirtualDatabase) checkImageStream(name, namespace string) bool
 }
 
 // ensureImageStream ...
-func (r *ReconcileVirtualDatabase) ensureImageStream(name string, cr *v1alpha1.VirtualDatabase, setOwner bool) (string, error) {
-	if r.checkImageStream(name, cr.Namespace) {
-		return cr.Namespace, nil
+func (r *ReconcileVirtualDatabase) ensureImageStream(name string, namespace string, setOwner bool, owner v1.Object) (string, error) {
+	if r.checkImageStream(name, namespace) {
+		return namespace, nil
 	}
-	err := r.createLocalImageStream(name, cr, setOwner)
+	err := r.createLocalImageStream(name, namespace, setOwner, owner)
 	if err != nil {
-		return cr.Namespace, err
+		return namespace, err
 	}
-	return cr.Namespace, nil
+	return namespace, nil
 }
 
 // createLocalImageStream creates local ImageStream
-func (r *ReconcileVirtualDatabase) createLocalImageStream(tagRefName string, cr *v1alpha1.VirtualDatabase, setOwner bool) error {
+func (r *ReconcileVirtualDatabase) createLocalImageStream(tagRefName string, namespace string, setOwner bool, owner v1.Object) error {
 	result := strings.Split(tagRefName, ":")
 	if len(result) == 1 {
 		result = append(result, "latest")
@@ -174,7 +175,7 @@ func (r *ReconcileVirtualDatabase) createLocalImageStream(tagRefName string, cr 
 	isnew := &oimagev1.ImageStream{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      result[0],
-			Namespace: cr.Namespace,
+			Namespace: namespace,
 		},
 		Spec: oimagev1.ImageStreamSpec{
 			LookupPolicy: oimagev1.ImageLookupPolicy{
@@ -184,7 +185,7 @@ func (r *ReconcileVirtualDatabase) createLocalImageStream(tagRefName string, cr 
 	}
 	isnew.SetGroupVersionKind(oimagev1.SchemeGroupVersion.WithKind("ImageStream"))
 	if setOwner {
-		err := controllerutil.SetControllerReference(cr, isnew, r.scheme)
+		err := controllerutil.SetControllerReference(owner, isnew, r.scheme)
 		if err != nil {
 			log.Error("Error setting controller reference for ImageStream. ", err)
 			return err

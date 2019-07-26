@@ -20,6 +20,7 @@ package virtualdatabase
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	obuildv1 "github.com/openshift/api/build/v1"
@@ -29,9 +30,12 @@ import (
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/pom"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/shared"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // News2IBuilderImageAction creates a new initialize action
@@ -59,11 +63,16 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseS2IReady {
 		vdb.Status.Phase = v1alpha1.ReconcilerPhaseBuilderImage
 
-		log.Info("Building Base builder Image")
+		opDeployment := &appsv1.Deployment{}
+		opDeploymentNS := os.Getenv("WATCH_NAMESPACE")
+		opDeploymentName := os.Getenv("OPERATOR_NAME")
+		r.client.Get(ctx, types.NamespacedName{Namespace: opDeploymentNS, Name: opDeploymentName}, opDeployment)
+
+		log.Info("Building Base builder Image", opDeployment)
 		// Define new BuildConfig objects
 		buildConfig := action.buildBC(vdb)
 		// set ownerreference for service BC only
-		if _, err := r.ensureImageStream(buildConfig.Name, vdb, false); err != nil {
+		if _, err := r.ensureImageStream(buildConfig.Name, vdb.Namespace, true, opDeployment); err != nil {
 			return err
 		}
 
@@ -82,6 +91,13 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		bc, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Get(buildConfig.Name, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
 			log.Info("Creating a new BuildConfig ", buildConfig.Name, " in namespace ", buildConfig.Namespace)
+
+			// make the Operator as the owner
+			err := controllerutil.SetControllerReference(opDeployment, &buildConfig, r.scheme)
+			if err != nil {
+				log.Error(err)
+			}
+
 			bc, err = r.buildClient.BuildConfigs(buildConfig.Namespace).Create(&buildConfig)
 			if err != nil {
 				return err
@@ -179,7 +195,7 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *
 
 	files["/pom.xml"] = pom
 	files["/src/main/resources/teiid.ddl"] = action.ddlFile()
-	log.Info(pom)
+	log.Debug(pom)
 
 	tarReader, err := shared.Tar(files)
 	if err != nil {

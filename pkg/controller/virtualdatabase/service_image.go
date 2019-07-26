@@ -68,7 +68,7 @@ func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.Virt
 
 		// Define new BuildConfig objects
 		buildConfig := action.serviceBC(vdb)
-		if _, err := r.ensureImageStream(buildConfig.Name, vdb, true); err != nil {
+		if _, err := r.ensureImageStream(buildConfig.Name, vdb.Namespace, true, vdb); err != nil {
 			return err
 		}
 
