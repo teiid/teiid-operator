@@ -14,8 +14,8 @@ spec:
   - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
     value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
   build:
-    ddlSource:
-      contents: |
+    source:
+      ddl: |
         CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
         USE DATABASE customer;
 

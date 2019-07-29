@@ -63,7 +63,7 @@ func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.Virt
 		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
 
 		// check for the VDB source type
-		if vdb.Spec.Build.GitSource.URI == "" && vdb.Spec.Build.DDLSource.Contents == "" {
+		if vdb.Spec.Build.Git.URI == "" && vdb.Spec.Build.Source.DDL == "" {
 			return errors.New("Only Git or Content based VDBs are allowed, neither are defined")
 		}
 
@@ -147,14 +147,14 @@ func (action *serviceImageAction) serviceBC(vdb *v1alpha1.VirtualDatabase) obuil
 	bc.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{vdb.ObjectMeta.Name, "latest"}, ":"), Kind: "ImageStreamTag"}
 
 	// for some reason "vdb.Spec.Build.GitSource" comes in as empty object rather than nil
-	if vdb.Spec.Build.GitSource.URI != "" {
+	if vdb.Spec.Build.Git.URI != "" {
 		log.Info("Git based build is chosen..")
 		bc.Spec.Source.Git = &obuildv1.GitBuildSource{
-			URI: vdb.Spec.Build.GitSource.URI,
-			Ref: vdb.Spec.Build.GitSource.Reference,
+			URI: vdb.Spec.Build.Git.URI,
+			Ref: vdb.Spec.Build.Git.Reference,
 		}
-		bc.Spec.Source.ContextDir = vdb.Spec.Build.GitSource.ContextDir
-	} else if vdb.Spec.Build.DDLSource.Contents != "" {
+		bc.Spec.Source.ContextDir = vdb.Spec.Build.Git.ContextDir
+	} else if vdb.Spec.Build.Source.DDL != "" {
 		log.Info("DDL based build is chosen..")
 		bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
 	}
@@ -193,7 +193,7 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 			return nil
 		}
 		files["/pom.xml"] = pom
-		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.DDLSource.Contents
+		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
 
 		tarReader, err := shared.Tar(files)
 		if err != nil {

@@ -13,7 +13,7 @@ spec:
   - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
     value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
   build:
-    gitSource:
+    git:
       uri: https://github.com/teiid/teiid-openshift-examples
       reference: master
     env:

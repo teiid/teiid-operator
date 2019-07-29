@@ -57,7 +57,7 @@ metadata:
   name: trial
 spec:
   build:
-    gitSource:
+    git:
       uri: https://github.com/teiid/teiid-openshift-examples
 `
 	var input map[string]interface{}

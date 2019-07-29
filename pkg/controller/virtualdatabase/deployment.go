@@ -20,6 +20,7 @@ package virtualdatabase
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	oappsv1 "github.com/openshift/api/apps/v1"
@@ -52,7 +53,8 @@ func (action *deploymentAction) Name() string {
 
 // CanHandle tells whether this action can handle the virtualdatabase
 func (action *deploymentAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImageFinished || vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImageFinished || vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying ||
+		vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning
 }
 
 // Handle handles the virtualdatabase
@@ -109,6 +111,19 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 		} else if item != nil && !action.isDeploymentProgressing(*item) {
 			log.Info("Deployment Failed:" + vdb.ObjectMeta.Name)
 			vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
+		}
+	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning {
+		item, _ := action.findDC(vdb, r)
+		if item != nil && action.isDeploymentInReadyState(*item) {
+			if *vdb.Spec.Replicas != item.Spec.Replicas {
+				item.Spec.Replicas = *vdb.Spec.Replicas
+			}
+			if !reflect.DeepEqual(vdb.Spec.Env, item.Spec.Template.Spec.Containers[0].Env) {
+				item.Spec.Template.Spec.Containers[0].Env = vdb.Spec.Env
+			}
+			if err := r.client.Update(ctx, item); err != nil {
+				return err
+			}
 		}
 	}
 	return nil

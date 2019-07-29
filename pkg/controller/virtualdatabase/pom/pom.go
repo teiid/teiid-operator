@@ -32,10 +32,10 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool) (st
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
 
-	ddl := vdb.Spec.Build.DDLSource.Contents
+	ddl := vdb.Spec.Build.Source.DDL
 
 	// looking that the CRD we need to fill in the dependencies
-	for _, str := range vdb.Spec.Build.DDLSource.Dependencies {
+	for _, str := range vdb.Spec.Build.Source.Dependencies {
 		d, err := maven.ParseGAV(str)
 		if err != nil {
 			return "", err

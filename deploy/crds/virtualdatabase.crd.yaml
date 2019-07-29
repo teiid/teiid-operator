@@ -57,7 +57,7 @@ spec:
               properties:
                 incremental:
                   type: boolean
-                gitSource:
+                git:
                   type: object
                   properties:
                     uri:
@@ -69,10 +69,10 @@ spec:
                     contextDir:
                       type: string
                       description: Context/subdirectory where the code is located, relatively to repo root
-                ddlSource:
+                source:
                   type: object
                   properties:
-                    contents:
+                    ddl:
                       type: string
                       description: Virtual database in DDL as string
                     dependencies:

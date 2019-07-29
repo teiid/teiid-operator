@@ -39,23 +39,23 @@ type OpenShiftObject interface {
 type VirtualDatabaseBuildObject struct {
 	Incremental *bool           `json:"incremental,omitempty"`
 	Env         []corev1.EnvVar `json:"env,omitempty"`
-	GitSource   GitSource       `json:"gitSource,omitempty"`
-	DDLSource   DDLSource       `json:"ddlSource,omitempty"`
+	Git         Git             `json:"git,omitempty"`
+	Source      Source          `json:"source,omitempty"`
 	Webhooks    []WebhookSecret `json:"webhooks,omitempty"`
 }
 
-// GitSource Git coordinates to locate the source code to build
+// Git coordinates to locate the source code to build
 // +k8s:openapi-gen=true
-type GitSource struct {
+type Git struct {
 	URI        string `json:"uri,omitempty"`
 	Reference  string `json:"reference,omitempty"`
 	ContextDir string `json:"contextDir,omitempty"`
 }
 
-// DDLSource Git coordinates to locate the source code to build
+// Source Git coordinates to locate the source code to build
 // +k8s:openapi-gen=true
-type DDLSource struct {
-	Contents     string   `json:"contents,omitempty"`
+type Source struct {
+	DDL          string   `json:"ddl,omitempty"`
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 
