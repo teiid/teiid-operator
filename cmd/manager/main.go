@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/teiid/teiid-operator/pkg/apis"
 	"github.com/teiid/teiid-operator/pkg/controller"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/logs"
+	"github.com/teiid/teiid-operator/pkg/util/logs"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/runtime/signals"

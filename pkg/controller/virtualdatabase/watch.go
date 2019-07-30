@@ -25,6 +25,7 @@ import (
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -78,11 +79,11 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 
 	// Watch for changes to primary resource VirtualDatabase
 	watchObjects := []runtime.Object{
-		// Watch for changes to primary resource KieApp
 		&v1alpha1.VirtualDatabase{},
 		&obuildv1.BuildConfig{},
 		&obuildv1.Build{},
 		&oimagev1.ImageStream{},
+		&appsv1.Deployment{},
 	}
 	objectHandler := &handler.EnqueueRequestForObject{}
 	for _, watchObject := range watchObjects {

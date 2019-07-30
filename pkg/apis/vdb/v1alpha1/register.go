@@ -2,7 +2,7 @@
 
 // Package v1alpha1 contains API Schema definitions for the vdb v1alpha1 API group
 // +k8s:deepcopy-gen=package,register
-// +groupName=vdb.teiid.io
+// +groupName=core.teiid.io
 package v1alpha1
 
 import (
@@ -12,7 +12,7 @@ import (
 
 var (
 	// SchemeGroupVersion is group version used to register these objects
-	SchemeGroupVersion = schema.GroupVersion{Group: "vdb.teiid.io", Version: "v1alpha1"}
+	SchemeGroupVersion = schema.GroupVersion{Group: "core.teiid.io", Version: "v1alpha1"}
 
 	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}

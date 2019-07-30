@@ -1,0 +1,25 @@
+apiVersion: core.teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: rdbms-springboot
+spec:
+  env:
+  - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
+    value: user
+  - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
+    value: mypassword
+  - name: SPRING_DATASOURCE_SAMPLEDB_DATABASENAME
+    value: sampledb
+  - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
+    value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
+  build:
+    git:
+      uri: https://github.com/teiid/teiid-openshift-examples
+      reference: master
+    env:
+    - name: MAVEN_PROJECT
+      value: rdbms-example/
+    - name: MAVEN_ARGS_APPEND
+      value: -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -Popenshift -am -pl $(MAVEN_PROJECT)
+    - name: ARTIFACT_DIR
+      value: $(MAVEN_PROJECT)target/

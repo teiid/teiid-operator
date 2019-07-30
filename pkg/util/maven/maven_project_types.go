@@ -31,6 +31,7 @@ type Project struct {
 	GroupID              string               `xml:"groupId"`
 	ArtifactID           string               `xml:"artifactId"`
 	Version              string               `xml:"version"`
+	Packaging            string               `xml:"packaging"`
 	Properties           Properties           `xml:"properties,omitempty"`
 	DependencyManagement DependencyManagement `xml:"dependencyManagement"`
 	Dependencies         []Dependency         `xml:"dependencies>dependency,omitempty"`

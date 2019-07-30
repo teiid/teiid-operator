@@ -136,14 +136,6 @@
   version = "v2.9.6"
 
 [[projects]]
-  digest = "1:448bf60e9dce6d5fd9dfa8fd9eb9a23163424ff4e4f142456405781e942e3998"
-  name = "github.com/evanphx/json-patch"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "026c730a0dcc5d11f93f1cf1cc65b01247ea7b6f"
-  version = "v4.5.0"
-
-[[projects]]
   digest = "1:81466b4218bf6adddac2572a30ac733a9255919bc2f470b4827a317bd4ee1756"
   name = "github.com/ghodss/yaml"
   packages = ["."]
@@ -326,27 +318,6 @@
   version = "v1.0.0"
 
 [[projects]]
-  digest = "1:4d7cb4a80c941824472da4b52de752882d0403a461c7a2cf1b965156edce126d"
-  name = "github.com/google/go-cmp"
-  packages = [
-    "cmp",
-    "cmp/cmpopts",
-    "cmp/internal/diff",
-    "cmp/internal/flags",
-    "cmp/internal/function",
-    "cmp/internal/value",
-  ]
-  pruneopts = "NT"
-  revision = "6f77996f0c42f7b84e5a2b252227263f93432e9b"
-
-[[projects]]
-  digest = "1:27b01c6accfd4d577b3bc9c0cae2be1d267220182471ac3a5df9661877c0bdfc"
-  name = "github.com/google/go-containerregistry"
-  packages = ["pkg/name"]
-  pruneopts = "NT"
-  revision = "dbc4da98389f9d0c42eb314c2b346bf1d2a27310"
-
-[[projects]]
   digest = "1:52c5834e2bebac9030c97cc0798ac11c3aa8a39f098aeb419f142533da6cd3cc"
   name = "github.com/google/gofuzz"
   packages = ["."]
@@ -449,64 +420,6 @@
   version = "v1.1.6"
 
 [[projects]]
-  digest = "1:65c19a88a1c78202759c0b25912c68f06f67ce90332d75b9cb494a9fea94393e"
-  name = "github.com/knative/build"
-  packages = [
-    "pkg/apis/build",
-    "pkg/apis/build/v1alpha1",
-  ]
-  pruneopts = "NT"
-  revision = "002a41a30693d0a720ba34476336fc81ba299564"
-  version = "v0.6.0"
-
-[[projects]]
-  digest = "1:78ac80be64d9aa1ab69f008d2384459f83e9eb0d9f231e09e4863a3128c878ec"
-  name = "github.com/knative/eventing"
-  packages = [
-    "pkg/apis/duck/v1alpha1",
-    "pkg/apis/eventing",
-    "pkg/apis/eventing/v1alpha1",
-  ]
-  pruneopts = "NT"
-  revision = "d123d12f7c6b9c51298719c67cd9745571abade2"
-  version = "v0.6.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:dce16dda95a9501f6a4b2c30b2ed0093ae3af261930792670a9457b75ff943d5"
-  name = "github.com/knative/pkg"
-  packages = [
-    "apis",
-    "apis/duck",
-    "apis/duck/v1alpha1",
-    "apis/duck/v1beta1",
-    "changeset",
-    "configmap",
-    "kmeta",
-    "kmp",
-    "logging",
-    "logging/logkey",
-    "webhook",
-  ]
-  pruneopts = "NT"
-  revision = "d90a9bc97dde7b1acc9f0b5b38916cb0914b1538"
-
-[[projects]]
-  digest = "1:130672f5ad06a61c2af09576b04a2c972c97a07e86ea612e20130bca86f6c091"
-  name = "github.com/knative/serving"
-  packages = [
-    "pkg/apis/autoscaling",
-    "pkg/apis/config",
-    "pkg/apis/networking",
-    "pkg/apis/networking/v1alpha1",
-    "pkg/apis/serving",
-    "pkg/apis/serving/v1alpha1",
-  ]
-  pruneopts = "NT"
-  revision = "98e0f5a999ba0f69c1909a676078a22e9b8b13b9"
-  version = "v0.5.2"
-
-[[projects]]
   digest = "1:fecb18d8d2d2b9964ea3ac289f05e86615e2f90842063d4871e9d87049b61ffa"
   name = "github.com/magiconair/properties"
   packages = ["."]
@@ -533,14 +446,6 @@
   pruneopts = "NT"
   revision = "24b83195037b3bc61fcda2d28b7b0518bce293b6"
   version = "v1.0.4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:0e9bfc47ab9941ecc3344e580baca5deb4091177e84dd9773b48b38ec26b93d5"
-  name = "github.com/mattbaird/jsonpatch"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "81af80346b1a01caae0cbc27fd3c1ba5b11e189f"
 
 [[projects]]
   digest = "1:ea1db000388d88b31db7531c83016bef0d6db0d908a07794bfc36aca16fbf935"
@@ -737,14 +642,6 @@
   pruneopts = "NT"
   revision = "298182f68c66c05229eb03ac171abe6e309ee79a"
   version = "v1.0.3"
-
-[[projects]]
-  digest = "1:232ab5b495f4faf58aea3d1c25042d6a557f4267d340b880d196864181a1d339"
-  name = "github.com/stoewer/go-strcase"
-  packages = ["."]
-  pruneopts = "NT"
-  revision = "9f4628dc69009a239427f342caccb0047c7aea01"
-  version = "v1.0.2"
 
 [[projects]]
   digest = "1:8e8fc2cb42cfa0a18fda0c9c4034092faa7aac773da5efdde8828eb4b96c001d"
@@ -1076,15 +973,12 @@
   digest = "1:15b5c41ff6faa4d0400557d4112d6337e1abc961c65513d44fce7922e32c9ca7"
   name = "k8s.io/apimachinery"
   packages = [
-    "pkg/api/equality",
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
-    "pkg/api/validation",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
-    "pkg/apis/meta/v1/validation",
     "pkg/apis/meta/v1beta1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
@@ -1132,52 +1026,6 @@
   packages = [
     "discovery",
     "dynamic",
-    "informers",
-    "informers/admissionregistration",
-    "informers/admissionregistration/v1alpha1",
-    "informers/admissionregistration/v1beta1",
-    "informers/apps",
-    "informers/apps/v1",
-    "informers/apps/v1beta1",
-    "informers/apps/v1beta2",
-    "informers/auditregistration",
-    "informers/auditregistration/v1alpha1",
-    "informers/autoscaling",
-    "informers/autoscaling/v1",
-    "informers/autoscaling/v2beta1",
-    "informers/autoscaling/v2beta2",
-    "informers/batch",
-    "informers/batch/v1",
-    "informers/batch/v1beta1",
-    "informers/batch/v2alpha1",
-    "informers/certificates",
-    "informers/certificates/v1beta1",
-    "informers/coordination",
-    "informers/coordination/v1beta1",
-    "informers/core",
-    "informers/core/v1",
-    "informers/events",
-    "informers/events/v1beta1",
-    "informers/extensions",
-    "informers/extensions/v1beta1",
-    "informers/internalinterfaces",
-    "informers/networking",
-    "informers/networking/v1",
-    "informers/policy",
-    "informers/policy/v1beta1",
-    "informers/rbac",
-    "informers/rbac/v1",
-    "informers/rbac/v1alpha1",
-    "informers/rbac/v1beta1",
-    "informers/scheduling",
-    "informers/scheduling/v1alpha1",
-    "informers/scheduling/v1beta1",
-    "informers/settings",
-    "informers/settings/v1alpha1",
-    "informers/storage",
-    "informers/storage/v1",
-    "informers/storage/v1alpha1",
-    "informers/storage/v1beta1",
     "kubernetes",
     "kubernetes/scheme",
     "kubernetes/typed/admissionregistration/v1alpha1",
@@ -1212,34 +1060,6 @@
     "kubernetes/typed/storage/v1",
     "kubernetes/typed/storage/v1alpha1",
     "kubernetes/typed/storage/v1beta1",
-    "listers/admissionregistration/v1alpha1",
-    "listers/admissionregistration/v1beta1",
-    "listers/apps/v1",
-    "listers/apps/v1beta1",
-    "listers/apps/v1beta2",
-    "listers/auditregistration/v1alpha1",
-    "listers/autoscaling/v1",
-    "listers/autoscaling/v2beta1",
-    "listers/autoscaling/v2beta2",
-    "listers/batch/v1",
-    "listers/batch/v1beta1",
-    "listers/batch/v2alpha1",
-    "listers/certificates/v1beta1",
-    "listers/coordination/v1beta1",
-    "listers/core/v1",
-    "listers/events/v1beta1",
-    "listers/extensions/v1beta1",
-    "listers/networking/v1",
-    "listers/policy/v1beta1",
-    "listers/rbac/v1",
-    "listers/rbac/v1alpha1",
-    "listers/rbac/v1beta1",
-    "listers/scheduling/v1alpha1",
-    "listers/scheduling/v1beta1",
-    "listers/settings/v1alpha1",
-    "listers/storage/v1",
-    "listers/storage/v1alpha1",
-    "listers/storage/v1beta1",
     "pkg/apis/clientauthentication",
     "pkg/apis/clientauthentication/v1alpha1",
     "pkg/apis/clientauthentication/v1beta1",
@@ -1419,8 +1239,6 @@
     "github.com/ghodss/yaml",
     "github.com/go-logr/logr",
     "github.com/go-openapi/spec",
-    "github.com/knative/eventing/pkg/apis/eventing/v1alpha1",
-    "github.com/knative/serving/pkg/apis/serving/v1alpha1",
     "github.com/magiconair/properties",
     "github.com/openshift/api/apps/v1",
     "github.com/openshift/api/build/v1",
@@ -1437,33 +1255,21 @@
     "github.com/pkg/errors",
     "github.com/scylladb/go-set/strset",
     "github.com/spf13/pflag",
-    "github.com/stoewer/go-strcase",
     "github.com/stretchr/testify/assert",
     "go.uber.org/zap",
     "go.uber.org/zap/zapcore",
-    "gopkg.in/yaml.v2",
     "k8s.io/api/apps/v1",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/resource",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
-    "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured",
-    "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
-    "k8s.io/apimachinery/pkg/runtime/serializer",
-    "k8s.io/apimachinery/pkg/runtime/serializer/json",
-    "k8s.io/apimachinery/pkg/runtime/serializer/versioning",
     "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
-    "k8s.io/apimachinery/pkg/util/json",
-    "k8s.io/apimachinery/pkg/util/yaml",
-    "k8s.io/apimachinery/pkg/watch",
-    "k8s.io/client-go/dynamic",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/plugin/pkg/client/auth",
-    "k8s.io/client-go/rest",
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/client-go/tools/clientcmd/api",
     "k8s.io/client-go/tools/clientcmd/api/latest",
