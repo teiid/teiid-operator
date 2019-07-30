@@ -68,5 +68,5 @@ clean:
 .PHONY: deploy
 deploy:
 	docker push quay.io/teiid/teiid-operator
-	oc delete -f deploy/operator.yaml
+	- oc delete -f deploy/operator.yaml
 	oc create -f deploy/operator.yaml

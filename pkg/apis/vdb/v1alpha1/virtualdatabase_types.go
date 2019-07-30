@@ -24,6 +24,7 @@ type VirtualDatabaseSpec struct {
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
 	Phase   ReconcilerPhase `json:"phase,omitempty"`
+	Digest  string          `json:"digest,omitempty"`
 	Failure string          `json:"failure,omitempty"`
 	Route   string          `json:"route,omitempty"`
 }

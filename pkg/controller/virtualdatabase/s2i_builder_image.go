@@ -27,8 +27,7 @@ import (
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/pom"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/shared"
+	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/image"
 	appsv1 "k8s.io/api/apps/v1"
@@ -69,11 +68,11 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		opDeploymentName := os.Getenv("OPERATOR_NAME")
 		r.client.Get(ctx, types.NamespacedName{Namespace: opDeploymentNS, Name: opDeploymentName}, opDeployment)
 
-		log.Info("Building Base builder Image", opDeployment)
+		log.Info("Building Base builder Image")
 		// Define new BuildConfig objects
 		buildConfig := action.buildBC(vdb)
 		// set ownerreference for service BC only
-		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.Namespace, true, opDeployment, r.imageClient, r.scheme); err != nil {
+		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, opDeployment, r.imageClient, r.scheme); err != nil {
 			return err
 		}
 
@@ -189,7 +188,7 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *
 		return err
 	}
 	files := map[string]string{}
-	pom, err := pom.GeneratePom(vdb, false)
+	pom, err := GeneratePom(vdb, false)
 	if err != nil {
 		return err
 	}
@@ -198,7 +197,7 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *
 	files["/src/main/resources/teiid.ddl"] = action.ddlFile()
 	log.Debug(pom)
 
-	tarReader, err := shared.Tar(files)
+	tarReader, err := util.Tar(files)
 	if err != nil {
 		return err
 	}

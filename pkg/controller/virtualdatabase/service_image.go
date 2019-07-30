@@ -27,8 +27,7 @@ import (
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/pom"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/shared"
+	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/image"
 	corev1 "k8s.io/api/core/v1"
@@ -53,73 +52,89 @@ func (action *serviceImageAction) Name() string {
 
 // CanHandle tells whether this action can handle the virtualdatabase
 func (action *serviceImageAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImageFinished || vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImage
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImageFinished ||
+		vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImage
+}
+
+func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImageFinished {
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
+		return action.buildServiceImage(ctx, vdb, r)
+	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImage {
+		return action.monitorServiceImage(ctx, vdb, r)
+	}
+	return nil
 }
 
 // Handle handles the virtualdatabase
-func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+	// check for the VDB source type
+	if vdb.Spec.Build.Git.URI == "" && vdb.Spec.Build.Source.DDL == "" {
+		return errors.New("Only Git or Content based VDBs are allowed, neither are defined")
+	}
 
-	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImageFinished {
-		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
+	// Define new BuildConfig objects
+	buildConfig := action.serviceBC(vdb)
+	if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, vdb, r.imageClient, r.scheme); err != nil {
+		return err
+	}
 
-		// check for the VDB source type
-		if vdb.Spec.Build.Git.URI == "" && vdb.Spec.Build.Source.DDL == "" {
-			return errors.New("Only Git or Content based VDBs are allowed, neither are defined")
+	// Check if this BC already exists
+	bc, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Get(buildConfig.Name, metav1.GetOptions{})
+	if err != nil && apierr.IsNotFound(err) {
+		log.Info("Creating a new BuildConfig ", buildConfig.Name, " in namespace ", buildConfig.Namespace)
+		// set ownerreference for service BC only
+		err := controllerutil.SetControllerReference(vdb, &buildConfig, r.scheme)
+		if err != nil {
+			log.Error(err)
 		}
-
-		// Define new BuildConfig objects
-		buildConfig := action.serviceBC(vdb)
-		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.Namespace, true, vdb, r.imageClient, r.scheme); err != nil {
-			return err
-		}
-
-		// Check if this BC already exists
-		bc, err := r.buildClient.BuildConfigs(buildConfig.Namespace).Get(buildConfig.Name, metav1.GetOptions{})
-		if err != nil && apierr.IsNotFound(err) {
-			log.Info("Creating a new BuildConfig ", buildConfig.Name, " in namespace ", buildConfig.Namespace)
-			// set ownerreference for service BC only
-			err := controllerutil.SetControllerReference(vdb, &buildConfig, r.scheme)
-			if err != nil {
-				log.Error(err)
-			}
-			bc, err = r.buildClient.BuildConfigs(buildConfig.Namespace).Create(&buildConfig)
-			if err != nil {
-				return err
-			}
-		} else if err != nil {
-			return err
-		}
-
-		// Trigger first build of "builder" and binary BCs
-		if bc.Spec.Source.Type == obuildv1.BuildSourceBinary && bc.Status.LastVersion == 0 {
-			if err = action.triggerBuild(*bc, vdb, r); err != nil {
-				return err
-			}
-		}
-	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImage {
-
-		builds := &obuildv1.BuildList{}
-		options := metav1.ListOptions{
-			FieldSelector: "metadata.namespace=" + vdb.ObjectMeta.Namespace,
-			LabelSelector: "buildconfig=" + vdb.ObjectMeta.Name,
-		}
-
-		builds, err := r.buildClient.Builds(vdb.ObjectMeta.Namespace).List(options)
+		bc, err = r.buildClient.BuildConfigs(buildConfig.Namespace).Create(&buildConfig)
 		if err != nil {
 			return err
 		}
+	} else if err != nil {
+		return err
+	}
 
-		for _, build := range builds.Items {
-			// set status of the build
-			if build.Status.Phase == obuildv1.BuildPhaseComplete {
-				vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFinished
-			} else if build.Status.Phase == obuildv1.BuildPhaseError ||
-				build.Status.Phase == obuildv1.BuildPhaseFailed ||
-				build.Status.Phase == obuildv1.BuildPhaseCancelled {
-				vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFailed
-			} else if build.Status.Phase == obuildv1.BuildPhaseRunning {
-				vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
-			}
+	// check the digest of the previous build, if does not match rebuild
+	digest := envvar.Get(bc.Spec.Strategy.SourceStrategy.Env, "DIGEST")
+
+	// Trigger first build of "builder" and binary BCs
+	if bc.Status.LastVersion == 0 || digest.Value != vdb.Status.Digest {
+		envvar.SetVal(&bc.Spec.Strategy.SourceStrategy.Env, "DIGEST", vdb.Status.Digest)
+		if err := r.client.Update(ctx, bc); err != nil {
+			return err
+		}
+
+		if err = action.triggerBuild(*bc, vdb, r); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (action *serviceImageAction) monitorServiceImage(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+	builds := &obuildv1.BuildList{}
+	options := metav1.ListOptions{
+		FieldSelector: "metadata.namespace=" + vdb.ObjectMeta.Namespace,
+		LabelSelector: "buildconfig=" + vdb.ObjectMeta.Name,
+	}
+
+	builds, err := r.buildClient.Builds(vdb.ObjectMeta.Namespace).List(options)
+	if err != nil {
+		return err
+	}
+
+	for _, build := range builds.Items {
+		// set status of the build
+		if build.Status.Phase == obuildv1.BuildPhaseComplete {
+			vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFinished
+		} else if build.Status.Phase == obuildv1.BuildPhaseError ||
+			build.Status.Phase == obuildv1.BuildPhaseFailed ||
+			build.Status.Phase == obuildv1.BuildPhaseCancelled {
+			vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFailed
+		} else if build.Status.Phase == obuildv1.BuildPhaseRunning {
+			vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
 		}
 	}
 	return nil
@@ -132,6 +147,7 @@ func (action *serviceImageAction) serviceBC(vdb *v1alpha1.VirtualDatabase) obuil
 	envvar.SetVal(&vdb.Spec.Build.Env, "DEPLOYMENTS_DIR", "/deployments")
 	// this below is add clean, to remove the previous jar file in target from builder image
 	envvar.SetVal(&vdb.Spec.Build.Env, "MAVEN_ARGS", "clean package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.site.skip=true -Dmaven.source.skip=true -Djacoco.skip=true -Dcheckstyle.skip=true -Dfindbugs.skip=true -Dpmd.skip=true -Dfabric8.skip=true -e -B")
+	envvar.SetVal(&vdb.Spec.Build.Env, "DIGEST", vdb.Status.Digest)
 
 	bc := obuildv1.BuildConfig{}
 	bc = obuildv1.BuildConfig{
@@ -188,14 +204,14 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 		files := map[string]string{}
 
 		//Binary build, generate the pom file
-		pom, err := pom.GeneratePom(vdb, false)
+		pom, err := GeneratePom(vdb, false)
 		if err != nil {
 			return nil
 		}
 		files["/pom.xml"] = pom
 		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
 
-		tarReader, err := shared.Tar(files)
+		tarReader, err := util.Tar(files)
 		if err != nil {
 			return err
 		}

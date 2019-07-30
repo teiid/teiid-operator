@@ -47,9 +47,24 @@ func (action *initializeAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
 
 // Handle handles the virtualdatabase
 func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
-	if &vdb.Status.Phase == nil || vdb.Status.Phase == "" {
-		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
+	// build digest the vdb/config contents
+	digest, err := ComputeForVirtualDatabase(vdb)
+	if err != nil {
+		return err
 	}
+
+	if &vdb.Status.Phase == nil || vdb.Status.Phase == v1alpha1.ReconcilerPhaseInitial {
+		// initialize with defaults
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
+		if err := action.init(ctx, vdb, r); err != nil {
+			return err
+		}
+		vdb.Status.Digest = digest
+	}
+	return nil
+}
+
+func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 
 	if vdb.Spec.Runtime == "" || vdb.Spec.Runtime != v1alpha1.SpringbootRuntimeType {
 		vdb.Spec.Runtime = v1alpha1.SpringbootRuntimeType

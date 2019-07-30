@@ -18,6 +18,9 @@ limitations under the License.
 package util
 
 import (
+	"archive/tar"
+	"bytes"
+	"io"
 	"os"
 	"os/signal"
 	"path"
@@ -189,4 +192,46 @@ func ExtractApplicationPropertiesBytes(data map[string][]byte, consumer func(str
 	}
 
 	return nil
+}
+
+// Tar ...
+func Tar(files map[string]string) (io.Reader, error) {
+	// Create and add some files to the archive.
+	var buf bytes.Buffer
+	tw := tar.NewWriter(&buf)
+	defer tw.Close()
+
+	for name, body := range files {
+		hdr := &tar.Header{
+			Name: name,
+			Mode: 0644,
+			Size: int64(len(body)),
+		}
+		if err := tw.WriteHeader(hdr); err != nil {
+			return nil, err
+		}
+		if _, err := tw.Write([]byte(body)); err != nil {
+			return nil, err
+		}
+	}
+	if err := tw.Close(); err != nil {
+		return nil, err
+	}
+
+	/*
+		// Open and iterate through the files in the archive.
+		tr := tar.NewReader(&buf)
+		for {
+			hdr, err := tr.Next()
+			if err == io.EOF {
+				break // End of archive
+			}
+			if err != nil {
+				return nil, err
+			}
+			fmt.Printf("Contents of %s:\n", hdr.Name)
+			fmt.Println()
+		}
+	*/
+	return &buf, nil
 }

@@ -80,13 +80,14 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	// have access to this
 	target := instance.DeepCopy()
 
+	// run through the different actions now
 	for _, a := range buildSteps {
 		if a.CanHandle(target) {
 			phaseFrom := target.Status.Phase
 
 			log.Debugf("Invoking action %s", a.Name())
 			if err := a.Handle(ctx, target, r); err != nil {
-				log.Error("Failed during action ", a.Name(), err)
+				log.Error("Failed during action ", a.Name(), " ", err)
 				return reconcile.Result{}, err
 			}
 

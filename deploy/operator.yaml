@@ -32,3 +32,4 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.labels['name']
+              
