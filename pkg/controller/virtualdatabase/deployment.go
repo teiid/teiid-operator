@@ -160,12 +160,42 @@ func (action *deploymentAction) createService(dc oappsv1.DeploymentConfig, vdb *
 		},
 		)
 	}
+
+	labels := map[string]string{
+		"discovery.3scale.net": "true",
+	}
+
+	// if openapi is in use then use the openapi for it
+	apiLink := "/odata/openapi.json"
+	if len(vdb.Spec.Build.Source.OpenAPI) > 0 {
+		apiLink = "/openapi.json"
+	}
+
+	annotations := map[string]string{
+		"discovery.3scale.net/scheme":           "http",
+		"discovery.3scale.net/port":             "8080",
+		"discovery.3scale.net/description-path": apiLink,
+	}
+
+	meta := metav1.ObjectMeta{
+		Name:        vdb.ObjectMeta.Name,
+		Namespace:   vdb.Namespace,
+		Labels:      labels,
+		Annotations: annotations,
+	}
+	timeout := int32(86400)
 	service := corev1.Service{
-		ObjectMeta: dc.ObjectMeta,
+		ObjectMeta: meta,
 		Spec: corev1.ServiceSpec{
-			Selector: dc.Spec.Selector,
-			Type:     corev1.ServiceTypeClusterIP,
-			Ports:    servicePorts,
+			Selector:        dc.Spec.Selector,
+			Type:            corev1.ServiceTypeClusterIP,
+			Ports:           servicePorts,
+			SessionAffinity: corev1.ServiceAffinityClientIP,
+			SessionAffinityConfig: &corev1.SessionAffinityConfig{
+				ClientIP: &corev1.ClientIPConfig{
+					TimeoutSeconds: &timeout,
+				},
+			},
 		},
 	}
 	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
