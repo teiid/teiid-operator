@@ -31,6 +31,7 @@ const expectedPom = `<?xml version="1.0" encoding="UTF-8"?>
   <groupId>org.apache.camel.k.integration</groupId>
   <artifactId>camel-k-integration</artifactId>
   <version>1.0.0</version>
+  <packaging>jar</packaging>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -90,6 +91,7 @@ func TestPomGeneration(t *testing.T) {
 		GroupID:           "org.apache.camel.k.integration",
 		ArtifactID:        "camel-k-integration",
 		Version:           "1.0.0",
+		Packaging:         "jar",
 		DependencyManagement: DependencyManagement{
 			Dependencies: []Dependency{
 				{
