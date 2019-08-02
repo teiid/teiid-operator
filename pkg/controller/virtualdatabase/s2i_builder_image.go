@@ -183,12 +183,13 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase) obui
 // triggerBuild triggers a BuildConfig to start a new build
 func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 	log := log.With("kind", "BuildConfig", "name", bc.GetName(), "namespace", bc.GetNamespace())
+	log.Info("starting the build for base image")
 	buildConfig, err := r.buildClient.BuildConfigs(bc.Namespace).Get(bc.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 	files := map[string]string{}
-	pom, err := GeneratePom(vdb, false)
+	pom, err := GeneratePom(vdb, false, true)
 	if err != nil {
 		return err
 	}

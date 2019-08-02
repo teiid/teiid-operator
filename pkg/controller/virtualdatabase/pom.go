@@ -27,7 +27,7 @@ import (
 )
 
 // GeneratePom -- Generate the POM file based on the VDb provided
-func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool) (string, error) {
+func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, includeOpenAPIAdependency bool) (string, error) {
 	// do code generation.
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
@@ -110,6 +110,14 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool) (st
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-keycloak",
+			Version:    constants.TeiidSpringBootVersion,
+		})
+	}
+
+	if includeOpenAPIAdependency {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-openapi",
 			Version:    constants.TeiidSpringBootVersion,
 		})
 	}

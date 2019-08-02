@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	obuildv1 "github.com/openshift/api/build/v1"
@@ -125,17 +126,29 @@ func (action *serviceImageAction) monitorServiceImage(ctx context.Context, vdb *
 		return err
 	}
 
-	for _, build := range builds.Items {
-		// set status of the build
-		if build.Status.Phase == obuildv1.BuildPhaseComplete {
-			vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFinished
-		} else if build.Status.Phase == obuildv1.BuildPhaseError ||
-			build.Status.Phase == obuildv1.BuildPhaseFailed ||
-			build.Status.Phase == obuildv1.BuildPhaseCancelled {
-			vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFailed
-		} else if build.Status.Phase == obuildv1.BuildPhaseRunning {
-			vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
+	// there could be multiple builds, find the latest one as that is one
+	// we are currently running
+	build := obuildv1.Build{}
+	maxBuildNumber := 0
+	if len(builds.Items) >= 1 {
+		for _, b := range builds.Items {
+			i, _ := strconv.Atoi(b.ObjectMeta.Annotations["openshift.io/build.number"])
+			if i > maxBuildNumber {
+				maxBuildNumber = i
+				build = b
+			}
 		}
+	}
+
+	// set status of the build
+	if build.Status.Phase == obuildv1.BuildPhaseComplete {
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFinished
+	} else if build.Status.Phase == obuildv1.BuildPhaseError ||
+		build.Status.Phase == obuildv1.BuildPhaseFailed ||
+		build.Status.Phase == obuildv1.BuildPhaseCancelled {
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImageFailed
+	} else if build.Status.Phase == obuildv1.BuildPhaseRunning {
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
 	}
 	return nil
 }
@@ -183,12 +196,9 @@ func (action *serviceImageAction) serviceBC(vdb *v1alpha1.VirtualDatabase) obuil
 		Env:         vdb.Spec.Build.Env,
 	}
 	bc.Spec.Source.Type = obuildv1.BuildSourceImage
-	bc.Spec.Triggers = []obuildv1.BuildTriggerPolicy{
-		{
-			Type:        obuildv1.ImageChangeBuildTriggerType,
-			ImageChange: &obuildv1.ImageChangeTrigger{From: &baseImage},
-		},
-	}
+	// when trigger is defined the build starts immediately without the
+	// binary, using previous base build's source directory which is not
+	// intended result, so do not add triggers
 	return bc
 }
 
@@ -203,8 +213,14 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 		log.Info("starting the binary build for service image ")
 		files := map[string]string{}
 
+		addOpenAPI := false
+		if len(vdb.Spec.Build.Source.OpenAPI) > 0 {
+			files["/src/main/resources/openapi.json"] = vdb.Spec.Build.Source.OpenAPI
+			addOpenAPI = true
+		}
+
 		//Binary build, generate the pom file
-		pom, err := GeneratePom(vdb, false)
+		pom, err := GeneratePom(vdb, false, addOpenAPI)
 		if err != nil {
 			return nil
 		}

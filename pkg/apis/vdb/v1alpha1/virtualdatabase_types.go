@@ -57,6 +57,7 @@ type Git struct {
 // +k8s:openapi-gen=true
 type Source struct {
 	DDL          string   `json:"ddl,omitempty"`
+	OpenAPI      string   `json:"openapi,omitempty"`
 	Dependencies []string `json:"dependencies,omitempty"`
 }
 
