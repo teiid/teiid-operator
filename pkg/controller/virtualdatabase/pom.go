@@ -120,6 +120,12 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 			ArtifactID: "spring-openapi",
 			Version:    constants.TeiidSpringBootVersion,
 		})
+	} else {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-odata",
+			Version:    constants.TeiidSpringBootVersion,
+		})
 	}
 
 	return maven.GeneratePomContent(project)
@@ -141,11 +147,6 @@ func createMavenProject(name string) maven.Project {
 			{
 				GroupID:    "org.teiid",
 				ArtifactID: "teiid-spring-boot-starter",
-				Version:    constants.TeiidSpringBootVersion,
-			},
-			{
-				GroupID:    "org.teiid",
-				ArtifactID: "spring-odata",
 				Version:    constants.TeiidSpringBootVersion,
 			},
 			{

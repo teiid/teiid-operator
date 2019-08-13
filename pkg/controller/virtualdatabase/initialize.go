@@ -94,6 +94,10 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 			Value: "false",
 		},
 		{
+			Name:  "AB_JMX_EXPORTER_CONFIG",
+			Value: "/tmp/src/src/main/resources/prometheus-config.yml",
+		},
+		{
 			Name: "NAMESPACE",
 			ValueFrom: &corev1.EnvVarSource{
 				FieldRef: &corev1.ObjectFieldSelector{
