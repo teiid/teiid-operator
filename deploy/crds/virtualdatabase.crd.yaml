@@ -43,10 +43,15 @@ spec:
             - build
           properties:
             runtime:
-              type: string
+              type: object
               description: The name of the runtime used, defaults to springboot
-              enum:
-                - springboot
+              properties:
+                type:
+                  type: string
+                  description: type of runtime
+                version:
+                  type: string
+                  description: version of the runtime
             replicas:
               type: integer
               format: int32

@@ -79,12 +79,10 @@ type WebhookSecret struct {
 }
 
 // RuntimeType - type of condition
-type RuntimeType string
-
-const (
-	// SpringbootRuntimeType - the virtualdatabase is being provisioned
-	SpringbootRuntimeType RuntimeType = "springboot"
-)
+type RuntimeType struct {
+	Type    string `json:"type,omitempty"`
+	Version string `json:"version,omitempty"`
+}
 
 // Image - image details
 // +k8s:openapi-gen=true
