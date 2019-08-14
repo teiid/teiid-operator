@@ -1,0 +1,245 @@
+apiVersion: core.teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: petstore-vdb
+spec:
+  replicas: 1
+  env:
+  - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
+    value: user
+  - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
+    value: mypassword
+  - name: SPRING_DATASOURCE_SAMPLEDB_DATABASENAME
+    value: sampledb
+  - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
+    value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE PetStore OPTIONS (ANNOTATION 'PetStore VDB');
+        USE DATABASE PetStore;
+
+        CREATE FOREIGN DATA WRAPPER postgresql;
+        CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;
+
+        CREATE VIRTUAL SCHEMA pets;
+        CREATE SCHEMA petdb SERVER sampledb;
+
+        SET SCHEMA petdb;
+        CREATE FOREIGN TABLE Pet
+        (
+            id integer,
+            name varchar(50),
+            status varchar(10),
+            CONSTRAINT PK_PET PRIMARY KEY(id)
+        ) OPTIONS(UPDATABLE 'TRUE');
+
+        SET SCHEMA pets;
+
+        CREATE VIRTUAL PROCEDURE createPets(IN pet json) OPTIONS (UPDATECOUNT 1)AS
+        BEGIN  
+          LOOP ON (SELECT j.id, j.name, j.status FROM JSONTABLE(pet, '$', false COLUMNS id integer, name string, status string) as j) AS x
+          BEGIN
+              INSERT INTO petdb.Pet(id, name, status) VALUES (x.id, x.name, x.status);
+          END
+        END
+
+        CREATE VIRTUAL PROCEDURE showPetById(IN petId integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
+        BEGIN
+            declare json x = (SELECT JSONOBJECT(id, name, status) FROM petdb.Pet where id = petId);
+            return x;
+        END
+
+        CREATE VIRTUAL PROCEDURE listPets(IN "limit" integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
+        BEGIN
+            declare json x = (SELECT JSONARRAY_AGG(JSONOBJECT(p.id, p.name, p.status)) 
+                FROM petdb.Pet p WHERE p.status in (status));
+            return x;
+        END
+      openapi: |
+        {
+          "openapi": "3.0.0",
+          "info": {
+            "version": "1.0.0",
+            "title": "Swagger Petstore",
+            "license": {
+              "name": "MIT"
+            }
+          },
+          "servers": [
+            {
+              "url": "http://petstore.swagger.io/v1"
+            }
+          ],
+          "paths": {
+            "/pets": {
+              "get": {
+                "summary": "List all pets",
+                "operationId": "listPets",
+                "tags": [
+                  "pets"
+                ],
+                "parameters": [
+                  {
+                    "name": "limit",
+                    "in": "query",
+                    "description": "How many items to return at one time (max 100)",
+                    "required": false,
+                    "schema": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "A paged array of pets",
+                    "headers": {
+                      "x-next": {
+                        "description": "A link to the next page of responses",
+                        "schema": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Pets"
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "description": "unexpected error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Error"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "post": {
+                "summary": "Create a pet",
+                "operationId": "createPets",
+                "requestBody": {
+                  "description": "Pet to add to the store",
+                  "required": true,
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/Pet"
+                      }
+                    }
+                  }
+                },
+                "tags": [
+                  "pets"
+                ],
+                "responses": {
+                  "201": {
+                    "description": "Null response"
+                  },
+                  "default": {
+                    "description": "unexpected error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Error"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "/pets/{petId}": {
+              "get": {
+                "summary": "Info for a specific pet",
+                "operationId": "showPetById",
+                "tags": [
+                  "pets"
+                ],
+                "parameters": [
+                  {
+                    "name": "petId",
+                    "in": "path",
+                    "required": true,
+                    "description": "The id of the pet to retrieve",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                ],
+                "responses": {
+                  "200": {
+                    "description": "Expected response to a valid request",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Pets"
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "description": "unexpected error",
+                    "content": {
+                      "application/json": {
+                        "schema": {
+                          "$ref": "#/components/schemas/Error"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "components": {
+            "schemas": {
+              "Pet": {
+                "required": [
+                  "id",
+                  "name"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "format": "int64"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              },
+              "Pets": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              },
+              "Error": {
+                "required": [
+                  "code",
+                  "message"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "message": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }

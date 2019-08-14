@@ -27,7 +27,7 @@ import (
 )
 
 // GeneratePom -- Generate the POM file based on the VDb provided
-func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool) (string, error) {
+func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, includeOpenAPIAdependency bool) (string, error) {
 	// do code generation.
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
@@ -114,6 +114,20 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool) (st
 		})
 	}
 
+	if includeOpenAPIAdependency {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-openapi",
+			Version:    constants.TeiidSpringBootVersion,
+		})
+	} else {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-odata",
+			Version:    constants.TeiidSpringBootVersion,
+		})
+	}
+
 	return maven.GeneratePomContent(project)
 }
 
@@ -133,11 +147,6 @@ func createMavenProject(name string) maven.Project {
 			{
 				GroupID:    "org.teiid",
 				ArtifactID: "teiid-spring-boot-starter",
-				Version:    constants.TeiidSpringBootVersion,
-			},
-			{
-				GroupID:    "org.teiid",
-				ArtifactID: "spring-odata",
 				Version:    constants.TeiidSpringBootVersion,
 			},
 			{

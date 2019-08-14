@@ -111,7 +111,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		// Trigger first build of "builder" and binary BCs
 		if bc.Status.LastVersion == 0 {
 			log.Info("triggering the base builder image build")
-			if err = action.triggerBuild(*bc, vdb, r); err != nil {
+			if err = action.triggerBuild(*bc, r); err != nil {
 				return err
 			}
 		}
@@ -181,14 +181,20 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase) obui
 }
 
 // triggerBuild triggers a BuildConfig to start a new build
-func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, r *ReconcileVirtualDatabase) error {
 	log := log.With("kind", "BuildConfig", "name", bc.GetName(), "namespace", bc.GetNamespace())
+	log.Info("starting the build for base image")
 	buildConfig, err := r.buildClient.BuildConfigs(bc.Namespace).Get(bc.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
+	vdb := &v1alpha1.VirtualDatabase{}
+	vdb.ObjectMeta.Name = "virtualdatabase-image"
+	vdb.ObjectMeta.Namespace = bc.GetNamespace()
+	vdb.Spec.Build.Source.DDL = action.ddlFile()
+
 	files := map[string]string{}
-	pom, err := GeneratePom(vdb, false)
+	pom, err := GeneratePom(vdb, true, true)
 	if err != nil {
 		return err
 	}
@@ -207,7 +213,7 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *
 	binaryBuildRequest.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BinaryBuildRequestOptions"))
 	log.Info("Triggering binary build ", buildConfig.Name)
 	err = r.buildClient.RESTClient().Post().
-		Namespace(vdb.ObjectMeta.Namespace).
+		Namespace(bc.GetNamespace()).
 		Resource("buildconfigs").
 		Name(buildConfig.Name).
 		SubResource("instantiatebinary").
