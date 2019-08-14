@@ -19,8 +19,10 @@ package virtualdatabase
 
 import (
 	"context"
+	"reflect"
 
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -66,9 +68,10 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 
 func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 
-	if vdb.Spec.Runtime == "" || vdb.Spec.Runtime != v1alpha1.SpringbootRuntimeType {
-		vdb.Spec.Runtime = v1alpha1.SpringbootRuntimeType
+	if &vdb.Spec.Runtime == nil || !reflect.DeepEqual(vdb.Spec.Runtime, constants.SpringBootRuntime) {
+		vdb.Spec.Runtime = constants.SpringBootRuntime
 	}
+
 	if vdb.Spec.Build.Incremental == nil {
 		inc := true
 		vdb.Spec.Build.Incremental = &inc

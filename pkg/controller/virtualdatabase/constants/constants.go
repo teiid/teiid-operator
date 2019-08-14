@@ -29,15 +29,27 @@ const (
 	ImageStreamTag = "latest" // "latest-java11"
 	// BuilderImageTargetName target build image name
 	BuilderImageTargetName = "virtualdatabase-builder"
+	// S2IBuildImageName --
+	S2IBuildImageName = "s2i-java"
+	//S2IBuildImageTag --
+	S2IBuildImageTag = "latest-java11"
+	// SpringBoot --
+	SpringBoot = "SpringBoot"
 )
 
+// SpringBootRuntime --
+var SpringBootRuntime = v1alpha1.RuntimeType{
+	Type:    SpringBoot,
+	Version: TeiidSpringBootVersion,
+}
+
 // RuntimeImageDefaults ...
-var RuntimeImageDefaults = map[v1alpha1.RuntimeType][]v1alpha1.Image{
-	v1alpha1.SpringbootRuntimeType: {
+var RuntimeImageDefaults = map[string][]v1alpha1.Image{
+	SpringBootRuntime.Type: {
 		{
-			ImageStreamName:      "s2i-java",
+			ImageStreamName:      S2IBuildImageName,
 			ImageStreamNamespace: ImageStreamNamespace,
-			ImageStreamTag:       "latest-java11",
+			ImageStreamTag:       S2IBuildImageTag,
 			ImageRegistry:        ImageRegistry,
 			ImageRepository:      ImageRepo,
 			BuilderImage:         true,

@@ -146,7 +146,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 // newBCForCR returns a BuildConfig with the same name/namespace as the cr
 func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase) obuildv1.BuildConfig {
 	bc := obuildv1.BuildConfig{}
-	images := constants.RuntimeImageDefaults[vdb.Spec.Runtime]
+	images := constants.RuntimeImageDefaults[vdb.Spec.Runtime.Type]
 	env := []corev1.EnvVar{}
 	envvar.SetVal(&env, "DEPLOYMENTS_DIR", "/opt/jboss") // this is avoid copying the jar file
 	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "-Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8")
