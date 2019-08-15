@@ -75,6 +75,8 @@ Before submitting PR, please be sure to generate, vet, format, and test your cod
 
 ```bash
 make test
+make
+make deploy
 ```
 
 ## OLM Notes
