@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: virtualdatabases.core.teiid.io
+  name: virtualdatabases.teiid.io
 spec:
-  group: core.teiid.io
+  group: teiid.io
   names:
     kind: VirtualDatabase
     listKind: VirtualDatabaseList
