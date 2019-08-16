@@ -44,7 +44,7 @@ Remember to replace _registryNamespace_ with your quay namespace. The name, disp
 
 It will take a few minutes for the operator to become visible under the _OperatorHub_ section of the OpenShift console _Catalog_. It can be easily found by filtering the provider type to _Custom_.
 
-### Trigger a VirtualDatabase deployment
+## VirtualDatabase Deployment
 
 Use the OLM console to subscribe to the `Teiid Operators` Operator Catalog Source within your namespace. Once subscribed, use the console to `Create VirtualDatabase` or create one manually as seen below.
 
@@ -52,7 +52,7 @@ Use the OLM console to subscribe to the `Teiid Operators` Operator Catalog Sourc
 $ oc tag --source=docker docker.io/fabric8/s2i-java:latest-java11 openshift/s2i-java:latest-java11 -n openshift
 $ oc new-app -e POSTGRESQL_USER=user -e POSTGRESQL_PASSWORD=mypassword -e POSTGRESQL_DATABASE=sampledb postgresql:9.5
 $ oc apply -f deploy/crs/vdb_v1alpha1_virtualdatabase_cr.yaml
-virtualdatabase.core.teiid.io/rdbms-springboot created
+virtualdatabase.teiid.io/rdbms-springboot created
 ```
 
 ### Clean up a VirtualDatabase deployment
@@ -75,4 +75,9 @@ Before submitting PR, please be sure to generate, vet, format, and test your cod
 
 ```bash
 make test
+make
+make deploy
 ```
+
+## OLM Notes
+https://github.com/operator-framework/community-operators/blob/master/docs/contributing.md
