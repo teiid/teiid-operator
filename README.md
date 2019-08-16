@@ -44,7 +44,7 @@ Remember to replace _registryNamespace_ with your quay namespace. The name, disp
 
 It will take a few minutes for the operator to become visible under the _OperatorHub_ section of the OpenShift console _Catalog_. It can be easily found by filtering the provider type to _Custom_.
 
-### Trigger a VirtualDatabase deployment
+## VirtualDatabase Deployment
 
 Use the OLM console to subscribe to the `Teiid Operators` Operator Catalog Source within your namespace. Once subscribed, use the console to `Create VirtualDatabase` or create one manually as seen below.
 

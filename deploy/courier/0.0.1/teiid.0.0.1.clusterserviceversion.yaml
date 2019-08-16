@@ -4,6 +4,7 @@ metadata:
   name: teiid.0.0.1
   namespace: placeholder
   annotations:
+    capabilities: Basic Install
     categories: "Database, Integration & Delivery"
     certified: "false"
     description: Teiid Cloud Operator for deployment and management of Virtual Database services.
