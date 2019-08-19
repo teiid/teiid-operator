@@ -70,7 +70,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 
 		log.Info("Building Base builder Image")
 		// Define new BuildConfig objects
-		buildConfig := action.buildBC(vdb)
+		buildConfig := action.buildBC(vdb, r)
 		// set ownerreference for service BC only
 		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, opDeployment, r.imageClient, r.scheme); err != nil {
 			return err
@@ -144,7 +144,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 }
 
 // newBCForCR returns a BuildConfig with the same name/namespace as the cr
-func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase) obuildv1.BuildConfig {
+func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) obuildv1.BuildConfig {
 	bc := obuildv1.BuildConfig{}
 	images := constants.RuntimeImageDefaults[vdb.Spec.Runtime.Type]
 	env := []corev1.EnvVar{}
@@ -155,6 +155,16 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase) obui
 	incremental := true
 	for _, imageDefaults := range images {
 		if imageDefaults.BuilderImage {
+
+			imageName := fmt.Sprintf("%s:%s", imageDefaults.ImageStreamName, imageDefaults.ImageStreamTag)
+			isNamespace := imageDefaults.ImageStreamNamespace
+			// check if the base image is found otherwise use from dockerhub, add to local images
+			if !image.CheckImageStream(imageName, isNamespace, r.imageClient) {
+				dockerImage := fmt.Sprintf("%s/%s/%s", imageDefaults.ImageRegistry, imageDefaults.ImageRepository, imageDefaults.ImageStreamName)
+				image.CreateImageStream(imageDefaults.ImageStreamName, vdb.ObjectMeta.Namespace, dockerImage, imageDefaults.ImageStreamTag, r.imageClient, r.scheme)
+				isNamespace = vdb.ObjectMeta.Namespace
+			}
+
 			builderName := constants.BuilderImageTargetName
 			bc = obuildv1.BuildConfig{
 				ObjectMeta: metav1.ObjectMeta{
@@ -170,8 +180,8 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase) obui
 				Incremental: &incremental,
 				Env:         env,
 				From: corev1.ObjectReference{
-					Name:      fmt.Sprintf("%s:%s", imageDefaults.ImageStreamName, imageDefaults.ImageStreamTag),
-					Namespace: imageDefaults.ImageStreamNamespace,
+					Name:      imageName,
+					Namespace: isNamespace,
 					Kind:      "ImageStreamTag",
 				},
 			}

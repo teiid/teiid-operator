@@ -24,6 +24,7 @@ import (
 
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -57,6 +58,37 @@ func EnsureImageStream(name string, namespace string, setOwner bool, owner v1.Ob
 		return namespace, err
 	}
 	return namespace, nil
+}
+
+// CreateImageStream --
+func CreateImageStream(name string, namespace string, dockerImage string, tag string, client *imagev1.ImageV1Client, scheme *runtime.Scheme) error {
+
+	isnew := &oimagev1.ImageStream{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: oimagev1.ImageStreamSpec{
+			Tags: []oimagev1.TagReference{
+				{
+					Name: tag,
+					From: &corev1.ObjectReference{
+						Kind: "DockerImage",
+						Name: dockerImage + ":" + tag,
+					},
+				},
+			},
+		},
+	}
+	isnew.SetGroupVersionKind(oimagev1.SchemeGroupVersion.WithKind("ImageStream"))
+	log := log.With("kind", isnew.GetObjectKind().GroupVersionKind().Kind, "name", isnew.Name, "namespace", isnew.Namespace)
+	log.Info("Creating")
+
+	_, err := client.ImageStreams(isnew.Namespace).Create(isnew)
+	if err != nil && !errors.IsAlreadyExists(err) {
+		log.Info("Already exists.", err)
+	}
+	return nil
 }
 
 // createLocalImageStream creates local ImageStream
