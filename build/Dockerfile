@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8-minimal
+FROM registry.access.redhat.com/ubi7/ubi-minimal:latest
 
 ENV OPERATOR=/usr/local/bin/teiid-operator
 
