@@ -17,7 +17,7 @@ oc create -f deploy/crds/virtualdatabase.crd.yaml
 oc create -f deploy/service_account.yaml
 oc create -f deploy/role.yaml
 oc create -f deploy/role_binding.yaml
-oc delete -f deploy/operator.yaml
+oc create -f deploy/operator.yaml
 ```
 
 If there were no errors, you should have a Teiid Operator deployed in your OpenShift instance in the logged in namespace. You can now, use the `VirtualDatabase Deployment` section to create and deploy VDB as image.
