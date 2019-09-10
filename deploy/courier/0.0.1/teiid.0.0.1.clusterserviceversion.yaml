@@ -54,10 +54,9 @@ metadata:
 spec:
   displayName: Teiid Operator
   description: |-
-    # Teiid on OpenShift
     Teiid is a data virtualization system that allows applications to use data from multiple, heterogeneous data stores. Through its abstraction and federation, data is accessed and integrated in real-time across distributed data sources without copying or otherwise moving data from its system of record. 
     
-    For example, you can access your all data in Oracle, Postgres, MongoDB and/or Rest API (many more) with a single request. Teiid gives you all the tools required to build logical/abstraction layer that can exposed as Virtual Database by essentially makeing all sources underneath as a black box to the consuming user. Since this integration of data happens in real time there is no ETL process to run and data is always fresh. For the end user the Virtual Database exactly looks like a relational database like Postgres, that can be accessed using JDBC, ODBC, OData V4 and Postgres protocols, i.e. can be accessed from any language that you have your application written in.
+    For example, you can access your all data in Oracle, Postgres, MongoDB and/or Rest API (many more) with a single request. Teiid gives you all the tools required to build logical/abstraction layer that can exposed as Virtual Database by essentially making all sources underneath as a black box to the consuming user. Since this integration of data happens in real time there is no ETL process to run and data is always fresh. For the end user the Virtual Database exactly looks like a relational database like Postgres, that can be accessed using JDBC, ODBC, OData V4 and Postgres protocols, i.e. can be accessed from any language that you have your application written in.
     
     Teiid, out of box also exposes the OData v4 REST API without any further coding, with this you can expose you single or multiple databases as rest services without any coding. Alternatively if you want expose a Open API directly over your data that is also possible with Teiid.
     
