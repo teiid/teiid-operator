@@ -65,6 +65,13 @@ func (in *Source) DeepCopyInto(out *Source) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.MavenRepositories != nil {
+		in, out := &in.MavenRepositories, &out.MavenRepositories
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
