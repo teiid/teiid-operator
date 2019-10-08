@@ -87,6 +87,10 @@ spec:
                       items:
                         type: string
                         description: maven dependency in GAV format
+                    mavenRepositories:
+                      additionalProperties:
+                        type: string
+                      type: object
                 webhooks:
                   type: array
                   minItems: 1
