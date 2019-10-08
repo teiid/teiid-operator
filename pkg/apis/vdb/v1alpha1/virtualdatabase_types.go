@@ -56,9 +56,10 @@ type Git struct {
 // Source Git coordinates to locate the source code to build
 // +k8s:openapi-gen=true
 type Source struct {
-	DDL          string   `json:"ddl,omitempty"`
-	OpenAPI      string   `json:"openapi,omitempty"`
-	Dependencies []string `json:"dependencies,omitempty"`
+	DDL               string            `json:"ddl,omitempty"`
+	OpenAPI           string            `json:"openapi,omitempty"`
+	Dependencies      []string          `json:"dependencies,omitempty"`
+	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
 }
 
 // WebhookType literal type to distinguish between different types of Webhooks

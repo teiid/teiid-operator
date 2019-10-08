@@ -130,5 +130,17 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 			},
 		}
 	}
+
+	// configure default repositories
+	if len(vdb.Spec.Build.Source.MavenRepositories) == 0 {
+		if vdb.Spec.Build.Source.MavenRepositories == nil {
+			vdb.Spec.Build.Source.MavenRepositories = make(map[string]string)
+		}
+	}
+	if len(constants.Config.MavenRepositories) != 0 {
+		for k, v := range constants.Config.MavenRepositories {
+			vdb.Spec.Build.Source.MavenRepositories[k] = v
+		}
+	}
 	return nil
 }

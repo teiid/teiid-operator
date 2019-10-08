@@ -57,6 +57,30 @@ func (p *Project) AddDependency(dep Dependency) {
 	p.Dependencies = append(p.Dependencies, dep)
 }
 
+// AddRepository adds a repository
+func (p *Project) AddRepository(repo Repository) {
+	for _, r := range p.Repositories {
+		// Check if the given repo is already included in the repo list
+		if r.ID == repo.ID && r.URL == repo.URL {
+			return
+		}
+	}
+
+	p.Repositories = append(p.Repositories, repo)
+}
+
+// AddPluginRepository adds a repository
+func (p *Project) AddPluginRepository(repo Repository) {
+	for _, r := range p.PluginRepositories {
+		// Check if the given repo is already included in the repo list
+		if r.ID == repo.ID && r.URL == repo.URL {
+			return
+		}
+	}
+
+	p.PluginRepositories = append(p.PluginRepositories, repo)
+}
+
 // AddDependencies adds dependencies to maven's dependencies
 func (p *Project) AddDependencies(deps ...Dependency) {
 	for _, d := range deps {

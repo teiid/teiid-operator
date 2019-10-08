@@ -34,6 +34,12 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 
 	ddl := vdb.Spec.Build.Source.DDL
 
+	mavenRepos := vdb.Spec.Build.Source.MavenRepositories
+	for k, v := range mavenRepos {
+		project.AddRepository(maven.NewRepository(v + "@id=" + k))
+		project.AddPluginRepository(maven.NewRepository(v + "@id=" + k))
+	}
+
 	// looking that the CRD we need to fill in the dependencies
 	for _, str := range vdb.Spec.Build.Source.Dependencies {
 		d, err := maven.ParseGAV(str)
@@ -49,7 +55,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.postgresql",
 			ArtifactID: "postgresql",
-			Version:    constants.PostgreSQLVersion,
+			Version:    constants.Config.Drivers["postgresql"],
 		})
 	}
 
@@ -57,7 +63,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "mysql",
 			ArtifactID: "mysql-connector-java",
-			Version:    constants.MySQLVersion,
+			Version:    constants.Config.Drivers["mysql"],
 		})
 	}
 
@@ -65,12 +71,12 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.mongodb",
 			ArtifactID: "mongo-java-driver",
-			Version:    constants.MongoDBVersion,
+			Version:    constants.Config.Drivers["mongodb"],
 		})
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-mongodb",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -78,7 +84,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-google",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -86,7 +92,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-salesforce",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -94,7 +100,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-excel",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -102,7 +108,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-rest",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -110,7 +116,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-keycloak",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -118,13 +124,13 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-openapi",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	} else {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-odata",
-			Version:    constants.TeiidSpringBootVersion,
+			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
 
@@ -147,12 +153,12 @@ func createMavenProject(name string) maven.Project {
 			{
 				GroupID:    "org.teiid",
 				ArtifactID: "teiid-spring-boot-starter",
-				Version:    constants.TeiidSpringBootVersion,
+				Version:    constants.Config.TeiidSpringBootVersion,
 			},
 			{
 				GroupID:    "org.springframework.boot",
 				ArtifactID: "spring-boot-starter-actuator",
-				Version:    constants.SpringBootVersion,
+				Version:    constants.Config.SpringBootVersion,
 			},
 			{
 				GroupID:    "io.opentracing.contrib",
@@ -216,7 +222,7 @@ func createMavenProject(name string) maven.Project {
 				{
 					GroupID:    "org.teiid",
 					ArtifactID: "vdb-codegen-plugin",
-					Version:    constants.TeiidSpringBootVersion,
+					Version:    constants.Config.TeiidSpringBootVersion,
 					Executions: []maven.Execution{
 						{
 							Goals: []string{
@@ -230,7 +236,7 @@ func createMavenProject(name string) maven.Project {
 				{
 					GroupID:    "org.springframework.boot",
 					ArtifactID: "spring-boot-maven-plugin",
-					Version:    constants.SpringBootVersion,
+					Version:    constants.Config.SpringBootVersion,
 					Executions: []maven.Execution{
 						{
 							Goals: []string{
