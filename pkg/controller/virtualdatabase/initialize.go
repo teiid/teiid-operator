@@ -131,6 +131,16 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		}
 	}
 
+	// S2I image default co-ordinates
+	if vdb.Spec.Build.S2i.Registry == "" {
+		vdb.Spec.Build.S2i = v1alpha1.S2i{
+			Registry:    constants.Config.BuildImage.Registry,
+			ImagePrefix: constants.Config.BuildImage.ImagePrefix,
+			ImageName:   constants.Config.BuildImage.ImageName,
+			Tag:         constants.Config.BuildImage.Tag,
+		}
+	}
+
 	// configure default repositories
 	if len(vdb.Spec.Build.Source.MavenRepositories) == 0 {
 		if vdb.Spec.Build.Source.MavenRepositories == nil {
