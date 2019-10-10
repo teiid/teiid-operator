@@ -70,7 +70,10 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 
 		log.Info("Building Base builder Image")
 		// Define new BuildConfig objects
-		buildConfig := action.buildBC(vdb, r)
+		buildConfig, err := action.buildBC(vdb, r)
+		if err != nil {
+			return err
+		}
 		// set ownerreference for service BC only
 		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, opDeployment, r.imageClient, r.scheme); err != nil {
 			return err
@@ -79,7 +82,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		// check to make sure the base s2i image for the build is available
 		isName := buildConfig.Spec.Strategy.SourceStrategy.From.Name
 		isNameSpace := buildConfig.Spec.Strategy.SourceStrategy.From.Namespace
-		_, err := r.imageClient.ImageStreamTags(isNameSpace).Get(isName, metav1.GetOptions{})
+		_, err = r.imageClient.ImageStreamTags(isNameSpace).Get(isName, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
 			log.Warn(isNameSpace, "/", isName, " ImageStreamTag does not exist and is required for this build.")
 			return err
@@ -144,50 +147,47 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 }
 
 // newBCForCR returns a BuildConfig with the same name/namespace as the cr
-func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) obuildv1.BuildConfig {
+func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (obuildv1.BuildConfig, error) {
 	bc := obuildv1.BuildConfig{}
-	images := constants.RuntimeImageDefaults[vdb.Spec.Runtime.Type]
 	env := []corev1.EnvVar{}
-	envvar.SetVal(&env, "DEPLOYMENTS_DIR", "/opt/jboss") // this is avoid copying the jar file
+	envvar.SetVal(&env, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
 	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "-Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8")
 	envvar.SetVal(&env, "ARTIFACT_DIR", "target/")
 
 	incremental := true
-	for _, imageDefaults := range images {
-		if imageDefaults.BuilderImage {
 
-			imageName := fmt.Sprintf("%s:%s", imageDefaults.ImageStreamName, imageDefaults.ImageStreamTag)
-			isNamespace := imageDefaults.ImageStreamNamespace
-			// check if the base image is found otherwise use from dockerhub, add to local images
-			if !image.CheckImageStream(imageName, isNamespace, r.imageClient) {
-				dockerImage := fmt.Sprintf("%s/%s/%s", imageDefaults.ImageRegistry, imageDefaults.ImageRepository, imageDefaults.ImageStreamName)
-				image.CreateImageStream(imageDefaults.ImageStreamName, vdb.ObjectMeta.Namespace, dockerImage, imageDefaults.ImageStreamTag, r.imageClient, r.scheme)
-				isNamespace = vdb.ObjectMeta.Namespace
-			}
-
-			builderName := constants.BuilderImageTargetName
-			bc = obuildv1.BuildConfig{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      builderName,
-					Namespace: vdb.ObjectMeta.Namespace,
-				},
-			}
-			bc.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BuildConfig"))
-			bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
-			bc.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{builderName, "latest"}, ":"), Kind: "ImageStreamTag"}
-			bc.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
-			bc.Spec.Strategy.SourceStrategy = &obuildv1.SourceBuildStrategy{
-				Incremental: &incremental,
-				Env:         env,
-				From: corev1.ObjectReference{
-					Name:      imageName,
-					Namespace: isNamespace,
-					Kind:      "ImageStreamTag",
-				},
-			}
+	imageName := fmt.Sprintf("%s:%s", vdb.Spec.Build.S2i.ImageName, vdb.Spec.Build.S2i.Tag)
+	isNamespace := vdb.ObjectMeta.Namespace
+	// check if the base image is found otherwise use from dockerhub, add to local images
+	if !image.CheckImageStream(imageName, isNamespace, r.imageClient) {
+		dockerImage := fmt.Sprintf("%s/%s/%s", vdb.Spec.Build.S2i.Registry, vdb.Spec.Build.S2i.ImagePrefix, vdb.Spec.Build.S2i.ImageName)
+		err := image.CreateImageStream(vdb.Spec.Build.S2i.ImageName, vdb.ObjectMeta.Namespace, dockerImage, vdb.Spec.Build.S2i.Tag, r.imageClient, r.scheme)
+		if err != nil {
+			return bc, err
 		}
 	}
-	return bc
+
+	builderName := constants.BuilderImageTargetName
+	bc = obuildv1.BuildConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      builderName,
+			Namespace: vdb.ObjectMeta.Namespace,
+		},
+	}
+	bc.SetGroupVersionKind(obuildv1.SchemeGroupVersion.WithKind("BuildConfig"))
+	bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
+	bc.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{builderName, "latest"}, ":"), Kind: "ImageStreamTag"}
+	bc.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
+	bc.Spec.Strategy.SourceStrategy = &obuildv1.SourceBuildStrategy{
+		Incremental: &incremental,
+		Env:         env,
+		From: corev1.ObjectReference{
+			Name:      imageName,
+			Namespace: isNamespace,
+			Kind:      "ImageStreamTag",
+		},
+	}
+	return bc, nil
 }
 
 // triggerBuild triggers a BuildConfig to start a new build

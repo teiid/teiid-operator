@@ -91,6 +91,21 @@ spec:
                       additionalProperties:
                         type: string
                       type: object
+                s2i:
+                  type: object
+                  properties:
+                    registry:
+                      type: string
+                      description: Registry where the s2i based build image is found for a Java based build. (like quay.io)
+                    imagePrefix:
+                      type: string
+                      description: Prefix for image name. (like fabric8)
+                    imageName:
+                      type: string
+                      description: Name of the s2i based image (s2i-java)
+                    tag:
+                      type: string
+                      description: tag of the image (latest)
                 webhooks:
                   type: array
                   minItems: 1
