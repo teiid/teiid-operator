@@ -4,11 +4,10 @@ mavenRepositories:
   central: https://repo.maven.apache.org/maven2
 productized: false
 buildImage:
+  registry: docker.io
+  prefix: fabric8
   name: s2i-java
   tag: latest-java11
-  registry: docker.io
-  repo: fabric8
-  namespace: openshift
 drivers:
   postgresql: 42.1.4
   mysql: 5.1.40

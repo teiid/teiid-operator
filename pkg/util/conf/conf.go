@@ -36,11 +36,10 @@ type Configuration struct {
 
 // BuildImage --
 type BuildImage struct {
-	Registry  string `yaml:"registry,omitempty"`
-	Repo      string `yaml:"repo,omitempty"`
-	Name      string `yaml:"name,omitempty"`
-	Tag       string `yaml:"tag,omitempty"`
-	Namespace string `yaml:"namespace,omitempty"`
+	Registry    string `yaml:"registry,omitempty"`
+	ImagePrefix string `yaml:"prefix,omitempty"`
+	ImageName   string `yaml:"name,omitempty"`
+	Tag         string `yaml:"tag,omitempty"`
 }
 
 // GetConfiguration --

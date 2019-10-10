@@ -1,7 +1,7 @@
 apiVersion: teiid.io/v1alpha1
 kind: VirtualDatabase
 metadata:
-  name: rdbms-springboot
+  name: customer-vdb
 spec:
   replicas: 1
   env:

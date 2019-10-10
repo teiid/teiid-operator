@@ -20,20 +20,3 @@ var SpringBootRuntime = v1alpha1.RuntimeType{
 	Type:    SpringBoot,
 	Version: Config.TeiidSpringBootVersion,
 }
-
-// RuntimeImageDefaults ...
-var RuntimeImageDefaults = map[string][]v1alpha1.Image{
-	SpringBootRuntime.Type: {
-		{
-			ImageStreamName:      Config.BuildImage.Name,
-			ImageStreamNamespace: Config.BuildImage.Namespace,
-			ImageStreamTag:       Config.BuildImage.Tag,
-			ImageRegistry:        Config.BuildImage.Registry,
-			ImageRepository:      Config.BuildImage.Repo,
-			BuilderImage:         true,
-		},
-		{
-			BuilderImage: false,
-		},
-	},
-}
