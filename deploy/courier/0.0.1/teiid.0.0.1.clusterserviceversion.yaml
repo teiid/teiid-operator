@@ -120,17 +120,30 @@ spec:
       - kind: ImageStream
         version: image.openshift.io/v1
       specDescriptors:
-      - description: Runtime
-        displayName: Runtime
-        path: runtime
+      - description: Type
+        displayName: Type
+        path: runtime.type
         x-descriptors:
-        - "urn:alm:descriptor:com.tectonic.ui:label"
+        - "urn:alm:descriptor:com.tectonic.ui:fieldGroup:Runtime"
+        - "urn:alm:descriptor:com.tectonic.ui:text"
+      - description: Version
+        displayName: Version
+        path: runtime.version
+        x-descriptors:
+        - "urn:alm:descriptor:com.tectonic.ui:fieldGroup:Runtime"
+        - "urn:alm:descriptor:com.tectonic.ui:text"
+      - description: Expose Via 3 Scale
+        displayName: Expose Via 3 Scale
+        path: exposeVia3scale
+        value: false
+        x-descriptors:
+        - "urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+      - description:  Desired number of Pods for the cluster
+        displayName: Size
+        path: replicas
+        x-descriptors:
+        - "urn:alm:descriptor:com.tectonic.ui:podCount"
       statusDescriptors:
-      - description: Deployments for the VirtualDatabase environment.
-        displayName: Deployments
-        path: deployments
-        x-descriptors:
-        - "urn:alm:descriptor:com.tectonic.ui:podStatuses"
       - description: The address for accessing teiid service, if it is deployed.
         displayName: Route
         path: route
