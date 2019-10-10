@@ -42,6 +42,7 @@ type VirtualDatabaseBuildObject struct {
 	Env         []corev1.EnvVar `json:"env,omitempty"`
 	Git         Git             `json:"git,omitempty"`
 	Source      Source          `json:"source,omitempty"`
+	S2i         S2i             `json:"s2i,omitempty"`
 	Webhooks    []WebhookSecret `json:"webhooks,omitempty"`
 }
 
@@ -60,6 +61,15 @@ type Source struct {
 	OpenAPI           string            `json:"openapi,omitempty"`
 	Dependencies      []string          `json:"dependencies,omitempty"`
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
+}
+
+// S2i Git coordinates to locate the s2i image
+// +k8s:openapi-gen=true
+type S2i struct {
+	Registry    string `json:"registry,omitempty"`
+	ImagePrefix string `json:"imagePrefix,omitempty"`
+	ImageName   string `json:"imageName,omitempty"`
+	Tag         string `json:"tag,omitempty"`
 }
 
 // WebhookType literal type to distinguish between different types of Webhooks
