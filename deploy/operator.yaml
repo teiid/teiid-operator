@@ -15,7 +15,7 @@ spec:
       serviceAccountName: dv-operator
       containers:
       - name: dv-operator
-        image: brew-pulp-docker01.web.prod.ext.phx2.redhat.com:8888/fuse7-tech-preview/dv-operator:7.5.0
+        image:  registry.redhat.io/fuse7-tech-preview/dv-operator:7.5.0
         command:
         - teiid-operator
         imagePullPolicy: Always
@@ -32,4 +32,3 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.labels['name']
-              
