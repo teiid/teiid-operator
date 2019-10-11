@@ -15,7 +15,7 @@ spec:
       serviceAccountName: dv-operator
       containers:
       - name: dv-operator
-        image:  registry.redhat.io/fuse7-tech-preview/dv-operator:7.5.0
+        image: registry.redhat.io/fuse7-tech-preview/dv-operator:1.5
         command:
         - teiid-operator
         imagePullPolicy: Always
