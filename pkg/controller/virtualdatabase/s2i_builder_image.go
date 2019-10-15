@@ -114,7 +114,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		// Trigger first build of "builder" and binary BCs
 		if bc.Status.LastVersion == 0 {
 			log.Info("triggering the base builder image build")
-			if err = action.triggerBuild(*bc, r); err != nil {
+			if err = action.triggerBuild(*bc, vdb.Spec.Build.Source.MavenRepositories, r); err != nil {
 				return err
 			}
 		}
@@ -191,7 +191,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 }
 
 // triggerBuild triggers a BuildConfig to start a new build
-func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, r *ReconcileVirtualDatabase) error {
+func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, mavenRepositories map[string]string, r *ReconcileVirtualDatabase) error {
 	log := log.With("kind", "BuildConfig", "name", bc.GetName(), "namespace", bc.GetNamespace())
 	log.Info("starting the build for base image")
 	buildConfig, err := r.buildClient.BuildConfigs(bc.Namespace).Get(bc.Name, metav1.GetOptions{})
@@ -202,6 +202,7 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, r *Re
 	vdb.ObjectMeta.Name = "virtualdatabase-image"
 	vdb.ObjectMeta.Namespace = bc.GetNamespace()
 	vdb.Spec.Build.Source.DDL = action.ddlFile()
+	vdb.Spec.Build.Source.MavenRepositories = mavenRepositories
 
 	files := map[string]string{}
 	pom, err := GeneratePom(vdb, true, true)
