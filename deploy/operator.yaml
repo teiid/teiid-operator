@@ -17,7 +17,7 @@ spec:
       - name: dv-operator
         image: registry.redhat.io/fuse7-tech-preview/dv-operator:1.5
         command:
-        - teiid-operator
+        - dv-operator
         imagePullPolicy: Always
         env:
         - name: WATCH_NAMESPACE
