@@ -5,7 +5,7 @@ import "github.com/teiid/teiid-operator/pkg/util/conf"
 
 const (
 	// Version --
-	Version = "0.0.1"
+	Version = "0.1.0"
 	// BuilderImageTargetName target build image name
 	BuilderImageTargetName = "virtualdatabase-builder"
 	// SpringBoot --
