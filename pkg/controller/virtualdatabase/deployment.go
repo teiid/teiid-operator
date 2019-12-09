@@ -134,14 +134,14 @@ func (action *deploymentAction) findDC(vdb *v1alpha1.VirtualDatabase, r *Reconci
 		client.InNamespace(vdb.ObjectMeta.Namespace),
 	}
 
-	list := oappsv1.DeploymentConfigList{
+	list := &oappsv1.DeploymentConfigList{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "DeploymentConfig",
 			APIVersion: "apps.openshift.io/v1",
 		},
 	}
 
-	err := r.client.List(context.TODO(), list, listOpts)
+	err := r.client.List(context.TODO(), list, listOpts...)
 	if err == nil {
 		for _, item := range list.Items {
 			if item.Name == vdb.ObjectMeta.Name {

@@ -9,8 +9,9 @@ require (
 	github.com/go-openapi/spec v0.19.3
 	github.com/go-openapi/validate v0.19.5 // indirect
 	github.com/gophercloud/gophercloud v0.7.0 // indirect
+	github.com/kiegroup/kie-cloud-operator v0.0.0-20191206193615-d76350c26754 // indirect
 	github.com/magiconair/properties v1.8.0
-	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible	
+	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/operator-framework/operator-sdk v0.0.0-00010101000000-000000000000
 	github.com/pkg/errors v0.8.1
@@ -42,6 +43,13 @@ replace (
 	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.8.2-0.20190525122359-d20e84d0fb64
 )
 
+replace (
+	github.com/openshift/api => github.com/openshift/api v3.9.1-0.20190814194116-a94e914914f4+incompatible
+	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20190813201236-5a5508328169
+)
+
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.11.0
+
+replace sigs.k8s.io/controller-runtime => sigs.k8s.io/controller-runtime v0.2.2
 
 go 1.13
