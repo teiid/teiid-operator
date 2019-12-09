@@ -1,26 +1,29 @@
-module teiid-operator
+module github.com/teiid/teiid-operator
 
 require (
+	//github.com/Azure/go-autorest/autorest v0.9.3 // indirect
 	github.com/RHsyseng/operator-utils v0.0.0-20191024171829-7e918ca09e5e
-	github.com/ghodss/yaml v1.0.0
+	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
+	github.com/ghodss/yaml v1.0.1-0.20180820084758-c7ce16629ff4
 	github.com/go-logr/logr v0.1.0
-	github.com/go-openapi/spec v0.17.2
+	github.com/go-openapi/spec v0.19.3
+	github.com/go-openapi/validate v0.19.5 // indirect
+	github.com/gophercloud/gophercloud v0.7.0 // indirect
 	github.com/magiconair/properties v1.8.0
-	github.com/openshift/api v3.9.0+incompatible
+	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible	
 	github.com/openshift/client-go v3.9.0+incompatible
-	github.com/operator-framework/operator-sdk v0.12.1-0.20191122190600-84193199e488
+	github.com/operator-framework/operator-sdk v0.0.0-00010101000000-000000000000
 	github.com/pkg/errors v0.8.1
 	github.com/scylladb/go-set v1.0.2
 	github.com/spf13/pflag v1.0.3
-	github.com/stretchr/testify v1.3.0
-	github.com/teiid/teiid-operator v0.0.0-20191101204323-9d85cdfc8089
+	github.com/stretchr/testify v1.4.0
 	go.uber.org/zap v1.10.0
-	gopkg.in/yaml.v2 v2.2.2
+	gopkg.in/yaml.v2 v2.2.7
 	k8s.io/api v0.0.0-20190918155943-95b840bb6a1f
 	k8s.io/apimachinery v0.0.0-20190913080033-27d36303b655
 	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
 	k8s.io/kube-openapi v0.0.0-20190401085232-94e1e7b7574c
-	sigs.k8s.io/controller-runtime v0.2.0
+	sigs.k8s.io/controller-runtime v0.2.2
 )
 
 // Pinned to kubernetes-1.14.1
@@ -33,14 +36,12 @@ replace (
 )
 
 replace (
-	// Indirect operator-sdk dependencies use git.apache.org, which is frequently
-	// down. The github mirror should be used instead.
-	// Locking to a specific version (from 'go mod graph'):
-	git.apache.org/thrift.git => github.com/apache/thrift v0.0.0-20180902110319-2566ecd5d999
 	github.com/coreos/prometheus-operator => github.com/coreos/prometheus-operator v0.31.1
 	// Pinned to v2.10.0 (kubernetes-1.14.1) so https://proxy.golang.org can
 	// resolve it correctly.
-	github.com/prometheus/prometheus => github.com/prometheus/prometheus v0.0.0-20190525122359-d20e84d0fb64
+	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.8.2-0.20190525122359-d20e84d0fb64
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.11.0
+
+go 1.13

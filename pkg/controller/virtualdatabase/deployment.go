@@ -130,16 +130,20 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 }
 
 func (action *deploymentAction) findDC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*oappsv1.DeploymentConfig, error) {
-	listOps := &client.ListOptions{
-		Namespace: vdb.ObjectMeta.Namespace,
-		// LabelSelector: labels.SelectorFromSet(labels.Set{
-		// 	"deploymentconfig": vdb.ObjectMeta.Name,
-		// }),
+	listOpts := []client.ListOption{
+		client.InNamespace(vdb.ObjectMeta.Namespace),
 	}
-	dcList := &oappsv1.DeploymentConfigList{}
-	err := r.client.List(context.TODO(), listOps, dcList)
+
+	list := oappsv1.DeploymentConfigList{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "DeploymentConfig",
+			APIVersion: "apps.openshift.io/v1",
+		},
+	}
+
+	err := r.client.List(context.TODO(), list, listOpts)
 	if err == nil {
-		for _, item := range dcList.Items {
+		for _, item := range list.Items {
 			if item.Name == vdb.ObjectMeta.Name {
 				return &item, nil
 			}

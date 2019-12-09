@@ -9,7 +9,9 @@ import (
 	"github.com/go-logr/logr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	logz "sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
 
 // Logger --
@@ -39,7 +41,7 @@ func GetLogger(name string) *zap.SugaredLogger {
 
 func createLogger(development bool) (logger Logger) {
 	log := Logger{
-		Logger:        logf.ZapLogger(development),
+		Logger:        log.ZapLogger(development),
 		SugaredLogger: zapSugaredLogger(development),
 	}
 	defer log.SugaredLogger.Sync()
@@ -82,7 +84,7 @@ func zapSugaredLoggerTo(destWriter io.Writer, development bool) *zap.SugaredLogg
 		}))
 	}
 	opts = append(opts, zap.AddCallerSkip(1), zap.ErrorOutput(sink))
-	log := zap.New(zapcore.NewCore(&logf.KubeAwareEncoder{Encoder: enc, Verbose: development}, sink, lvl))
+	log := zap.New(zapcore.NewCore(&logz.KubeAwareEncoder{Encoder: enc, Verbose: development}, sink, lvl))
 	log = log.WithOptions(opts...)
 
 	return log.Sugar()
@@ -93,6 +95,7 @@ func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format(time.RFC3339Nano))
 }
 
+// GetBoolEnv --
 func GetBoolEnv(key string) bool {
 	val := GetEnv(key, "false")
 	ret, err := strconv.ParseBool(val)
@@ -102,6 +105,7 @@ func GetBoolEnv(key string) bool {
 	return ret
 }
 
+// GetEnv --
 func GetEnv(key, fallback string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
