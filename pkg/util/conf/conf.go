@@ -49,7 +49,11 @@ func GetConfiguration() Configuration {
 	var c Configuration
 	yamlFile, err := ioutil.ReadFile("/conf/config.yaml")
 	if err != nil {
-		log.Error("Failed to read configuration file ", err)
+		yamlFile, err = ioutil.ReadFile("build/conf/config.yaml")
+		if err != nil {
+			log.Error("Failed to read configuration file at /conf/config.yaml", err)
+			return c
+		}
 	}
 	err = yaml.Unmarshal(yamlFile, &c)
 	if err != nil {
