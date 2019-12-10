@@ -91,6 +91,9 @@ spec:
                       additionalProperties:
                         type: string
                       type: object
+                    openapi:
+                      type: string
+                      description: OpenAPI document, that is implemented through Virtual database procedures
                 s2i:
                   type: object
                   properties:
@@ -106,25 +109,6 @@ spec:
                     tag:
                       type: string
                       description: tag of the image (latest)
-                webhooks:
-                  type: array
-                  minItems: 1
-                  items:
-                    type: object
-                    description: WebHook secrets for build configs
-                    required:
-                      - type
-                      - secret
-                    properties:
-                      type:
-                        type: string
-                        description: WebHook type, either GitHub or Generic
-                        enum:
-                          - GitHub
-                          - Generic
-                      secret:
-                        type: string
-                        description: Secret value for webhook
                 env:
                   type: array
                   items:

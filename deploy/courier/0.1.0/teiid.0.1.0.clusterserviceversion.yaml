@@ -19,7 +19,7 @@ metadata:
           "apiVersion": "teiid.io/v1alpha1",
           "kind": "VirtualDatabase",
           "metadata": {
-            "name": "rdbms-springboot"
+            "name": "customer-vdb"
           },
           "spec": {
             "replicas": 1,
@@ -43,7 +43,7 @@ metadata:
             ],
             "build": {
               "source": {
-                "ddl": "CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');\nUSE DATABASE customer;\n\nCREATE FOREIGN DATA WRAPPER postgresql;\nCREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;\n\nCREATE SCHEMA accounts SERVER sampledb;\nCREATE VIRTUAL SCHEMA portfolio;\n\nSET SCHEMA accounts;\nIMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS(\"importer.useFullSchemaName\" 'false');\n\nSET SCHEMA portfolio;\n\nCREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS \n    SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip \n    FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a \n    ON c.ID = a.CUSTOMER_ID;\n"
+                "ddl": "CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');\nUSE DATABASE customer;\n\nCREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;\n\nCREATE SCHEMA accounts SERVER sampledb;\nCREATE VIRTUAL SCHEMA portfolio;\n\nSET SCHEMA accounts;\nIMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS(\"importer.useFullSchemaName\" 'false');\n\nSET SCHEMA portfolio;\n\nCREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS \n    SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip \n    FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a \n    ON c.ID = a.CUSTOMER_ID;\n"
               }
             }
           }
@@ -67,7 +67,7 @@ spec:
   - operator
   - springboot
   version: 0.1.0
-  maturity: alpha
+  maturity: beta
   maintainers:
   - name: Red Hat, Inc.
     email: teiid-dev@lists.jboss.org

@@ -43,7 +43,6 @@ type VirtualDatabaseBuildObject struct {
 	Git         Git             `json:"git,omitempty"`
 	Source      Source          `json:"source,omitempty"`
 	S2i         S2i             `json:"s2i,omitempty"`
-	Webhooks    []WebhookSecret `json:"webhooks,omitempty"`
 }
 
 // Git coordinates to locate the source code to build
@@ -70,23 +69,6 @@ type S2i struct {
 	ImagePrefix string `json:"imagePrefix,omitempty"`
 	ImageName   string `json:"imageName,omitempty"`
 	Tag         string `json:"tag,omitempty"`
-}
-
-// WebhookType literal type to distinguish between different types of Webhooks
-type WebhookType string
-
-const (
-	// GitHubWebhook GitHub webhook
-	GitHubWebhook WebhookType = "GitHub"
-	// GenericWebhook Generic webhook
-	GenericWebhook WebhookType = "Generic"
-)
-
-// WebhookSecret Secret to use for a given webhook
-// +k8s:openapi-gen=true
-type WebhookSecret struct {
-	Type   WebhookType `json:"type,omitempty"`
-	Secret string      `json:"secret,omitempty"`
 }
 
 // RuntimeType - type of condition

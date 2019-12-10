@@ -19,7 +19,6 @@ spec:
         CREATE DATABASE PetStore OPTIONS (ANNOTATION 'PetStore VDB');
         USE DATABASE PetStore;
 
-        CREATE FOREIGN DATA WRAPPER postgresql;
         CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;
 
         CREATE VIRTUAL SCHEMA pets;
