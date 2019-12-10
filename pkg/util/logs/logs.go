@@ -1,3 +1,20 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package logs
 
 import (
@@ -9,7 +26,8 @@ import (
 	"github.com/go-logr/logr"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	logzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 // Logger --
@@ -39,7 +57,9 @@ func GetLogger(name string) *zap.SugaredLogger {
 
 func createLogger(development bool) (logger Logger) {
 	log := Logger{
-		Logger:        logf.ZapLogger(development),
+		Logger: logzap.New(func(o *logzap.Options) {
+			o.Development = development
+		}),
 		SugaredLogger: zapSugaredLogger(development),
 	}
 	defer log.SugaredLogger.Sync()
@@ -82,7 +102,7 @@ func zapSugaredLoggerTo(destWriter io.Writer, development bool) *zap.SugaredLogg
 		}))
 	}
 	opts = append(opts, zap.AddCallerSkip(1), zap.ErrorOutput(sink))
-	log := zap.New(zapcore.NewCore(&logf.KubeAwareEncoder{Encoder: enc, Verbose: development}, sink, lvl))
+	log := zap.New(zapcore.NewCore(&logzap.KubeAwareEncoder{Encoder: enc, Verbose: development}, sink, lvl))
 	log = log.WithOptions(opts...)
 
 	return log.Sugar()
@@ -93,6 +113,7 @@ func timeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format(time.RFC3339Nano))
 }
 
+// GetBoolEnv --
 func GetBoolEnv(key string) bool {
 	val := GetEnv(key, "false")
 	ret, err := strconv.ParseBool(val)
@@ -102,6 +123,7 @@ func GetBoolEnv(key string) bool {
 	return ret
 }
 
+// GetEnv --
 func GetEnv(key, fallback string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
