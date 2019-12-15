@@ -80,6 +80,9 @@ spec:
                     ddl:
                       type: string
                       description: Virtual database in DDL as string
+                    maven:
+                      type: string
+                      description: Virtual database in Maven in GAV
                     dependencies:
                       type: array
                       minItems: 0

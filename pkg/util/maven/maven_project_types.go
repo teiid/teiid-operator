@@ -94,9 +94,26 @@ type Plugin struct {
 
 // Execution --
 type Execution struct {
-	ID    string   `xml:"id"`
-	Phase string   `xml:"phase"`
-	Goals []string `xml:"goals>goal,omitempty"`
+	ID            string        `xml:"id"`
+	Phase         string        `xml:"phase,omitempty"`
+	Goals         []string      `xml:"goals>goal,omitempty"`
+	Configuration Configuration `xml:"configuration,omitempty"`
+}
+
+// Configuration --
+type Configuration struct {
+	ArtifactItems   []ArtifactItem `xml:"artifactItems>artifactItem,omitempty"`
+	OutputDirectory string         `xml:"outputDirectory,omitempty"`
+	VdbFile         string         `xml:"vdbFile,omitempty"`
+}
+
+// ArtifactItem --
+type ArtifactItem struct {
+	GroupID             string `xml:"groupId"`
+	ArtifactID          string `xml:"artifactId"`
+	Version             string `xml:"version,omitempty"`
+	Type                string `xml:"type,omitempty"`
+	DestinationFileName string `xml:"destFileName,omitempty"`
 }
 
 // Properties --

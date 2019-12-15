@@ -16,8 +16,8 @@ limitations under the License.
 */
 package virtualdatabase
 
-// PromentheusConfig --
-func PromentheusConfig() string {
+// PrometheusConfig --
+func PrometheusConfig() string {
 	return `
     startDelaySecs: 5
     ssl: false

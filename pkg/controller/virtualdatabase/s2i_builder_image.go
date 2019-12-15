@@ -30,6 +30,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/image"
+	"github.com/teiid/teiid-operator/pkg/util/maven"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -205,14 +206,20 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, maven
 	vdb.Spec.Build.Source.MavenRepositories = mavenRepositories
 
 	files := map[string]string{}
-	pom, err := GeneratePom(vdb, true, true)
+
+	pom, err := GeneratePom(vdb, vdb.Spec.Build.Source.DDL, true, true)
 	if err != nil {
 		return err
 	}
+	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl")
+	pomContent, err := maven.GeneratePomContent(pom)
+	if err != nil {
+		return err
+	}
+	log.Debug(" Base Build Pom ", pomContent)
 
-	files["/pom.xml"] = pom
+	files["/pom.xml"] = pomContent
 	files["/src/main/resources/teiid.ddl"] = action.ddlFile()
-	log.Debug(pom)
 
 	tarReader, err := util.Tar(files)
 	if err != nil {
@@ -239,8 +246,8 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, maven
 }
 
 func (action *s2iBuilderImageAction) ddlFile() string {
-	return `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');	USE DATABASE customer;
-	SET NAMESPACE 'http://teiid.org/rest' AS REST;
+	return `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');	
+	USE DATABASE customer;
 	CREATE FOREIGN DATA WRAPPER h2;
 	CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2;`
 }

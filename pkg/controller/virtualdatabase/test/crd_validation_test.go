@@ -90,6 +90,8 @@ func TestCompleteCRD(t *testing.T) {
 			//The ObjectReference in From is not expected to be used and is not fully defined TODO: verify
 		} else if strings.HasSuffix(missing.Path, "/spec/build/source/openapi") {
 			//The ObjectReference in From is not expected to be used and is not fully defined TODO: verify
+		} else if strings.HasSuffix(missing.Path, "/spec/build/source/maven") {
+			//The ObjectReference in From is not expected to be used and is not fully defined TODO: verify
 		} else {
 			assert.Fail(t, "Discrepancy between CRD and Struct", "Missing or incorrect schema validation at %v, expected type %v", missing.Path, missing.Type)
 		}
