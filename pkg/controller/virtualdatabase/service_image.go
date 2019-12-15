@@ -21,8 +21,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"github.com/teiid/teiid-operator/pkg/util/maven"
 
 	obuildv1 "github.com/openshift/api/build/v1"
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
@@ -31,6 +34,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/image"
+	"github.com/teiid/teiid-operator/pkg/util/zip"
 	corev1 "k8s.io/api/core/v1"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,8 +74,8 @@ func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.Virt
 // Handle handles the virtualdatabase
 func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 	// check for the VDB source type
-	if vdb.Spec.Build.Git.URI == "" && vdb.Spec.Build.Source.DDL == "" {
-		return errors.New("Only Git or Content based VDBs are allowed, neither are defined")
+	if vdb.Spec.Build.Git.URI == "" && vdb.Spec.Build.Source.DDL == "" && vdb.Spec.Build.Source.Maven == "" {
+		return errors.New("Only Git and DDL Content based, Maven based VDBs are allowed, none of these types are defined")
 	}
 
 	// Define new BuildConfig objects
@@ -186,6 +190,9 @@ func (action *serviceImageAction) serviceBC(vdb *v1alpha1.VirtualDatabase) obuil
 	} else if vdb.Spec.Build.Source.DDL != "" {
 		log.Info("DDL based build is chosen..")
 		bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
+	} else if vdb.Spec.Build.Source.Maven != "" {
+		log.Info("Maven based VDB build is chosen..")
+		bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
 	}
 
 	bc.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
@@ -220,15 +227,66 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 			addOpenAPI = true
 		}
 
+		// check to make sure which type of vdb
+		mavenVdb := false
+		ddl := vdb.Spec.Build.Source.DDL
+		if vdb.Spec.Build.Source.DDL != "" {
+			mavenVdb = false
+		} else if vdb.Spec.Build.Source.Maven != "" {
+			mavenVdb = true
+			vdbFile, err := readVdbFromMaven(vdb, "/tmp/teiid.vdb")
+			if err != nil {
+				return err
+			}
+			files, err := zip.Unzip(vdbFile, "/tmp/"+vdb.ObjectMeta.Name)
+			if err != nil {
+				return err
+			}
+			log.Info("Maven based VDB file contains files: ", files)
+			b, err := ioutil.ReadFile("/tmp/" + vdb.ObjectMeta.Name + "/META-INF/vdb.ddl")
+			if err != nil {
+				return err
+			}
+			ddl = string(b)
+			log.Debug("Read VDB File: " + ddl)
+		}
+
 		//Binary build, generate the pom file
-		pom, err := GeneratePom(vdb, false, addOpenAPI)
+		pom, err := GeneratePom(vdb, ddl, false, addOpenAPI)
 		if err != nil {
 			return nil
 		}
-		files["/pom.xml"] = pom
-		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
-		files["/src/main/resources/prometheus-config.yml"] = PromentheusConfig()
-		files["/src/main/resources/application.properties"] = action.applicationProperties()
+
+		if mavenVdb {
+			// vdb-code-gen plugin is finding the vdb.ddl file before the dependency
+			// or the .vdb file from the base image, this is way hard code to use the
+			// correct vdb file.
+			addVdbCodeGenPlugIn(&pom, "/tmp/teiid.vdb")
+			// maven based vdb is given
+			vdbDependency, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
+			if err != nil {
+				log.Error("The Maven based VDB is provided in bad format", err)
+				return err
+			}
+			// Add VDB as dependency
+			pom.AddDependencies(vdbDependency)
+			// configure pom.xml to copy the teiid.vdb into classpath
+			addCopyPlugIn(vdbDependency, &pom)
+		} else {
+			addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl")
+			files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
+		}
+
+		pomContent, err := maven.GeneratePomContent(pom)
+		if err != nil {
+			return err
+		}
+
+		log.Info("Pom file generated ", pomContent)
+
+		files["/pom.xml"] = pomContent
+		files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
+		files["/src/main/resources/application.properties"] = action.applicationProperties(mavenVdb)
 
 		tarReader, err := util.Tar(files)
 		if err != nil {
@@ -270,8 +328,8 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 	return nil
 }
 
-func (action *serviceImageAction) applicationProperties() string {
-	return `logging.level.io.jaegertracing.internal.reporters=WARN
+func (action *serviceImageAction) applicationProperties(addVDB bool) string {
+	str := `logging.level.io.jaegertracing.internal.reporters=WARN
 	logging.level.i.j.internal.reporters.LoggingReporter=WARN
 	logging.level.org.teiid.SECURITY=WARN
 	spring.main.allow-bean-definition-overriding=true
@@ -280,4 +338,16 @@ func (action *serviceImageAction) applicationProperties() string {
 	springfox.documentation.swagger.v2.path=/openapi.json
 	spring.teiid.model.package=io.integration
 	`
+	if addVDB {
+		str = str + "teiid.vdb-file=teiid.vdb\n"
+	}
+	return str
+}
+
+func readVdbFromMaven(vdb *v1alpha1.VirtualDatabase, targetName string) (string, error) {
+	dep, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
+	if err != nil {
+		return "", err
+	}
+	return maven.DownloadDependency(dep, targetName, vdb.Spec.Build.Source.MavenRepositories)
 }

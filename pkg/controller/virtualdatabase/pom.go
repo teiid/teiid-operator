@@ -27,12 +27,10 @@ import (
 )
 
 // GeneratePom -- Generate the POM file based on the VDb provided
-func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, includeOpenAPIAdependency bool) (string, error) {
+func GeneratePom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDependencies bool, includeOpenAPIAdependency bool) (maven.Project, error) {
 	// do code generation.
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
-
-	ddl := vdb.Spec.Build.Source.DDL
 
 	mavenRepos := vdb.Spec.Build.Source.MavenRepositories
 	for k, v := range mavenRepos {
@@ -44,7 +42,7 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 	for _, str := range vdb.Spec.Build.Source.Dependencies {
 		d, err := maven.ParseGAV(str)
 		if err != nil {
-			return "", err
+			return project, err
 		}
 		project.AddDependencies(d)
 	}
@@ -134,7 +132,58 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, includeAllDependencies bool, inc
 		})
 	}
 
-	return maven.GeneratePomContent(project)
+	return project, nil
+}
+
+func addCopyPlugIn(vdbDependency maven.Dependency, project *maven.Project) {
+	// build the plugin to grab the VDB from maven repo and make it part of the package
+	plugin := maven.Plugin{
+		GroupID:    "org.apache.maven.plugins",
+		ArtifactID: "maven-dependency-plugin",
+		Executions: []maven.Execution{
+			{
+				ID:    "copy-vdb",
+				Phase: "generate-sources",
+				Goals: []string{
+					"copy",
+				},
+				Configuration: maven.Configuration{
+					ArtifactItems: []maven.ArtifactItem{
+						{
+							GroupID:             vdbDependency.GroupID,
+							ArtifactID:          vdbDependency.ArtifactID,
+							Version:             vdbDependency.Version,
+							Type:                "vdb",
+							DestinationFileName: "teiid.vdb",
+						},
+					},
+					OutputDirectory: "${project.build.outputDirectory}",
+				},
+			},
+		},
+	}
+	project.AddBuildPlugin(plugin)
+}
+
+func addVdbCodeGenPlugIn(project *maven.Project, vdbName string) {
+	plugin := maven.Plugin{
+		GroupID:    "org.teiid",
+		ArtifactID: "vdb-codegen-plugin",
+		Version:    constants.Config.TeiidSpringBootVersion,
+		Executions: []maven.Execution{
+			{
+				Goals: []string{
+					"vdb-codegen",
+				},
+				ID:    "codegen",
+				Phase: "generate-sources",
+				Configuration: maven.Configuration{
+					VdbFile: vdbName,
+				},
+			},
+		},
+	}
+	project.PrependBuildPlugin(plugin)
 }
 
 func createMavenProject(name string) maven.Project {
@@ -219,20 +268,6 @@ func createMavenProject(name string) maven.Project {
 		},
 		Build: maven.Build{
 			Plugins: []maven.Plugin{
-				{
-					GroupID:    "org.teiid",
-					ArtifactID: "vdb-codegen-plugin",
-					Version:    constants.Config.TeiidSpringBootVersion,
-					Executions: []maven.Execution{
-						{
-							Goals: []string{
-								"vdb-codegen",
-							},
-							ID:    "codegen",
-							Phase: "generate-sources",
-						},
-					},
-				},
 				{
 					GroupID:    "org.springframework.boot",
 					ArtifactID: "spring-boot-maven-plugin",

@@ -53,10 +53,11 @@ type Git struct {
 	ContextDir string `json:"contextDir,omitempty"`
 }
 
-// Source Git coordinates to locate the source code to build
+// Source VDB coordinates to locate the source code to build
 // +k8s:openapi-gen=true
 type Source struct {
 	DDL               string            `json:"ddl,omitempty"`
+	Maven             string            `json:"maven,omitempty"`
 	OpenAPI           string            `json:"openapi,omitempty"`
 	Dependencies      []string          `json:"dependencies,omitempty"`
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`

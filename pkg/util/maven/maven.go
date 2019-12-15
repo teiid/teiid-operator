@@ -21,6 +21,8 @@ import (
 	"bytes"
 	"encoding/xml"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
@@ -124,10 +126,67 @@ func ParseGAV(gav string) (Dependency, error) {
 	return dep, nil
 }
 
-// ExtraOptions --
-func ExtraOptions(localRepo string) []string {
-	if _, err := os.Stat(localRepo); err == nil {
-		return []string{"-Dmaven.repo.local=" + localRepo}
+// DownloadDependency --
+func DownloadDependency(d Dependency, filepath string, mavenRepos map[string]string) (string, error) {
+	parts := append(strings.Split(d.GroupID, "."), d.ArtifactID)
+	artifactName := strings.Join(append(parts, d.Version), "/") + "/" + fileName(d)
+
+	if mavenRepos["central"] == "" {
+		mavenRepos["central"] = "https://repo1.maven.org/maven2/"
 	}
-	return []string{"-Dcamel.noop=true"}
+	for _, v := range mavenRepos {
+		url := v + artifactName
+		if !strings.HasSuffix(v, "/") {
+			url = v + "/" + artifactName
+		}
+		err := downloadFile(filepath, url)
+		if err == nil {
+			return filepath, nil
+		}
+	}
+	return "", errors.New("Failed to download the artfact from configured maven repositories and maven central")
+}
+
+func fileName(a Dependency) string {
+	ext := "jar"
+	if a.Type != "" {
+		ext = a.Type
+	}
+	if a.Classifier != "" {
+		return fmt.Sprintf("%s-%s-%s.%s", a.ArtifactID, a.Version, a.Classifier, ext)
+	}
+	return fmt.Sprintf("%s-%s.%s", a.ArtifactID, a.Version, ext)
+}
+
+func downloadFile(filepath string, url string) (err error) {
+	log := logs.GetLogger("maven")
+
+	log.Info("downloading artifact from ", url, " writing to ", filepath)
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Check server response
+	if resp.StatusCode != http.StatusOK {
+		log.Error("Failed download of url ", url)
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	// Writer the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -57,6 +57,16 @@ func (p *Project) AddDependency(dep Dependency) {
 	p.Dependencies = append(p.Dependencies, dep)
 }
 
+// AddBuildPlugin adds a build plugin
+func (p *Project) AddBuildPlugin(plugin Plugin) {
+	p.Build.Plugins = append(p.Build.Plugins, plugin)
+}
+
+// PrependBuildPlugin adds a build plugin
+func (p *Project) PrependBuildPlugin(plugin Plugin) {
+	p.Build.Plugins = append(p.Build.Plugins, plugin)
+}
+
 // AddRepository adds a repository
 func (p *Project) AddRepository(repo Repository) {
 	for _, r := range p.Repositories {

@@ -1,7 +1,7 @@
 apiVersion: teiid.io/v1alpha1
 kind: VirtualDatabase
 metadata:
-  name: customer-vdb
+  name: dv-customer
 spec:
   env:
   - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
