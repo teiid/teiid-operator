@@ -333,8 +333,10 @@ func (action *serviceImageAction) applicationProperties(addVDB bool) string {
 	logging.level.i.j.internal.reporters.LoggingReporter=WARN
 	logging.level.org.teiid.SECURITY=WARN
 	spring.main.allow-bean-definition-overriding=true
+	teiid.jdbc-secure-enable=true
+	teiid.pg-secure-enable=true
 	teiid.jdbc-enable=true
-	teiid.pg-enable=true
+	teiid.pg-enable=true	
 	springfox.documentation.swagger.v2.path=/openapi.json
 	spring.teiid.model.package=io.integration
 	`

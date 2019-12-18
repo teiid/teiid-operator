@@ -69,6 +69,14 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			return err
 		}
 
+		// check to see if the user configured a secret with certificates
+		// if not have generate self signed
+		hasCertSecret := false
+		_, err = findSecret(vdb, r)
+		if err == nil {
+			hasCertSecret = true
+		}
+
 		dc, err := action.deploymentConfig(vdb, *bc, r)
 		if err != nil {
 			return err
@@ -82,32 +90,36 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 		if err != nil {
 			return err
 		}
+
+		// Create the service and route needed. We are creating service
+		// before so that we can use the service annotation to create certificate
+		// that can be loaded in a deployment
+		if len(existing.Spec.Template.Spec.Containers[0].Ports) != 0 {
+			service, err := action.createService(*existing, vdb, r, hasCertSecret)
+			if err != nil {
+				vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
+				vdb.Status.Failure = "Failed to create Service"
+			} else {
+				log.Info("Services created:" + vdb.ObjectMeta.Name)
+				if vdb.Spec.ExposeVia3Scale {
+					log.Info("creation of Route skipped as it is configured to be exposed through 3scale")
+				} else {
+					route, err := action.createRoute(service, vdb, r)
+					if err != nil {
+						vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
+						vdb.Status.Failure = "Failed to create route"
+					} else {
+						log.Info("Route created:" + vdb.ObjectMeta.Name)
+						vdb.Status.Route = fmt.Sprintf("https://%s/odata", route.Spec.Host)
+					}
+				}
+			}
+		}
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying {
 		item, _ := action.findDC(vdb, r)
 		if item != nil && action.isDeploymentInReadyState(*item) {
 			log.Info("Deployment finished:" + vdb.ObjectMeta.Name)
 			vdb.Status.Phase = v1alpha1.ReconcilerPhaseRunning
-			if len(item.Spec.Template.Spec.Containers[0].Ports) != 0 {
-				service, err := action.createService(*item, vdb, r)
-				if err != nil {
-					vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
-					vdb.Status.Failure = "Failed to create Service"
-				} else {
-					log.Info("Services created:" + vdb.ObjectMeta.Name)
-					if vdb.Spec.ExposeVia3Scale {
-						log.Info("creation of Route skipped as it is configured to be exposed through 3scale")
-					} else {
-						route, err := action.createRoute(service, vdb, r)
-						if err != nil {
-							vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
-							vdb.Status.Failure = "Failed to create route"
-						} else {
-							log.Info("Route created:" + vdb.ObjectMeta.Name)
-							vdb.Status.Route = fmt.Sprintf("https://%s/odata", route.Spec.Host)
-						}
-					}
-				}
-			}
 		} else if item != nil && !action.isDeploymentProgressing(*item) {
 			log.Info("Deployment Failed:" + vdb.ObjectMeta.Name)
 			vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
@@ -152,15 +164,33 @@ func (action *deploymentAction) findDC(vdb *v1alpha1.VirtualDatabase, r *Reconci
 	return nil, err
 }
 
+func findSecret(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*corev1.Secret, error) {
+	obj := corev1.Secret{}
+	key := client.ObjectKey{Namespace: vdb.ObjectMeta.Namespace, Name: vdb.ObjectMeta.Name}
+	err := r.client.Get(context.TODO(), key, &obj)
+	return &obj, err
+}
+
+func getTargetPort(port corev1.ContainerPort) intstr.IntOrString {
+	p := int(port.ContainerPort)
+	if p == 35443 {
+		p = 5433
+	} else if p == 35432 {
+		p = 5432
+	}
+	return intstr.FromInt(p)
+}
+
 func (action *deploymentAction) createService(dc oappsv1.DeploymentConfig, vdb *v1alpha1.VirtualDatabase,
-	r *ReconcileVirtualDatabase) (corev1.Service, error) {
+	r *ReconcileVirtualDatabase, hasCertSecret bool) (corev1.Service, error) {
+
 	servicePorts := []corev1.ServicePort{}
 	for _, port := range dc.Spec.Template.Spec.Containers[0].Ports {
 		servicePorts = append(servicePorts, corev1.ServicePort{
 			Name:       port.Name,
 			Protocol:   port.Protocol,
 			Port:       port.ContainerPort,
-			TargetPort: intstr.FromInt(int(port.ContainerPort)),
+			TargetPort: getTargetPort(port),
 		},
 		)
 	}
@@ -179,6 +209,11 @@ func (action *deploymentAction) createService(dc oappsv1.DeploymentConfig, vdb *
 		"discovery.3scale.net/scheme":           "http",
 		"discovery.3scale.net/port":             "8080",
 		"discovery.3scale.net/description-path": apiLink,
+	}
+
+	// if there is no secret certificate then annotate to create one
+	if !hasCertSecret {
+		annotations["service.alpha.openshift.io/serving-cert-secret-name"] = vdb.ObjectMeta.Name
 	}
 
 	meta := metav1.ObjectMeta{
@@ -304,6 +339,8 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 	ports = append(ports, corev1.ContainerPort{Name: "prometheus", ContainerPort: int32(9779), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "teiid", ContainerPort: int32(31000), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "pg", ContainerPort: int32(35432), Protocol: corev1.ProtocolTCP})
+	ports = append(ports, corev1.ContainerPort{Name: "teiid-secure", ContainerPort: int32(31443), Protocol: corev1.ProtocolTCP})
+	ports = append(ports, corev1.ContainerPort{Name: "pg-secure", ContainerPort: int32(35443), Protocol: corev1.ProtocolTCP})
 
 	// liveness and readiness probes
 	probe = &corev1.Probe{
@@ -378,101 +415,6 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 
 	return dc, nil
 }
-
-/*
-func (action *deploymentAction) setFailedStatus(instance *v1alpha1.VirtualDatabase, reason v1alpha1.ReasonType,
-	err error, r *ReconcileVirtualDatabase) {
-
-	status.SetFailed(instance, reason, err)
-	_, updateError := r.UpdateObj(instance)
-	if updateError != nil {
-		log.Warn("Unable to update object after receiving failed status. ", err)
-	}
-}
-
-func (action *deploymentAction) updateDeploymentConfigs(instance *v1alpha1.VirtualDatabase,
-	depConfig oappsv1.DeploymentConfig, r *ReconcileVirtualDatabase) (bool, error) {
-
-	log := log.With("kind", instance.Kind, "name", instance.Name, "namespace", instance.Namespace)
-	listOps := &client.ListOptions{Namespace: instance.Namespace}
-	dcList := &oappsv1.DeploymentConfigList{}
-	err := r.client.List(context.TODO(), listOps, dcList)
-	if err != nil {
-		log.Warn("Failed to list dc's. ", err)
-		action.setFailedStatus(instance, v1alpha1.UnknownReason, err, r)
-		return false, err
-	}
-	instance.Status.Deployments = action.getDeploymentsStatuses(dcList.Items, instance)
-
-	var dcUpdates []oappsv1.DeploymentConfig
-	for _, dc := range dcList.Items {
-		if dc.Name == depConfig.Name {
-			dcUpdates = action.dcUpdateCheck(dc, depConfig, dcUpdates, instance, r)
-		}
-	}
-	log.Debugf("There are %d updated DCs", len(dcUpdates))
-	if len(dcUpdates) > 0 {
-		for _, uDc := range dcUpdates {
-			_, err := r.UpdateObj(&uDc)
-			if err != nil {
-				action.setFailedStatus(instance, v1alpha1.DeploymentFailedReason, err, r)
-				return false, err
-			}
-		}
-		return true, nil
-	}
-	return false, nil
-}
-
-func (action *deploymentAction) dcUpdateCheck(current oappsv1.DeploymentConfig, new oappsv1.DeploymentConfig,
-	dcUpdates []oappsv1.DeploymentConfig, cr *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) []oappsv1.DeploymentConfig {
-
-	log := log.With("kind", new.GetObjectKind().GroupVersionKind().Kind, "name", current.Name, "namespace", current.Namespace)
-	update := false
-	if !reflect.DeepEqual(current.Spec.Template.Labels, new.Spec.Template.Labels) {
-		log.Debug("Changes detected in labels.", " OLD - ", current.Spec.Template.Labels, " NEW - ", new.Spec.Template.Labels)
-		update = true
-	}
-	if current.Spec.Replicas != new.Spec.Replicas {
-		log.Debug("Changes detected in replicas.", " OLD - ", current.Spec.Replicas, " NEW - ", new.Spec.Replicas)
-		update = true
-	}
-
-	cContainer := current.Spec.Template.Spec.Containers[0]
-	nContainer := new.Spec.Template.Spec.Containers[0]
-	if !shared.EnvVarCheck(cContainer.Env, nContainer.Env) {
-		log.Debug("Changes detected in 'Env' config.", " OLD - ", cContainer.Env, " NEW - ", nContainer.Env)
-		update = true
-	}
-	if !reflect.DeepEqual(cContainer.Resources, nContainer.Resources) {
-		log.Debug("Changes detected in 'Resource' config.", " OLD - ", cContainer.Resources, " NEW - ", nContainer.Resources)
-		update = true
-	}
-	sort.Slice(cContainer.Ports, func(i, j int) bool {
-		return cContainer.Ports[i].Name < cContainer.Ports[j].Name
-	})
-	sort.Slice(nContainer.Ports, func(i, j int) bool {
-		return nContainer.Ports[i].Name < nContainer.Ports[j].Name
-	})
-	if !reflect.DeepEqual(cContainer.Ports, nContainer.Ports) {
-		log.Debug("Changes detected in 'Ports' config.", " OLD - ", cContainer.Ports, " NEW - ", nContainer.Ports)
-		update = true
-	}
-	if update {
-		dcnew := new
-		err := controllerutil.SetControllerReference(cr, &dcnew, r.scheme)
-		if err != nil {
-			log.Error("Error setting controller reference for dc. ", err)
-		}
-		dcnew.SetNamespace(current.Namespace)
-		dcnew.SetResourceVersion(current.ResourceVersion)
-		dcnew.SetGroupVersionKind(oappsv1.SchemeGroupVersion.WithKind("DeploymentConfig"))
-
-		dcUpdates = append(dcUpdates, dcnew)
-	}
-	return dcUpdates
-}
-*/
 
 // ensureObj creates an object based on the error passed in from a `client.Get`
 func (action *deploymentAction) ensureObj(obj v1alpha1.OpenShiftObject, err error, r *ReconcileVirtualDatabase) error {
