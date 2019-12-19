@@ -23,6 +23,7 @@ import (
 
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 )
 
@@ -111,6 +112,16 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDependenci
 	}
 
 	if includeAllDependencies || vdb.Spec.ExposeVia3Scale {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-keycloak",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+	}
+
+	// add keyclock based security
+	if includeAllDependencies || envvar.Get(vdb.Spec.Env, "KEYCLOAK_AUTH_SERVER_URL") != nil {
+		log.Info("KEYCLOAK_AUTH_SERVER_URL found, enabling security module")
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-keycloak",
