@@ -9,6 +9,6 @@ buildImage:
   name: s2i-java
   tag: latest-java11
 drivers:
-  postgresql: 42.1.4
+  postgresql: 42.2.8
   mysql: 5.1.40
   mongodb: 3.6.3
