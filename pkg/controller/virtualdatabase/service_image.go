@@ -74,7 +74,7 @@ func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.Virt
 // Handle handles the virtualdatabase
 func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 	// check for the VDB source type
-	if vdb.Spec.Build.Git.URI == "" && vdb.Spec.Build.Source.DDL == "" && vdb.Spec.Build.Source.Maven == "" {
+	if vdb.Spec.Build.Source.DDL == "" && vdb.Spec.Build.Source.Maven == "" {
 		return errors.New("Only Git and DDL Content based, Maven based VDBs are allowed, none of these types are defined")
 	}
 
@@ -180,14 +180,7 @@ func (action *serviceImageAction) serviceBC(vdb *v1alpha1.VirtualDatabase) obuil
 	bc.Spec.Output.To = &corev1.ObjectReference{Name: strings.Join([]string{vdb.ObjectMeta.Name, "latest"}, ":"), Kind: "ImageStreamTag"}
 
 	// for some reason "vdb.Spec.Build.GitSource" comes in as empty object rather than nil
-	if vdb.Spec.Build.Git.URI != "" {
-		log.Info("Git based build is chosen..")
-		bc.Spec.Source.Git = &obuildv1.GitBuildSource{
-			URI: vdb.Spec.Build.Git.URI,
-			Ref: vdb.Spec.Build.Git.Reference,
-		}
-		bc.Spec.Source.ContextDir = vdb.Spec.Build.Git.ContextDir
-	} else if vdb.Spec.Build.Source.DDL != "" {
+	if vdb.Spec.Build.Source.DDL != "" {
 		log.Info("DDL based build is chosen..")
 		bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
 	} else if vdb.Spec.Build.Source.Maven != "" {

@@ -62,18 +62,6 @@ spec:
               properties:
                 incremental:
                   type: boolean
-                git:
-                  type: object
-                  properties:
-                    uri:
-                      type: string
-                      description: Git URI for the s2i source
-                    reference:
-                      type: string
-                      description: Branch to use in the git repository
-                    contextDir:
-                      type: string
-                      description: Context/subdirectory where the code is located, relatively to repo root
                 source:
                   type: object
                   properties:
