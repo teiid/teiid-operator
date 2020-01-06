@@ -50,23 +50,6 @@ func ComputeForVirtualDatabase(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		}
 	}
 
-	// Git code, may be webhook is more appropriate here
-	if vdb.Spec.Build.Git.URI != "" {
-		if _, err := hash.Write([]byte(vdb.Spec.Build.Git.URI)); err != nil {
-			return "", err
-		}
-		if vdb.Spec.Build.Git.Reference != "" {
-			if _, err := hash.Write([]byte(vdb.Spec.Build.Git.Reference)); err != nil {
-				return "", err
-			}
-		}
-		if vdb.Spec.Build.Git.ContextDir != "" {
-			if _, err := hash.Write([]byte(vdb.Spec.Build.Git.ContextDir)); err != nil {
-				return "", err
-			}
-		}
-	}
-
 	// Add a letter at the beginning and use URL safe encoding
 	digest := "v" + base64.RawURLEncoding.EncodeToString(hash.Sum(nil))
 	return digest, nil

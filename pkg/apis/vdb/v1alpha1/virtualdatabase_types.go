@@ -40,17 +40,8 @@ type OpenShiftObject interface {
 type VirtualDatabaseBuildObject struct {
 	Incremental *bool           `json:"incremental,omitempty"`
 	Env         []corev1.EnvVar `json:"env,omitempty"`
-	Git         Git             `json:"git,omitempty"`
 	Source      Source          `json:"source,omitempty"`
 	S2i         S2i             `json:"s2i,omitempty"`
-}
-
-// Git coordinates to locate the source code to build
-// +k8s:openapi-gen=true
-type Git struct {
-	URI        string `json:"uri,omitempty"`
-	Reference  string `json:"reference,omitempty"`
-	ContextDir string `json:"contextDir,omitempty"`
 }
 
 // Source VDB coordinates to locate the source code to build
