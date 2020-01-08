@@ -127,16 +127,26 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning {
 		item, _ := action.findDC(vdb, r)
 		if item != nil && action.isDeploymentInReadyState(*item) {
-			if *vdb.Spec.Replicas != item.Spec.Replicas {
-				item.Spec.Replicas = *vdb.Spec.Replicas
-			}
-			if !reflect.DeepEqual(vdb.Spec.Env, item.Spec.Template.Spec.Containers[0].Env) {
-				item.Spec.Template.Spec.Containers[0].Env = vdb.Spec.Env
-			}
-			if err := r.client.Update(ctx, item); err != nil {
+			err := action.ensureReplicas(ctx, vdb, item, r)
+			if err != nil {
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
+	item *oappsv1.DeploymentConfig, r *ReconcileVirtualDatabase) error {
+
+	if *vdb.Spec.Replicas != item.Spec.Replicas {
+		item.Spec.Replicas = *vdb.Spec.Replicas
+	}
+	if !reflect.DeepEqual(vdb.Spec.Env, item.Spec.Template.Spec.Containers[0].Env) {
+		item.Spec.Template.Spec.Containers[0].Env = vdb.Spec.Env
+	}
+	if err := r.client.Update(ctx, item); err != nil {
+		return err
 	}
 	return nil
 }
@@ -196,7 +206,9 @@ func (action *deploymentAction) createService(dc oappsv1.DeploymentConfig, vdb *
 	}
 
 	labels := map[string]string{
-		"discovery.3scale.net": "true",
+		"discovery.3scale.net":     "true",
+		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
+		"app":                      vdb.ObjectMeta.Name,
 	}
 
 	// if openapi is in use then use the openapi for it
@@ -329,8 +341,9 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 
 	var probe *corev1.Probe
 	labels := map[string]string{
-		"app":              vdb.Name,
-		"syndesis.io/type": "datavirtualization",
+		"app":                      vdb.Name,
+		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
+		"teiid.io/type":            "VirtualDatabase",
 	}
 
 	ports := []corev1.ContainerPort{}

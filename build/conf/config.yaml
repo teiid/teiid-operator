@@ -12,3 +12,6 @@ drivers:
   postgresql: 42.2.8
   mysql: 5.1.40
   mongodb: 3.6.3
+prometheus:
+  matchLabels:
+    team: dv
