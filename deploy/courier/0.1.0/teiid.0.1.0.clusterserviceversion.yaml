@@ -7,11 +7,11 @@ metadata:
     capabilities: Basic Install
     categories: "Database, Integration & Delivery"
     certified: "false"
-    description: Teiid Cloud Operator for deployment and management of Virtual Database services.
+    description: Teiid Operator for deployment and management of Data Virtualization services in Kubernetes/OpenShift cloud.
     repository: https://github.com/teiid/teiid-operator
     containerImage: quay.io/teiid/teiid-operator:0.1.0
     createdAt: 2019-06-24T12:48:22Z
-    support: Red Hat, Inc.
+    support: https://teiid.io
     tectonic-visibility: ocs
     alm-examples: |-
       [
@@ -52,9 +52,9 @@ metadata:
   labels:
     operator-teiid: "true"
 spec:
-  displayName: Teiid Operator
+  displayName: Teiid
   description: |-
-    Teiid is a data virtualization system that allows applications to use data from multiple, heterogeneous data stores. Through its abstraction and federation, data is accessed and integrated in real-time across distributed data sources without copying or otherwise moving data from its system of record. 
+    Teiid is a Data Virtualization system that allows applications to federate data from multiple, heterogeneous data stores. Through its abstraction and federation, data is accessed and integrated in real-time across distributed data sources without copying or otherwise moving data from its system of record. 
     
     For example, you can access your all data in Oracle, Postgres, MongoDB and/or Rest API (many more) with a single request. Teiid gives you all the tools required to build logical/abstraction layer that can exposed as Virtual Database by essentially making all sources underneath as a black box to the consuming user. Since this integration of data happens in real time there is no ETL process to run and data is always fresh. For the end user the Virtual Database exactly looks like a relational database like Postgres, that can be accessed using JDBC, ODBC, OData V4 and Postgres protocols, i.e. can be accessed from any language that you have your application written in.
     
@@ -69,10 +69,10 @@ spec:
   version: 0.1.0
   maturity: beta
   maintainers:
-  - name: Red Hat, Inc.
+  - name: https://teiid.io
     email: teiid-dev@lists.jboss.org
   provider:
-    name: Red Hat, Inc.
+    name: https://teiid.io
   links:
   - name: Product Page
     url: http://teiid.io/
@@ -99,7 +99,7 @@ spec:
     owned:
     - version: v1alpha1
       kind: VirtualDatabase
-      description: A project prescription running a teiid service.
+      description: An example built using PostgreSQL database.
       displayName: VirtualDatabase
       name: virtualdatabases.teiid.io
       resources:
