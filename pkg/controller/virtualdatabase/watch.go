@@ -18,6 +18,7 @@ limitations under the License.
 package virtualdatabase
 
 import (
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	oappsv1 "github.com/openshift/api/apps/v1"
 	obuildv1 "github.com/openshift/api/build/v1"
 	oimagev1 "github.com/openshift/api/image/v1"
@@ -60,12 +61,19 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		log.Errorf("Error getting build client: %v", err)
 		return &ReconcileVirtualDatabase{}
 	}
+	monitorClient, err := monitoringv1.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		log.Errorf("Error getting prometheus client: %v", err)
+		return &ReconcileVirtualDatabase{}
+	}
+
 	return &ReconcileVirtualDatabase{
-		client:      mgr.GetClient(),
-		scheme:      mgr.GetScheme(),
-		cache:       mgr.GetCache(),
-		imageClient: imageClient,
-		buildClient: buildClient,
+		client:           mgr.GetClient(),
+		scheme:           mgr.GetScheme(),
+		cache:            mgr.GetCache(),
+		imageClient:      imageClient,
+		buildClient:      buildClient,
+		prometheusClient: monitorClient,
 	}
 }
 

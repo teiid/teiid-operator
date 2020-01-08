@@ -22,6 +22,7 @@ import (
 	"reflect"
 	"time"
 
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
@@ -41,11 +42,12 @@ var _ reconcile.Reconciler = &ReconcileVirtualDatabase{}
 type ReconcileVirtualDatabase struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client      client.Client
-	scheme      *runtime.Scheme
-	cache       cachev1.Cache
-	imageClient *imagev1.ImageV1Client
-	buildClient *buildv1client.BuildV1Client
+	client           client.Client
+	scheme           *runtime.Scheme
+	cache            cachev1.Cache
+	imageClient      *imagev1.ImageV1Client
+	buildClient      *buildv1client.BuildV1Client
+	prometheusClient monitoringv1.MonitoringV1Interface
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read
@@ -74,6 +76,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		News2IBuilderImageAction(),
 		NewServiceImageAction(),
 		NewDeploymentAction(),
+		NewPrometheusMonitorAction(),
 	}
 
 	// make deep copy and do not directly update the stock copy as other might
@@ -118,7 +121,6 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		} else {
 			continue
 		}
-		break
 	}
 
 	// Requeue

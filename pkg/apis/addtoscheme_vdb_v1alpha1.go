@@ -1,6 +1,7 @@
 package apis
 
 import (
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	oappsv1 "github.com/openshift/api/apps/v1"
 	buildv1 "github.com/openshift/api/build/v1"
 	oimagev1 "github.com/openshift/api/image/v1"
@@ -16,5 +17,6 @@ func init() {
 		routev1.AddToScheme,
 		oimagev1.AddToScheme,
 		buildv1.AddToScheme,
+		monitoringv1.AddToScheme,
 	)
 }

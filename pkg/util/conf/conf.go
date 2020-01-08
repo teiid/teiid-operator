@@ -32,6 +32,7 @@ type Configuration struct {
 	EarlyAccess            bool              `yaml:"earlyAccess,omitempty"`
 	BuildImage             BuildImage        `yaml:"buildImage,omitempty"`
 	Drivers                map[string]string `yaml:"drivers,omitempty"`
+	Prometheus             PrometheusConfig  `yaml:"prometheus,omitempty"`
 }
 
 // BuildImage --
@@ -40,6 +41,11 @@ type BuildImage struct {
 	ImagePrefix string `yaml:"prefix,omitempty"`
 	ImageName   string `yaml:"name,omitempty"`
 	Tag         string `yaml:"tag,omitempty"`
+}
+
+// PrometheusConfig --
+type PrometheusConfig struct {
+	MatchLabels map[string]string `yaml:"matchLabels,omitempty"`
 }
 
 // GetConfiguration --

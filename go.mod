@@ -3,6 +3,7 @@ module github.com/teiid/teiid-operator
 require (
 	//github.com/Azure/go-autorest/autorest v0.9.3 // indirect
 	github.com/RHsyseng/operator-utils v0.0.0-20191024171829-7e918ca09e5e
+	github.com/coreos/prometheus-operator v0.34.0
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20180820084758-c7ce16629ff4
 	github.com/go-logr/logr v0.1.0
