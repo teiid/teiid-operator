@@ -13,6 +13,9 @@ spec:
     value: sampledb
   - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
     value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
+  resources:
+    memory: 1024Mi
+    cpu: 2.0
   build:
     source:
       maven: org.teiid:dv-customer:vdb:1.1

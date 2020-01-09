@@ -41,6 +41,10 @@ metadata:
                 "value": "jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)"
               }
             ],
+            "resources": {
+              "memory": "512Mi",
+              "cpu": 1
+            },            
             "build": {
               "source": {
                 "ddl": "CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');\nUSE DATABASE customer;\n\nCREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;\n\nCREATE SCHEMA accounts SERVER sampledb;\nCREATE VIRTUAL SCHEMA portfolio;\n\nSET SCHEMA accounts;\nIMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS(\"importer.useFullSchemaName\" 'false');\n\nSET SCHEMA portfolio;\n\nCREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS \n    SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip \n    FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a \n    ON c.ID = a.CUSTOMER_ID;\n"
