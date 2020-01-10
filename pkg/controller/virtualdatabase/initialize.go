@@ -73,7 +73,7 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 	}
 
 	if vdb.Spec.Build.Incremental == nil {
-		inc := true
+		inc := false
 		vdb.Spec.Build.Incremental = &inc
 	}
 

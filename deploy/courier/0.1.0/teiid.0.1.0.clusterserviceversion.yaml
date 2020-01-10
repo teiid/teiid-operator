@@ -4,7 +4,7 @@ metadata:
   name: teiid.0.1.0
   namespace: placeholder
   annotations:
-    capabilities: Basic Install
+    capabilities: Seamless Upgrades
     categories: "Database, Integration & Delivery"
     certified: "false"
     description: Teiid Operator for deployment and management of Data Virtualization services in Kubernetes/OpenShift cloud.
