@@ -77,6 +77,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		NewServiceImageAction(),
 		NewDeploymentAction(),
 		NewPrometheusMonitorAction(),
+		NewUpdateAction(),
 	}
 
 	// make deep copy and do not directly update the stock copy as other might

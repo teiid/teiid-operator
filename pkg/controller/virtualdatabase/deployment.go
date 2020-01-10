@@ -360,8 +360,8 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 		TimeoutSeconds:      int32(5),
 		PeriodSeconds:       int32(20),
 		SuccessThreshold:    int32(1),
-		FailureThreshold:    int32(3),
-		InitialDelaySeconds: int32(60),
+		FailureThreshold:    int32(5),
+		InitialDelaySeconds: int32(15),
 	}
 	probe.Handler.HTTPGet = &corev1.HTTPGetAction{
 		Path: "/actuator/health",

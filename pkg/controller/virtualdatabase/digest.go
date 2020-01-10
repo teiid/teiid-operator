@@ -43,6 +43,20 @@ func ComputeForVirtualDatabase(vdb *v1alpha1.VirtualDatabase) (string, error) {
 		}
 	}
 
+	// if this Maven based deploy
+	if vdb.Spec.Build.Source.Maven != "" {
+		if _, err := hash.Write([]byte(vdb.Spec.Build.Source.Maven)); err != nil {
+			return "", err
+		}
+	}
+
+	// if it has OpenAPI
+	if vdb.Spec.Build.Source.OpenAPI != "" {
+		if _, err := hash.Write([]byte(vdb.Spec.Build.Source.OpenAPI)); err != nil {
+			return "", err
+		}
+	}
+
 	// Dependencies resources
 	for _, item := range vdb.Spec.Build.Source.Dependencies {
 		if _, err := hash.Write([]byte(item)); err != nil {

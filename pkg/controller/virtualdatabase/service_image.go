@@ -79,7 +79,7 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 	}
 
 	// Define new BuildConfig objects
-	buildConfig := action.serviceBC(vdb)
+	buildConfig := action.newServiceBC(vdb)
 	if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, vdb, r.imageClient, r.scheme); err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func (action *serviceImageAction) monitorServiceImage(ctx context.Context, vdb *
 	return nil
 }
 
-func (action *serviceImageAction) serviceBC(vdb *v1alpha1.VirtualDatabase) obuildv1.BuildConfig {
+func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) obuildv1.BuildConfig {
 	baseImage := corev1.ObjectReference{Name: strings.Join([]string{constants.BuilderImageTargetName, "latest"}, ":"), Kind: "ImageStreamTag"}
 
 	// set it back original default
@@ -275,7 +275,7 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, vdb *v1a
 			return err
 		}
 
-		log.Info("Pom file generated ", pomContent)
+		log.Debugf("Pom file generated %s", pomContent)
 
 		files["/pom.xml"] = pomContent
 		files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
