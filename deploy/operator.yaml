@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: teiid-operator
+  name: dv-operator
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: teiid-operator
+      name: dv-operator
   template:
     metadata:
       labels:
-        name: teiid-operator
+        name: dv-operator
     spec:
-      serviceAccountName: teiid-operator
+      serviceAccountName: dv-operator
       containers:
-      - name: teiid-operator
-        image: quay.io/teiid/teiid-operator:0.1.0
+      - name: dv-operator
+        image: registry.redhat.io/fuse7-tech-preview/dv-rhel7-operator:1.6
         command:
         - teiid-operator
         imagePullPolicy: Always
