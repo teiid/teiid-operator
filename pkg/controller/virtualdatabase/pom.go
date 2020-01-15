@@ -27,8 +27,8 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 )
 
-// GeneratePom -- Generate the POM file based on the VDb provided
-func GeneratePom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDependencies bool, includeOpenAPIAdependency bool) (maven.Project, error) {
+// GenerateVdbPom -- Generate the POM file based on the VDb provided
+func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDependencies bool, includeOpenAPIAdependency bool) (maven.Project, error) {
 	// do code generation.
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
@@ -142,11 +142,25 @@ func GeneratePom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDependenci
 			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
+	return project, nil
+}
+
+// GenerateJarPom -- Generate the POM file based on the VDb provided
+func GenerateJarPom(vdb *v1alpha1.VirtualDatabase) (maven.Project, error) {
+	// do code generation.
+	// generate pom.xml
+	project := createPlainMavenProject(vdb.ObjectMeta.Name)
+
+	mavenRepos := vdb.Spec.Build.Source.MavenRepositories
+	for k, v := range mavenRepos {
+		project.AddRepository(maven.NewRepository(v + "@id=" + k))
+		project.AddPluginRepository(maven.NewRepository(v + "@id=" + k))
+	}
 
 	return project, nil
 }
 
-func addCopyPlugIn(vdbDependency maven.Dependency, project *maven.Project) {
+func addCopyPlugIn(vdbDependency maven.Dependency, artifactType string, targetName string, outputDirectory string, project *maven.Project) {
 	// build the plugin to grab the VDB from maven repo and make it part of the package
 	plugin := maven.Plugin{
 		GroupID:    "org.apache.maven.plugins",
@@ -164,11 +178,11 @@ func addCopyPlugIn(vdbDependency maven.Dependency, project *maven.Project) {
 							GroupID:             vdbDependency.GroupID,
 							ArtifactID:          vdbDependency.ArtifactID,
 							Version:             vdbDependency.Version,
-							Type:                "vdb",
-							DestinationFileName: "teiid.vdb",
+							Type:                artifactType,
+							DestinationFileName: targetName,
 						},
 					},
-					OutputDirectory: "${project.build.outputDirectory}",
+					OutputDirectory: outputDirectory,
 				},
 			},
 		},
@@ -294,6 +308,71 @@ func createMavenProject(name string) maven.Project {
 					},
 				},
 			},
+		},
+	}
+	return project
+}
+
+func createPlainMavenProject(name string) maven.Project {
+	project := maven.Project{
+		XMLName:           xml.Name{Local: "project"},
+		XMLNs:             "http://maven.apache.org/POM/4.0.0",
+		XMLNsXsi:          "http://www.w3.org/2001/XMLSchema-instance",
+		XsiSchemaLocation: "http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd",
+		ModelVersion:      "4.0.0",
+		GroupID:           "io.integration",
+		ArtifactID:        name,
+		Version:           "1.0.0",
+		Packaging:         "pom",
+
+		Repositories: []maven.Repository{
+			{
+				ID:  "central",
+				URL: "https://repo.maven.apache.org/maven2",
+				Snapshots: maven.RepositoryPolicy{
+					Enabled: false,
+				},
+				Releases: maven.RepositoryPolicy{
+					Enabled:      true,
+					UpdatePolicy: "never",
+				},
+			},
+			{
+				ID:  "snapshots-repo",
+				URL: "https://oss.sonatype.org/content/repositories/snapshots",
+				Snapshots: maven.RepositoryPolicy{
+					Enabled: true,
+				},
+				Releases: maven.RepositoryPolicy{
+					Enabled: false,
+				},
+			},
+		},
+		PluginRepositories: []maven.Repository{
+			{
+				ID:  "central",
+				URL: "https://repo.maven.apache.org/maven2",
+				Snapshots: maven.RepositoryPolicy{
+					Enabled: false,
+				},
+				Releases: maven.RepositoryPolicy{
+					Enabled:      true,
+					UpdatePolicy: "never",
+				},
+			},
+			{
+				ID:  "snapshots-repo",
+				URL: "https://oss.sonatype.org/content/repositories/snapshots",
+				Snapshots: maven.RepositoryPolicy{
+					Enabled: true,
+				},
+				Releases: maven.RepositoryPolicy{
+					Enabled: false,
+				},
+			},
+		},
+		Build: maven.Build{
+			Plugins: []maven.Plugin{},
 		},
 	}
 	return project

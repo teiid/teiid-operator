@@ -152,7 +152,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	bc := obuildv1.BuildConfig{}
 	env := []corev1.EnvVar{}
 	envvar.SetVal(&env, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
-	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "-Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8")
+	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "clean package -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8")
 	envvar.SetVal(&env, "ARTIFACT_DIR", "target/")
 
 	incremental := true
@@ -207,10 +207,19 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, maven
 
 	files := map[string]string{}
 
-	pom, err := GeneratePom(vdb, vdb.Spec.Build.Source.DDL, true, true)
+	pom, err := GenerateVdbPom(vdb, vdb.Spec.Build.Source.DDL, true, true)
 	if err != nil {
 		return err
 	}
+
+	// the below is to get copy plugin as dependency
+	jarDependency, err := maven.ParseGAV("org.teiid:teiid-common-core:12.3.1")
+	if err != nil {
+		log.Error("The Maven based JAR is provided in bad format", err)
+		return err
+	}
+	addCopyPlugIn(jarDependency, "jar", "app.jar", "/tmp", &pom)
+
 	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl")
 	pomContent, err := maven.GeneratePomContent(pom)
 	if err != nil {

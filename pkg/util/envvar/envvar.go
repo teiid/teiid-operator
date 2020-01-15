@@ -23,6 +23,9 @@ import (
 
 // Get --
 func Get(vars []corev1.EnvVar, name string) *corev1.EnvVar {
+	if vars == nil {
+		return nil
+	}
 	for i := 0; i < len(vars); i++ {
 		if vars[i].Name == name {
 			return &vars[i]
