@@ -18,6 +18,7 @@ package conf
 
 import (
 	"io/ioutil"
+	"os"
 
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	"gopkg.in/yaml.v2"
@@ -66,5 +67,11 @@ func GetConfiguration() Configuration {
 		log.Error("Unmarshal: %v", err)
 	}
 	log.Info("Configuration:", c)
+
+	// add or overide any values about prometheus scan values
+	if os.Getenv("PROMETHEUS_MONITOR_LABEL_KEY") != "" && os.Getenv("PROMETHEUS_MONITOR_LABEL_VALUE") != "" {
+		c.Prometheus.MatchLabels[os.Getenv("PROMETHEUS_MONITOR_LABEL_KEY")] = os.Getenv("PROMETHEUS_MONITOR_LABEL_VALUE")
+	}
+
 	return c
 }
