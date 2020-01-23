@@ -142,6 +142,13 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
+
+	project.AddDependencies(maven.Dependency{
+		GroupID:    "me.snowdrop",
+		ArtifactID: "narayana-spring-boot-starter",
+		Version:    constants.Config.Drivers["narayana"],
+	})
+
 	return project, nil
 }
 
