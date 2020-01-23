@@ -67,7 +67,7 @@ clean:
 
 .PHONY: deploy
 deploy:
-	- docker push quay.io/teiid/teiid-operator
+	- docker push quay.io/teiid/teiid-operator:0.2.0
 	- oc create -f deploy/crds/virtualdatabase.crd.yaml
 	- oc create -f deploy/service_account.yaml
 	- oc create -f deploy/role.yaml
