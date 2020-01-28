@@ -27,6 +27,7 @@ import (
 	obuildv1 "github.com/openshift/api/build/v1"
 	oroutev1 "github.com/openshift/api/route/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -344,6 +345,10 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 		"app":                      vdb.Name,
 		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
 		"teiid.io/type":            "VirtualDatabase",
+	}
+	// Add any custom labels
+	for k := range constants.Config.Labels {
+		labels[k] = constants.Config.Labels[k]
 	}
 
 	ports := []corev1.ContainerPort{}

@@ -34,6 +34,7 @@ type Configuration struct {
 	BuildImage             BuildImage        `yaml:"buildImage,omitempty"`
 	Drivers                map[string]string `yaml:"drivers,omitempty"`
 	Prometheus             PrometheusConfig  `yaml:"prometheus,omitempty"`
+	Labels                 map[string]string `yaml:"labels,omitempty"`
 }
 
 // BuildImage --
