@@ -16,3 +16,7 @@ drivers:
 prometheus:
   matchLabels:
     team: dv
+labels:
+  com.redhat.product-name: integration
+  com.redhat.product-version: 7.6
+  com.redhat.product-contains: NA
