@@ -16,3 +16,5 @@ drivers:
 prometheus:
   matchLabels:
     team: dv
+labels:
+  version: 1.3.0
