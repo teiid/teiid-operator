@@ -62,9 +62,7 @@ func (action *deploymentAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
 func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 
 	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImageFinished {
-		vdb.Status.Phase = v1alpha1.ReconcilerPhaseDeploying
 		log.Info("Running the deployment")
-
 		bc, err := r.buildClient.BuildConfigs(vdb.ObjectMeta.Namespace).Get(vdb.ObjectMeta.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
@@ -83,7 +81,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			return err
 		}
 
-		existing, err := action.findDC(vdb, r)
+		existing, err := findDC(vdb, r)
 		if existing == nil {
 			err = errors.NewNotFound(schema.GroupResource{Group: "dc", Resource: "dc"}, vdb.ObjectMeta.Name)
 		}
@@ -92,10 +90,17 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			return err
 		}
 
+		existing, err = findDC(vdb, r)
+		if err != nil {
+			// wait until the dc is found, no need report error
+			log.Debug(err)
+			return nil
+		}
 		// Create the service and route needed. We are creating service
 		// before so that we can use the service annotation to create certificate
 		// that can be loaded in a deployment
-		if len(existing.Spec.Template.Spec.Containers[0].Ports) != 0 {
+		_, err = findService(vdb, r)
+		if err != nil {
 			service, err := action.createService(*existing, vdb, r, hasCertSecret)
 			if err != nil {
 				vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
@@ -116,8 +121,10 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 				}
 			}
 		}
+		// change the status
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseDeploying
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying {
-		item, _ := action.findDC(vdb, r)
+		item, _ := findDC(vdb, r)
 		if item != nil && action.isDeploymentInReadyState(*item) {
 			log.Info("Deployment finished:" + vdb.ObjectMeta.Name)
 			vdb.Status.Phase = v1alpha1.ReconcilerPhaseRunning
@@ -126,7 +133,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
 		}
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning {
-		item, _ := action.findDC(vdb, r)
+		item, _ := findDC(vdb, r)
 		if item != nil && action.isDeploymentInReadyState(*item) {
 			err := action.ensureReplicas(ctx, vdb, item, r)
 			if err != nil {
@@ -152,31 +159,22 @@ func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha
 	return nil
 }
 
-func (action *deploymentAction) findDC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*oappsv1.DeploymentConfig, error) {
-	listOpts := []client.ListOption{
-		client.InNamespace(vdb.ObjectMeta.Namespace),
-	}
-
-	list := &oappsv1.DeploymentConfigList{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "DeploymentConfig",
-			APIVersion: "apps.openshift.io/v1",
-		},
-	}
-
-	err := r.client.List(context.TODO(), list, listOpts...)
-	if err == nil {
-		for _, item := range list.Items {
-			if item.Name == vdb.ObjectMeta.Name {
-				return &item, nil
-			}
-		}
-	}
-	return nil, err
+func findDC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*oappsv1.DeploymentConfig, error) {
+	obj := oappsv1.DeploymentConfig{}
+	key := client.ObjectKey{Namespace: vdb.ObjectMeta.Namespace, Name: vdb.ObjectMeta.Name}
+	err := r.client.Get(context.TODO(), key, &obj)
+	return &obj, err
 }
 
 func findSecret(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*corev1.Secret, error) {
 	obj := corev1.Secret{}
+	key := client.ObjectKey{Namespace: vdb.ObjectMeta.Namespace, Name: vdb.ObjectMeta.Name}
+	err := r.client.Get(context.TODO(), key, &obj)
+	return &obj, err
+}
+
+func findService(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*corev1.Service, error) {
+	obj := corev1.Service{}
 	key := client.ObjectKey{Namespace: vdb.ObjectMeta.Namespace, Name: vdb.ObjectMeta.Name}
 	err := r.client.Get(context.TODO(), key, &obj)
 	return &obj, err
