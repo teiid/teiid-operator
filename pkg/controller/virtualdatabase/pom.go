@@ -66,6 +66,102 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 		})
 	}
 
+	if includeAllDependencies || strings.Contains(lowerDDL, "h2") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.h2database",
+			ArtifactID: "h2",
+			Version:    constants.Config.Drivers["h2"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "sqlserver") || strings.Contains(lowerDDL, "mssql-server") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.microsoft.sqlserver",
+			ArtifactID: "mssql-jdbc",
+			Version:    constants.Config.Drivers["sqlserver"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "amazon-athena") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.syncron.amazonaws",
+			ArtifactID: "simba-athena-jdbc-driver",
+			Version:    constants.Config.Drivers["athena"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "db2") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.ibm.db2",
+			ArtifactID: "jcc",
+			Version:    constants.Config.Drivers["db2"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "hana") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.sap.cloud.db.jdbc",
+			ArtifactID: "ngdbc",
+			Version:    constants.Config.Drivers["hana"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "hbase") || strings.Contains(lowerDDL, "phoenix") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.apache.phoenix",
+			ArtifactID: "phoenix-queryserver-client",
+			Version:    constants.Config.Drivers["hbase"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "hive") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.apache.hive",
+			ArtifactID: "hive-jdbc",
+			Version:    constants.Config.Drivers["hive"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "hsql") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.hsqldb",
+			ArtifactID: "hsqldb",
+			Version:    constants.Config.Drivers["hsql"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "informix") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.ibm.informix",
+			ArtifactID: "jdbc",
+			Version:    constants.Config.Drivers["informix"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "ingres") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "com.ingres.jdbc",
+			ArtifactID: "iijdbc",
+			Version:    constants.Config.Drivers["ingres"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "jtds") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "net.sourceforge.jtds",
+			ArtifactID: "jtds",
+			Version:    constants.Config.Drivers["jtds"],
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "ucanacess") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "net.sf.ucanaccess",
+			ArtifactID: "ucanaccess",
+			Version:    constants.Config.Drivers["ucanacess"],
+		})
+	}
+
 	if includeAllDependencies || strings.Contains(lowerDDL, "mongodb") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.mongodb",
@@ -79,7 +175,7 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 		})
 	}
 
-	if includeAllDependencies || strings.Contains(lowerDDL, "google") {
+	if includeAllDependencies || strings.Contains(lowerDDL, "google-spreadsheet") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-google",
@@ -108,6 +204,49 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-data-rest",
 			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "openapi") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-data-rest",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid.connectors",
+			ArtifactID: "translator-openapi",
+			Version:    constants.Config.TeiidVersion,
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "infinispan-hotrod") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-data-infinispan",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "amazon-s3") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-data-amazon-s3",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+	}
+
+	if includeAllDependencies || strings.Contains(lowerDDL, "odata4") ||
+		strings.Contains(lowerDDL, "sap-gateway") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-data-rest",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid.connectors",
+			ArtifactID: "translator-odata4",
+			Version:    constants.Config.TeiidVersion,
 		})
 	}
 

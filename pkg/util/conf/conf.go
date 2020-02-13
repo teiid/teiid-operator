@@ -27,6 +27,7 @@ import (
 // Configuration --
 type Configuration struct {
 	TeiidSpringBootVersion string            `yaml:"teiidSpringBootVersion,omitempty"`
+	TeiidVersion           string            `yaml:"teiidVersion,omitempty"`
 	SpringBootVersion      string            `yaml:"springBootVersion,omitempty"`
 	MavenRepositories      map[string]string `yaml:"mavenRepositories,omitempty"`
 	Productized            bool              `yaml:"productized,omitempty"`
