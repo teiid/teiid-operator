@@ -12,21 +12,30 @@ import (
 // VirtualDatabaseSpec defines the desired state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseSpec struct {
-	Replicas        *int32                      `json:"replicas,omitempty"`
-	ExposeVia3Scale bool                        `json:"exposeVia3scale,omitempty"`
-	Env             []corev1.EnvVar             `json:"env,omitempty"`
-	Runtime         RuntimeType                 `json:"runtime,omitempty"`
-	Resources       corev1.ResourceRequirements `json:"resources,omitempty"`
-	Build           VirtualDatabaseBuildObject  `json:"build"` // S2I Build configuration
+	// Number Of deployment units required
+	Replicas *int32 `json:"replicas,omitempty"`
+	// Expose route via 3scale
+	ExposeVia3Scale bool `json:"exposeVia3scale,omitempty"`
+	// Environment properties required for deployment
+	Env []corev1.EnvVar `json:"env,omitempty"`
+	// Runtime engine type (ex: spring boot)
+	Runtime RuntimeType `json:"runtime,omitempty"`
+	// memory, disk cpu requirements
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// S2I Build configuration
+	Build VirtualDatabaseBuildObject `json:"build"`
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
-	Phase   ReconcilerPhase `json:"phase,omitempty"`
-	Digest  string          `json:"digest,omitempty"`
-	Failure string          `json:"failure,omitempty"`
-	Route   string          `json:"route,omitempty"`
+	Phase ReconcilerPhase `json:"phase,omitempty"`
+	// Digest value of the vdb
+	Digest string `json:"digest,omitempty"`
+	// Failure message if deployment ended in failure
+	Failure string `json:"failure,omitempty"`
+	// Route information that is exposed for clients
+	Route string `json:"route,omitempty"`
 }
 
 // OpenShiftObject ...
@@ -38,46 +47,48 @@ type OpenShiftObject interface {
 // VirtualDatabaseBuildObject Data to define how to build an application from source
 // +k8s:openapi-gen=true
 type VirtualDatabaseBuildObject struct {
-	Incremental *bool           `json:"incremental,omitempty"`
-	Env         []corev1.EnvVar `json:"env,omitempty"`
-	Source      Source          `json:"source,omitempty"`
-	S2i         S2i             `json:"s2i,omitempty"`
+	// Should incremental build is being used
+	Incremental *bool `json:"incremental,omitempty"`
+	// Environment properties set build purpose
+	Env []corev1.EnvVar `json:"env,omitempty"`
+	// VDB Source details
+	Source Source `json:"source,omitempty"`
+	// source to image details
+	S2i S2i `json:"s2i,omitempty"`
 }
 
 // Source VDB coordinates to locate the source code to build
 // +k8s:openapi-gen=true
 type Source struct {
-	DDL               string            `json:"ddl,omitempty"`
-	Maven             string            `json:"maven,omitempty"`
-	OpenAPI           string            `json:"openapi,omitempty"`
-	Dependencies      []string          `json:"dependencies,omitempty"`
+	// DDL based VDB
+	DDL string `json:"ddl,omitempty"`
+	// A VDB defined in GAV format
+	Maven string `json:"maven,omitempty"`
+	// Open API contract that is exposed by the VDB
+	OpenAPI string `json:"openapi,omitempty"`
+	// List of maven dependencies for the build in GAV format
+	Dependencies []string `json:"dependencies,omitempty"`
+	// Custom maven repositories that need to be used for the S2I build
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
 }
 
 // S2i Git coordinates to locate the s2i image
 // +k8s:openapi-gen=true
 type S2i struct {
-	Registry    string `json:"registry,omitempty"`
+	// S2I image registry
+	Registry string `json:"registry,omitempty"`
+	// S2I image prefix
 	ImagePrefix string `json:"imagePrefix,omitempty"`
-	ImageName   string `json:"imageName,omitempty"`
-	Tag         string `json:"tag,omitempty"`
+	// S2I image name
+	ImageName string `json:"imageName,omitempty"`
+	// S2I image tag
+	Tag string `json:"tag,omitempty"`
 }
 
 // RuntimeType - type of condition
 type RuntimeType struct {
 	Type    string `json:"type,omitempty"`
 	Version string `json:"version,omitempty"`
-}
-
-// Image - image details
-// +k8s:openapi-gen=true
-type Image struct {
-	ImageStreamName      string `json:"imageStreamName,omitempty"`
-	ImageStreamTag       string `json:"imageStreamTag,omitempty"`
-	ImageStreamNamespace string `json:"imageStreamNamespace,omitempty"`
-	ImageRegistry        string `json:"imageRegistry,omitempty"`
-	ImageRepository      string `json:"imageRepository,omitempty"`
-	BuilderImage         bool   `json:"builderImage,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -88,7 +99,9 @@ type VirtualDatabase struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   VirtualDatabaseSpec   `json:"spec,omitempty"`
+	// Virtual Database specification
+	Spec VirtualDatabaseSpec `json:"spec,omitempty"`
+	// Virtual Database Status
 	Status VirtualDatabaseStatus `json:"status,omitempty"`
 }
 
