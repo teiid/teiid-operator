@@ -12,7 +12,7 @@ require (
 	github.com/magiconair/properties v1.8.1
 	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
 	github.com/openshift/client-go v0.0.0-20190923180330-3b6373338c9b
-	github.com/operator-framework/operator-sdk v0.14.1
+	github.com/operator-framework/operator-sdk v0.15.1
 	github.com/pkg/errors v0.8.1
 	github.com/scylladb/go-set v1.0.2
 	github.com/spf13/pflag v1.0.5
@@ -25,18 +25,6 @@ require (
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
 	sigs.k8s.io/controller-runtime v0.4.0
 )
-
-// replace (
-// 	github.com/coreos/prometheus-operator => github.com/coreos/prometheus-operator v0.31.1
-// 	// Pinned to v2.10.0 (kubernetes-1.14.1) so https://proxy.golang.org can
-// 	// resolve it correctly.
-// 	github.com/prometheus/prometheus => github.com/prometheus/prometheus v1.8.2-0.20190525122359-d20e84d0fb64
-// )
-
-// replace (
-// 	github.com/openshift/api => github.com/openshift/api v3.9.1-0.20190814194116-a94e914914f4+incompatible
-// 	github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20190813201236-5a5508328169
-// )
 
 // Pinned to kubernetes-1.16.2
 replace (
@@ -63,6 +51,8 @@ replace (
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.0.0-20191016112829-06bb3c9d77c9
 )
 
-replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by H
+replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by Helm
+
+replace github.com/openshift/api => github.com/openshift/api v0.0.0-20190924102528-32369d4db2ad // Required until https://github.com/operator-framework/operator-lifecycle-manager/pull/1241 is resolved
 
 go 1.13

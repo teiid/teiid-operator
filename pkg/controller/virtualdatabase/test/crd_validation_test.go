@@ -106,7 +106,7 @@ func deleteNestedMapEntry(object map[string]interface{}, keys ...string) {
 }
 
 func getSchema(t *testing.T) validation.Schema {
-	crdFile := "../../../../deploy/crds/virtualdatabase.crd.yaml"
+	crdFile := "../../../../deploy/crds/teiid.io_virtualdatabases_crd.yaml"
 	file, err := os.Open(crdFile)
 	if err != nil {
 		log.Println(err)
