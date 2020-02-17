@@ -1,5 +1,5 @@
 #!/bin/sh
-
+echo "In go-lint.."
 dirs=(cmd pkg version)
 for dir in "${dirs[@]}"
 do
