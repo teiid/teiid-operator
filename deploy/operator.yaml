@@ -14,22 +14,21 @@ spec:
     spec:
       serviceAccountName: teiid-operator
       containers:
-      - name: teiid-operator
-        image: quay.io/teiid/teiid-operator:0.2.0
-        command:
-        - teiid-operator
-        imagePullPolicy: Always
-        env:
-        - name: WATCH_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace              
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: OPERATOR_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.labels['name']
-              
+        - name: teiid-operator
+          image: $IMAGE_LOCATION
+          command:
+            - teiid-operator
+          imagePullPolicy: Always
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: OPERATOR_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['name']
