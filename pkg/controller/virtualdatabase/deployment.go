@@ -26,7 +26,7 @@ import (
 	oappsv1 "github.com/openshift/api/apps/v1"
 	obuildv1 "github.com/openshift/api/build/v1"
 	oroutev1 "github.com/openshift/api/route/v1"
-	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

@@ -6,7 +6,7 @@ import (
 	buildv1 "github.com/openshift/api/build/v1"
 	oimagev1 "github.com/openshift/api/image/v1"
 	routev1 "github.com/openshift/api/route/v1"
-	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 )
 
 func init() {

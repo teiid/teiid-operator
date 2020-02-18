@@ -21,7 +21,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	corev1 "k8s.io/api/core/v1"

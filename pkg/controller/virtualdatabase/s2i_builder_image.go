@@ -25,7 +25,7 @@ import (
 
 	obuildv1 "github.com/openshift/api/build/v1"
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
-	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"

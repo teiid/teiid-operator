@@ -21,7 +21,7 @@ import (
 	"encoding/xml"
 	"strings"
 
-	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/maven"

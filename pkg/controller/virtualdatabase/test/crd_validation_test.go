@@ -12,7 +12,7 @@ import (
 	"github.com/RHsyseng/operator-utils/pkg/validation"
 	"github.com/ghodss/yaml"
 	"github.com/stretchr/testify/assert"
-	"github.com/teiid/teiid-operator/pkg/apis/vdb/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 )
 
 func TestSampleCustomResources(t *testing.T) {
