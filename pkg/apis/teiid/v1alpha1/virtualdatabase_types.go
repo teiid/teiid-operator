@@ -13,16 +13,26 @@ import (
 // +k8s:openapi-gen=true
 type VirtualDatabaseSpec struct {
 	// Number Of deployment units required
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Replicas"
 	Replicas *int32 `json:"replicas,omitempty"`
 	// Expose route via 3scale
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Expose Via 3scale"
 	ExposeVia3Scale bool `json:"exposeVia3scale,omitempty"`
 	// Environment properties required for deployment
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Properties"
 	Env []corev1.EnvVar `json:"env,omitempty"`
 	// Runtime engine type (ex: spring boot)
 	Runtime RuntimeType `json:"runtime,omitempty"`
 	// memory, disk cpu requirements
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Resources"
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	// S2I Build configuration
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="VDB Build"
 	Build VirtualDatabaseBuildObject `json:"build"`
 }
 
@@ -95,6 +105,7 @@ type RuntimeType struct {
 
 // VirtualDatabase is the Schema for the virtualdatabases API
 // +k8s:openapi-gen=true
+// +operator-sdk:gen-csv:customresourcedefinitions.displayName="Virtual Database Application"
 type VirtualDatabase struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

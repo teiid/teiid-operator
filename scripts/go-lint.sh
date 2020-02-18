@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "In go-lint.."
+yamllint deploy config
 dirs=(cmd pkg version)
 for dir in "${dirs[@]}"
 do
