@@ -268,13 +268,15 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 		})
 	}
 
-	if includeOpenAPIAdependency {
+	if includeOpenAPIAdependency || includeAllDependencies {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-openapi",
 			Version:    constants.Config.TeiidSpringBootVersion,
 		})
-	} else {
+	}
+
+	if !includeOpenAPIAdependency || includeAllDependencies {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-odata",
