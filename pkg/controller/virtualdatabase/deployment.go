@@ -415,7 +415,7 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 	}
 
 	// Inject Jaeger agent as side car into the deployment
-	if vdb.Spec.Jaeger != "" {
+	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
 		dc.ObjectMeta.Annotations["sidecar.jaegertracing.io/inject"] = vdb.Spec.Jaeger
 	}
 

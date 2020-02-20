@@ -139,7 +139,7 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		}
 	}
 
-	if vdb.Spec.Jaeger != "" {
+	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
 		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
 			Name:  "JAEGER_AGENT_HOST",
 			Value: "localhost",

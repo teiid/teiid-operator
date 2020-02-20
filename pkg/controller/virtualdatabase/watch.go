@@ -26,6 +26,7 @@ import (
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -67,6 +68,12 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		return &ReconcileVirtualDatabase{}
 	}
 
+	jaegerClient, err := otclient.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		log.Errorf("Error getting prometheus client: %v", err)
+		return &ReconcileVirtualDatabase{}
+	}
+
 	return &ReconcileVirtualDatabase{
 		client:           mgr.GetClient(),
 		scheme:           mgr.GetScheme(),
@@ -74,6 +81,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		imageClient:      imageClient,
 		buildClient:      buildClient,
 		prometheusClient: monitorClient,
+		jaegerClient:     jaegerClient,
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	oimagev1 "github.com/openshift/api/image/v1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	jaegerv1 "github.com/teiid/teiid-operator/pkg/util/opentracing/client/scheme"
 )
 
 func init() {
@@ -18,5 +19,6 @@ func init() {
 		oimagev1.AddToScheme,
 		buildv1.AddToScheme,
 		monitoringv1.AddToScheme,
+		jaegerv1.AddToScheme,
 	)
 }

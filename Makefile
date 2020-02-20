@@ -1,7 +1,7 @@
 #REGISTRY=quay.io/teiid
 REGISTRY?=`whoami`
 IMAGE=teiid-operator
-TAG=2.0.0-SNAPSHOT
+TAG=0.2.0-SNAPSHOT
 
 IMAGE_NAME=$(REGISTRY)/$(IMAGE):$(TAG)
 
