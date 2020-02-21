@@ -347,7 +347,7 @@ func buildVdbBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, err
 
 	files["/pom.xml"] = pomContent
 	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
-	files["/src/main/resources/application.properties"] = applicationProperties(mavenVdb)
+	files["/src/main/resources/application.properties"] = applicationProperties(mavenVdb, vdb.ObjectMeta.Name)
 
 	return files, nil
 }
@@ -401,7 +401,7 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, files ma
 	return nil
 }
 
-func applicationProperties(addVDB bool) string {
+func applicationProperties(addVDB bool, vdbName string) string {
 	str := `logging.level.io.jaegertracing.internal.reporters=WARN
 	logging.level.i.j.internal.reporters.LoggingReporter=WARN
 	logging.level.org.teiid.SECURITY=WARN
@@ -416,5 +416,6 @@ func applicationProperties(addVDB bool) string {
 	if addVDB {
 		str = str + "teiid.vdb-file=teiid.vdb\n"
 	}
+	str = str + "spring.application.name=" + vdbName + "\n"
 	return str
 }
