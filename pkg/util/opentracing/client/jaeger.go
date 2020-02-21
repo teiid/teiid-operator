@@ -196,12 +196,8 @@ func (c *jaegers) Patch(name string, pt types.PatchType, data []byte, subresourc
 
 func (c *jaegers) HasJaeger(name string) bool {
 	list, err := c.List(metav1.ListOptions{})
-	if err != nil {
-		log.Errorf("jaeger: %s", err)
-	}
 	if err == nil {
 		for _, item := range list.Items {
-			log.Info("Jaeger Instance: %s", item)
 			if name == "true" {
 				return true
 			}
