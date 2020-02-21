@@ -8,7 +8,7 @@ rules:
     resources:
       - "*"
       - "*/finalizers"
-    verbs: [ get, list, create, update, delete, deletecollection, watch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch]
   - apiGroups:
       - ""
     resources:
@@ -19,13 +19,13 @@ rules:
       - configmaps
       - secrets
       - serviceaccounts
-    verbs: [ get, list, create, update, delete, deletecollection, watch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch]
   - apiGroups:
       - ""
     resources:
       - replicationcontrollers
       - replicationcontrollers/scale
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - apps
     resources:
@@ -36,7 +36,7 @@ rules:
       - replicasets/scale
       - statefulsets
       - statefulsets/scale
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - extensions
     resources:
@@ -48,7 +48,7 @@ rules:
       - replicasets
       - replicasets/scale
       - replicationcontrollers/scale
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - ""
     resources:
@@ -61,7 +61,7 @@ rules:
       - replicationcontrollers/status
       - resourcequotas
       - resourcequotas/status
-    verbs: [ get, list, watch ]
+    verbs: [get, list, watch]
   - apiGroups:
       - ""
       - build.openshift.io
@@ -69,7 +69,7 @@ rules:
       - buildconfigs
       - buildconfigs/webhooks
       - builds
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - ""
       - build.openshift.io
@@ -77,26 +77,26 @@ rules:
       - buildconfigs/instantiate
       - buildconfigs/instantiatebinary
       - builds/clone
-    verbs: [ create ]
+    verbs: [create]
   - apiGroups:
       - ""
       - build.openshift.io
     resources:
       - builds/details
-    verbs: [ update ]
+    verbs: [update]
   - apiGroups:
       - ""
       - build.openshift.io
     resources:
       - builds/log
-    verbs: [ get, list, watch ]
+    verbs: [get, list, watch]
   - apiGroups:
       - ""
       - apps.openshift.io
     resources:
       - deploymentconfigs
       - deploymentconfigs/scale
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - ""
       - apps.openshift.io
@@ -104,14 +104,14 @@ rules:
       - deploymentconfigrollbacks
       - deploymentconfigs/instantiate
       - deploymentconfigs/rollback
-    verbs: [ create ]
+    verbs: [create]
   - apiGroups:
       - ""
       - apps.openshift.io
     resources:
       - deploymentconfigs/log
       - deploymentconfigs/status
-    verbs: [ get, list, watch ]
+    verbs: [get, list, watch]
   - apiGroups:
       - ""
       - image.openshift.io
@@ -121,30 +121,30 @@ rules:
       - imagestreammappings
       - imagestreams/secrets
       - imagestreamtags
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - ""
       - image.openshift.io
     resources:
       - imagestreamimports
-    verbs: [ create ]
+    verbs: [create]
   - apiGroups:
       - ""
       - image.openshift.io
     resources:
       - imagestreams/status
-    verbs: [ get, list, watch ]
+    verbs: [get, list, watch]
   - apiGroups:
       - ""
     resources:
       - events
-    verbs: [ get, list ]
+    verbs: [get, list]
   - apiGroups:
       - rbac.authorization.k8s.io
     resources:
       - roles
       - rolebindings
-    verbs: [ get, list, create, update, delete, deletecollection, watch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch]
   - apiGroups:
       - ""
       - template.openshift.io
@@ -153,24 +153,24 @@ rules:
       - templateconfigs
       - templateinstances
       - templates
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - ""
       - build.openshift.io
     resources:
       - buildlogs
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - authorization.openshift.io
     resources:
       - rolebindings
-    verbs: [ get, list, create, update, delete, deletecollection, watch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch]
   - apiGroups:
       - route.openshift.io
     resources:
       - routes
       - routes/custom-host
-    verbs: [ get, list, create, update, delete, deletecollection, watch, patch ]
+    verbs: [get, list, create, update, delete, deletecollection, watch, patch]
   - apiGroups:
       - monitoring.coreos.com
     resources:
@@ -178,12 +178,17 @@ rules:
       - prometheuses
       - servicemonitors
       - prometheusrules
-    verbs: [ get, list, create, update, delete, deletecollection, watch]
+    verbs: [get, list, create, update, delete, deletecollection, watch]
   - apiGroups:
-    - apps
-    resourceNames:
-    - teiid-operator
+      - jaegertracing.io
     resources:
-    - deployments/finalizers
+      - jaegers
+    verbs: [get, list, watch]
+  - apiGroups:
+      - apps
+    resourceNames:
+      - teiid-operator
+    resources:
+      - deployments/finalizers
     verbs:
-    - update    
+      - update

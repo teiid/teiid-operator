@@ -27,6 +27,7 @@ import (
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
+	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -48,6 +49,7 @@ type ReconcileVirtualDatabase struct {
 	imageClient      *imagev1.ImageV1Client
 	buildClient      *buildv1client.BuildV1Client
 	prometheusClient monitoringv1.MonitoringV1Interface
+	jaegerClient     *otclient.JaegertracingV1Client
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read

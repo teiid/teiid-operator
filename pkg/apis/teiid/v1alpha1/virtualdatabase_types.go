@@ -34,6 +34,10 @@ type VirtualDatabaseSpec struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="VDB Build"
 	Build VirtualDatabaseBuildObject `json:"build"`
+	// Jaeger instance to use to push the tracing information
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Jaeger Name"
+	Jaeger string `json:"jaeger,omitempty"`
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
@@ -106,6 +110,8 @@ type RuntimeType struct {
 // VirtualDatabase is the Schema for the virtualdatabases API
 // +k8s:openapi-gen=true
 // +operator-sdk:gen-csv:customresourcedefinitions.displayName="Virtual Database Application"
+// +kubebuilder:resource:path=virtualdatabases,shortName=vdb;vdbs
+// +kubebuilder:singular=virtualdatabase
 type VirtualDatabase struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

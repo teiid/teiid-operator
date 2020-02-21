@@ -139,6 +139,21 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		}
 	}
 
+	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
+		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
+			Name:  "JAEGER_AGENT_HOST",
+			Value: "localhost",
+		})
+		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
+			Name:  "JAEGER_AGENT_PORT",
+			Value: "6831",
+		})
+		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
+			Name:  "JAEGER_SERVICE_NAME",
+			Value: vdb.ObjectMeta.Name,
+		})
+	}
+
 	// resources for the container
 	if &vdb.Spec.Resources == nil {
 		vdb.Spec.Resources = corev1.ResourceRequirements{

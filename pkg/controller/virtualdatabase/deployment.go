@@ -23,11 +23,11 @@ import (
 	"reflect"
 	"time"
 
-	oappsv1 "github.com/openshift/api/apps/v1"
 	obuildv1 "github.com/openshift/api/build/v1"
 	oroutev1 "github.com/openshift/api/route/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -145,10 +145,10 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 }
 
 func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
-	item *oappsv1.DeploymentConfig, r *ReconcileVirtualDatabase) error {
+	item *appsv1.Deployment, r *ReconcileVirtualDatabase) error {
 
-	if *vdb.Spec.Replicas != item.Spec.Replicas {
-		item.Spec.Replicas = *vdb.Spec.Replicas
+	if vdb.Spec.Replicas != item.Spec.Replicas {
+		item.Spec.Replicas = vdb.Spec.Replicas
 	}
 	if !reflect.DeepEqual(vdb.Spec.Env, item.Spec.Template.Spec.Containers[0].Env) {
 		item.Spec.Template.Spec.Containers[0].Env = vdb.Spec.Env
@@ -159,8 +159,8 @@ func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha
 	return nil
 }
 
-func findDC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*oappsv1.DeploymentConfig, error) {
-	obj := oappsv1.DeploymentConfig{}
+func findDC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*appsv1.Deployment, error) {
+	obj := appsv1.Deployment{}
 	key := client.ObjectKey{Namespace: vdb.ObjectMeta.Namespace, Name: vdb.ObjectMeta.Name}
 	err := r.client.Get(context.TODO(), key, &obj)
 	return &obj, err
@@ -190,7 +190,7 @@ func getTargetPort(port corev1.ContainerPort) intstr.IntOrString {
 	return intstr.FromInt(p)
 }
 
-func (action *deploymentAction) createService(dc oappsv1.DeploymentConfig, vdb *v1alpha1.VirtualDatabase,
+func (action *deploymentAction) createService(dc appsv1.Deployment, vdb *v1alpha1.VirtualDatabase,
 	r *ReconcileVirtualDatabase, hasCertSecret bool) (corev1.Service, error) {
 
 	servicePorts := []corev1.ServicePort{}
@@ -237,7 +237,7 @@ func (action *deploymentAction) createService(dc oappsv1.DeploymentConfig, vdb *
 	service := corev1.Service{
 		ObjectMeta: meta,
 		Spec: corev1.ServiceSpec{
-			Selector:        dc.Spec.Selector,
+			Selector:        dc.Spec.Selector.MatchLabels,
 			Type:            corev1.ServiceTypeClusterIP,
 			Ports:           servicePorts,
 			SessionAffinity: corev1.ServiceAffinityClientIP,
@@ -307,10 +307,10 @@ func (action *deploymentAction) createRoute(service corev1.Service, vdb *v1alpha
 	return *found, err
 }
 
-func (action *deploymentAction) isDeploymentInReadyState(dc oappsv1.DeploymentConfig) bool {
+func (action *deploymentAction) isDeploymentInReadyState(dc appsv1.Deployment) bool {
 	if len(dc.Status.Conditions) > 0 {
 		for _, condition := range dc.Status.Conditions {
-			if condition.Type == oappsv1.DeploymentAvailable && condition.Status == corev1.ConditionTrue {
+			if condition.Type == appsv1.DeploymentAvailable && condition.Status == corev1.ConditionTrue {
 				return true
 			}
 		}
@@ -318,10 +318,10 @@ func (action *deploymentAction) isDeploymentInReadyState(dc oappsv1.DeploymentCo
 	return false
 }
 
-func (action *deploymentAction) isDeploymentProgressing(dc oappsv1.DeploymentConfig) bool {
+func (action *deploymentAction) isDeploymentProgressing(dc appsv1.Deployment) bool {
 	if len(dc.Status.Conditions) > 0 {
 		for _, condition := range dc.Status.Conditions {
-			if condition.Type == oappsv1.DeploymentProgressing && condition.Status == corev1.ConditionTrue {
+			if condition.Type == appsv1.DeploymentProgressing && condition.Status == corev1.ConditionTrue {
 				return true
 			}
 		}
@@ -336,7 +336,7 @@ func (action *deploymentAction) isDeploymentProgressing(dc oappsv1.DeploymentCon
 
 // newDCForCR returns a BuildConfig with the same name/namespace as the cr
 func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, serviceBC obuildv1.BuildConfig,
-	r *ReconcileVirtualDatabase) (oappsv1.DeploymentConfig, error) {
+	r *ReconcileVirtualDatabase) (appsv1.Deployment, error) {
 
 	var probe *corev1.Probe
 	labels := map[string]string{
@@ -371,19 +371,22 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 		Port: intstr.FromInt(8080),
 	}
 
-	dc := oappsv1.DeploymentConfig{
+	dc := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      vdb.ObjectMeta.Name,
-			Namespace: vdb.Namespace,
-			Labels:    labels,
+			Name:        vdb.ObjectMeta.Name,
+			Namespace:   vdb.Namespace,
+			Labels:      labels,
+			Annotations: make(map[string]string),
 		},
-		Spec: oappsv1.DeploymentConfigSpec{
-			Replicas: *vdb.Spec.Replicas,
-			Selector: labels,
-			Strategy: oappsv1.DeploymentStrategy{
-				Type: oappsv1.DeploymentStrategyTypeRolling,
+		Spec: appsv1.DeploymentSpec{
+			Replicas: vdb.Spec.Replicas,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: labels,
 			},
-			Template: &corev1.PodTemplateSpec{
+			Strategy: appsv1.DeploymentStrategy{
+				Type: appsv1.RollingUpdateDeploymentStrategyType,
+			},
+			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: labels,
 					Name:   vdb.ObjectMeta.Name,
@@ -408,25 +411,19 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 					},
 				},
 			},
-			Triggers: oappsv1.DeploymentTriggerPolicies{
-				{Type: oappsv1.DeploymentTriggerOnConfigChange},
-				{
-					Type: oappsv1.DeploymentTriggerOnImageChange,
-					ImageChangeParams: &oappsv1.DeploymentTriggerImageChangeParams{
-						Automatic:      true,
-						ContainerNames: []string{vdb.ObjectMeta.Name},
-						From:           *serviceBC.Spec.Output.To,
-					},
-				},
-			},
 		},
 	}
 
-	dc.SetGroupVersionKind(oappsv1.SchemeGroupVersion.WithKind("DeploymentConfig"))
+	// Inject Jaeger agent as side car into the deployment
+	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
+		dc.ObjectMeta.Annotations["sidecar.jaegertracing.io/inject"] = vdb.Spec.Jaeger
+	}
+
+	dc.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
 	var err = controllerutil.SetControllerReference(vdb, &dc, r.scheme)
 	if err != nil {
 		log.Error(err)
-		return oappsv1.DeploymentConfig{}, err
+		return appsv1.Deployment{}, err
 	}
 
 	return dc, nil

@@ -32,23 +32,6 @@ func TestSampleCustomResources(t *testing.T) {
 	}
 }
 
-func TestExampleCustomResources(t *testing.T) {
-	schema := getSchema(t)
-	fileList := fileList("../../../../deploy/examples")
-	for _, filePath := range fileList {
-		file, err := os.Open(filePath)
-		if err != nil {
-			log.Println(err)
-		}
-		defer file.Close()
-		yamlString, err := ioutil.ReadAll(file)
-		assert.NoError(t, err, "Error reading %v CR yaml", filePath)
-		var input map[string]interface{}
-		assert.NoError(t, yaml.Unmarshal(yamlString, &input))
-		assert.NoError(t, schema.Validate(input), "File %v does not validate against the CRD schema", filePath)
-	}
-}
-
 func TestTrialEnvMinimum(t *testing.T) {
 	var inputYaml = `
 apiVersion: teiid.io/v1alpha1
