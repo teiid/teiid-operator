@@ -4,7 +4,6 @@ metadata:
   name: dv-customer
 spec:
   replicas: 1
-  jaeger: simplest
   env:
     - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
       value: user
@@ -14,8 +13,6 @@ spec:
       value: sampledb
     - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
       value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
-    - name: ORG_TEIID_TRACING_WITH_ACTIVE_SPAN_ONLY
-      value: "false"
   build:
     source:
       ddl: |

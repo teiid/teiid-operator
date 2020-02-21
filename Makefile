@@ -6,7 +6,7 @@ TAG=0.2.0-SNAPSHOT
 IMAGE_NAME=$(REGISTRY)/$(IMAGE):$(TAG)
 
 .PHONY: all
-all: build
+all: build deploy
 
 .PHONY: dep
 dep:
