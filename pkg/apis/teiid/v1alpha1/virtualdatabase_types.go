@@ -50,6 +50,8 @@ type VirtualDatabaseStatus struct {
 	Failure string `json:"failure,omitempty"`
 	// Route information that is exposed for clients
 	Route string `json:"route,omitempty"`
+	// Deployed vdb version.
+	Version string `json:"version,omitempty"`
 }
 
 // OpenShiftObject ...
@@ -74,6 +76,8 @@ type VirtualDatabaseBuildObject struct {
 // Source VDB coordinates to locate the source code to build
 // +k8s:openapi-gen=true
 type Source struct {
+	// Deployed vdb version. For embedded DDL version this will be implicitly provided when ignored, for maven based vdb the maven version is always
+	Version string `json:"version,omitempty"`
 	// DDL based VDB
 	DDL string `json:"ddl,omitempty"`
 	// A VDB defined in GAV format
@@ -158,24 +162,12 @@ const (
 	// ReconcilerPhaseServiceImageFailed --
 	ReconcilerPhaseServiceImageFailed ReconcilerPhase = "Service Image Failed"
 
-	// ReconcilerPhaseCodeGeneration Code generation
-	ReconcilerPhaseCodeGeneration ReconcilerPhase = "Code Generation"
-	// ReconcilerPhaseCodeGenerationCompleted Code generation completed
-	ReconcilerPhaseCodeGenerationCompleted ReconcilerPhase = "Code Generation Completed"
-	// ReconcilerPhaseBuildImageSubmitted --
-	ReconcilerPhaseBuildImageSubmitted ReconcilerPhase = "Build Image Submitted"
-	// ReconcilerPhaseBuildImageRunning --
-	ReconcilerPhaseBuildImageRunning ReconcilerPhase = "Build Image Running"
-	// ReconcilerPhaseBuildImageComplete --
-	ReconcilerPhaseBuildImageComplete ReconcilerPhase = "Build Image Completed"
 	// ReconcilerPhaseDeploying --
 	ReconcilerPhaseDeploying ReconcilerPhase = "Deploying"
 	// ReconcilerPhaseRunning --
 	ReconcilerPhaseRunning ReconcilerPhase = "Running"
 	// ReconcilerPhaseError --
 	ReconcilerPhaseError ReconcilerPhase = "Error"
-	// ReconcilerPhaseBuildFailureRecovery --
-	ReconcilerPhaseBuildFailureRecovery ReconcilerPhase = "Building Failure Recovery"
 	// ReconcilerPhaseDeleting --
 	ReconcilerPhaseDeleting ReconcilerPhase = "Deleting"
 )

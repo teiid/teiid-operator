@@ -24,6 +24,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/maven"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -80,6 +81,18 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 	replicas := int32(1)
 	if vdb.Spec.Replicas == nil {
 		vdb.Spec.Replicas = &replicas
+	}
+
+	// set the VDB version for the deployment
+	if vdb.Spec.Build.Source.Version == "" && vdb.Spec.Build.Source.DDL != "" && vdb.Status.Version == "" {
+		vdb.Status.Version = "1"
+	}
+
+	if vdb.Spec.Build.Source.Maven != "" {
+		dep, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
+		if err == nil {
+			vdb.Status.Version = dep.Version
+		}
 	}
 
 	// environment variables

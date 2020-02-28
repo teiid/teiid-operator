@@ -9,8 +9,8 @@ spec:
     listKind: VirtualDatabaseList
     plural: virtualdatabases
     shortNames:
-    - vdb
-    - vdbs
+      - vdb
+      - vdbs
     singular: virtualdatabase
   scope: Namespaced
   validation:
@@ -18,14 +18,14 @@ spec:
       description: VirtualDatabase is the Schema for the virtualdatabases API
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
+          description: "APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources"
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
+          description: "Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds"
           type: string
         metadata:
           type: object
@@ -65,22 +65,23 @@ spec:
                                 description: The key to select.
                                 type: string
                               name:
-                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                description:
+                                  "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                   TODO: Add other useful fields. apiVersion, kind,
-                                  uid?'
+                                  uid?"
                                 type: string
                               optional:
                                 description: Specify whether the ConfigMap or its
                                   key must be defined
                                 type: boolean
                             required:
-                            - key
+                              - key
                             type: object
                           fieldRef:
-                            description: 'Selects a field of the pod: supports metadata.name,
+                            description: "Selects a field of the pod: supports metadata.name,
                               metadata.namespace, metadata.labels, metadata.annotations,
                               spec.nodeName, spec.serviceAccountName, status.hostIP,
-                              status.podIP.'
+                              status.podIP."
                             properties:
                               apiVersion:
                                 description: Version of the schema the FieldPath is
@@ -91,27 +92,27 @@ spec:
                                   API version.
                                 type: string
                             required:
-                            - fieldPath
+                              - fieldPath
                             type: object
                           resourceFieldRef:
-                            description: 'Selects a resource of the container: only
+                            description: "Selects a resource of the container: only
                               resources limits and requests (limits.cpu, limits.memory,
                               limits.ephemeral-storage, requests.cpu, requests.memory
-                              and requests.ephemeral-storage) are currently supported.'
+                              and requests.ephemeral-storage) are currently supported."
                             properties:
                               containerName:
-                                description: 'Container name: required for volumes,
-                                  optional for env vars'
+                                description: "Container name: required for volumes,
+                                  optional for env vars"
                                 type: string
                               divisor:
                                 description: Specifies the output format of the exposed
                                   resources, defaults to "1"
                                 type: string
                               resource:
-                                description: 'Required: resource to select'
+                                description: "Required: resource to select"
                                 type: string
                             required:
-                            - resource
+                              - resource
                             type: object
                           secretKeyRef:
                             description: Selects a key of a secret in the pod's namespace
@@ -121,20 +122,21 @@ spec:
                                   be a valid secret key.
                                 type: string
                               name:
-                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                description:
+                                  "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                   TODO: Add other useful fields. apiVersion, kind,
-                                  uid?'
+                                  uid?"
                                 type: string
                               optional:
                                 description: Specify whether the Secret or its key
                                   must be defined
                                 type: boolean
                             required:
-                            - key
+                              - key
                             type: object
                         type: object
                     required:
-                    - name
+                      - name
                     type: object
                   type: array
                 incremental:
@@ -180,6 +182,11 @@ spec:
                     openapi:
                       description: Open API contract that is exposed by the VDB
                       type: string
+                    version:
+                      description: Deployed vdb version. For embedded DDL version
+                        this will be implicitly provided when ignored, for maven based
+                        vdb the maven version is always
+                      type: string
                   type: object
               type: object
             env:
@@ -211,20 +218,21 @@ spec:
                             description: The key to select.
                             type: string
                           name:
-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            description:
+                              "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?"
                             type: string
                           optional:
                             description: Specify whether the ConfigMap or its key
                               must be defined
                             type: boolean
                         required:
-                        - key
+                          - key
                         type: object
                       fieldRef:
-                        description: 'Selects a field of the pod: supports metadata.name,
+                        description: "Selects a field of the pod: supports metadata.name,
                           metadata.namespace, metadata.labels, metadata.annotations,
-                          spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP.'
+                          spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP."
                         properties:
                           apiVersion:
                             description: Version of the schema the FieldPath is written
@@ -235,27 +243,27 @@ spec:
                               API version.
                             type: string
                         required:
-                        - fieldPath
+                          - fieldPath
                         type: object
                       resourceFieldRef:
-                        description: 'Selects a resource of the container: only resources
+                        description: "Selects a resource of the container: only resources
                           limits and requests (limits.cpu, limits.memory, limits.ephemeral-storage,
                           requests.cpu, requests.memory and requests.ephemeral-storage)
-                          are currently supported.'
+                          are currently supported."
                         properties:
                           containerName:
-                            description: 'Container name: required for volumes, optional
-                              for env vars'
+                            description: "Container name: required for volumes, optional
+                              for env vars"
                             type: string
                           divisor:
                             description: Specifies the output format of the exposed
                               resources, defaults to "1"
                             type: string
                           resource:
-                            description: 'Required: resource to select'
+                            description: "Required: resource to select"
                             type: string
                         required:
-                        - resource
+                          - resource
                         type: object
                       secretKeyRef:
                         description: Selects a key of a secret in the pod's namespace
@@ -265,19 +273,20 @@ spec:
                               be a valid secret key.
                             type: string
                           name:
-                            description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                              TODO: Add other useful fields. apiVersion, kind, uid?'
+                            description:
+                              "Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                              TODO: Add other useful fields. apiVersion, kind, uid?"
                             type: string
                           optional:
                             description: Specify whether the Secret or its key must
                               be defined
                             type: boolean
                         required:
-                        - key
+                          - key
                         type: object
                     type: object
                 required:
-                - name
+                  - name
                 type: object
               type: array
             exposeVia3scale:
@@ -296,20 +305,20 @@ spec:
                 limits:
                   additionalProperties:
                     type: string
-                  description: 'Limits describes the maximum amount of compute resources
-                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                  description: "Limits describes the maximum amount of compute resources
+                    allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/"
                   type: object
                 requests:
                   additionalProperties:
                     type: string
-                  description: 'Requests describes the minimum amount of compute resources
+                  description: "Requests describes the minimum amount of compute resources
                     required. If Requests is omitted for a container, it defaults
                     to Limits if that is explicitly specified, otherwise to an implementation-defined
-                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                    value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/"
                   type: object
               type: object
             runtime:
-              description: 'Runtime engine type (ex: spring boot)'
+              description: "Runtime engine type (ex: spring boot)"
               properties:
                 type:
                   type: string
@@ -317,7 +326,7 @@ spec:
                   type: string
               type: object
           required:
-          - build
+            - build
           type: object
         status:
           description: Virtual Database Status
@@ -334,10 +343,13 @@ spec:
             route:
               description: Route information that is exposed for clients
               type: string
+            version:
+              description: Deployed vdb version.
+              type: string
           type: object
       type: object
   version: v1alpha1
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true
