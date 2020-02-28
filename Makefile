@@ -38,6 +38,7 @@ build: test
 .PHONY: clean
 clean:
 	rm -rf build/_output
+	./scripts/clean.sh $(IMAGE_NAME)
 
 .PHONY: lint
 lint:
