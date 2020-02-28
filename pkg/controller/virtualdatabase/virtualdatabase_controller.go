@@ -58,8 +58,6 @@ type ReconcileVirtualDatabase struct {
 // The Controller will requeue the Request to be processed again if the returned error is non-nil or
 // Result.Requeue is true, otherwise upon completion it will remove the work from the queue.
 func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
-	log.Debug("Reconciling VirtualDatabase")
-
 	ctx := context.TODO()
 
 	// Fetch the VirtualDatabase instance
@@ -73,18 +71,28 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		return reconcile.Result{}, err
 	}
 
+	log.Debugf("Reconciling VirtualDatabase: %s", instance.ObjectMeta.Name)
+
 	buildSteps := []Action{
 		NewInitializeAction(),
 		News2IBuilderImageAction(),
 		NewServiceImageAction(),
 		NewDeploymentAction(),
 		NewPrometheusMonitorAction(),
-		NewUpdateAction(),
 	}
 
 	// make deep copy and do not directly update the stock copy as other might
 	// have access to this
 	target := instance.DeepCopy()
+
+	// check if the VDB has been updated, then redo everything
+	if IsVdbUpdated(target) {
+		RedeployVdb(target)
+		if err := r.client.Update(ctx, target); err != nil {
+			return reconcile.Result{}, err
+		}
+		return reconcile.Result{}, nil
+	}
 
 	// run through the different actions now
 	for _, a := range buildSteps {

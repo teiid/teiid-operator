@@ -84,10 +84,20 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 		existing, err := findDC(vdb, r)
 		if existing == nil {
 			err = errors.NewNotFound(schema.GroupResource{Group: "dc", Resource: "dc"}, vdb.ObjectMeta.Name)
-		}
-		err = action.ensureObj(&dc, err, r)
-		if err != nil {
-			return err
+			err = action.ensureObj(&dc, err, r)
+			if err != nil {
+				return err
+			}
+		} else {
+			// if a new image is created then update the deployment with it
+			if existing.Spec.Template.Spec.Containers[0].Image != bc.Spec.Output.To.Name {
+				dc.Spec.Template.Spec.Containers[0].Image = bc.Spec.Output.To.Name
+			}
+			err = r.client.Update(context.TODO(), &dc)
+			if err != nil {
+				log.Warn("Failed to update object. ", err)
+				return err
+			}
 		}
 
 		existing, err = findDC(vdb, r)
@@ -205,9 +215,10 @@ func (action *deploymentAction) createService(dc appsv1.Deployment, vdb *v1alpha
 	}
 
 	labels := map[string]string{
-		"discovery.3scale.net":     "true",
-		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
-		"app":                      vdb.ObjectMeta.Name,
+		"discovery.3scale.net":        "true",
+		"teiid.io/VirtualDatabase":    vdb.ObjectMeta.Name,
+		"app":                         vdb.ObjectMeta.Name,
+		"teiid.io/deployment-version": vdb.Status.Version,
 	}
 
 	// if openapi is in use then use the openapi for it

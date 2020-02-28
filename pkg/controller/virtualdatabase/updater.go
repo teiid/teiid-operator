@@ -18,40 +18,35 @@ limitations under the License.
 package virtualdatabase
 
 import (
-	"context"
+	"strconv"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 )
 
-// NewUpdateAction creates a new initialize action
-func NewUpdateAction() Action {
-	return &updateAction{}
-}
-
-type updateAction struct {
-	baseAction
-}
-
-// Name returns a common name of the action
-func (action *updateAction) Name() string {
-	return "UpdateAction"
-}
-
-// CanHandle tells whether this action can handle the virtualdatabase
-func (action *updateAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning
-}
-
-// Handle handles the virtualdatabase
-func (action *updateAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+// IsVdbUpdated --
+func IsVdbUpdated(vdb *v1alpha1.VirtualDatabase) bool {
 	digest, err := ComputeForVirtualDatabase(vdb)
-	if err != nil {
-		return err
+	if err == nil {
+		return digest != vdb.Status.Digest
 	}
-	// when digest do not match restart the whole process, which will update the build
-	if digest != vdb.Status.Digest {
-		log.Infof("Changes detected in VDB %s, redeploying", vdb.ObjectMeta.Name)
-		vdb.Status.Phase = v1alpha1.ReconcilerPhaseInitial
+	return false
+}
+
+// RedeployVdb Handle handles the virtualdatabase
+func RedeployVdb(vdb *v1alpha1.VirtualDatabase) error {
+	digest, _ := ComputeForVirtualDatabase(vdb)
+	vdb.Status.Phase = v1alpha1.ReconcilerPhaseInitial
+	vdb.Status.Digest = digest
+
+	// we only want to update the version implicitly when the DDL based model is used
+	// for maven based it is expected of the user to change the version of maven to be reflected here
+	if vdb.Spec.Build.Source.DDL != "" && vdb.Spec.Build.Source.Version == "" {
+		ver, err := strconv.Atoi(vdb.Status.Version)
+		if err == nil {
+			vdb.Status.Version = strconv.Itoa(ver + 1)
+		}
+		log.Debugf("new version is %s", vdb.Status.Version)
 	}
+	log.Infof("Changes detected in VDB %s:%s, redeploying", vdb.ObjectMeta.Name, vdb.Status.Version)
 	return nil
 }
