@@ -111,10 +111,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 				if err := r.client.Update(ctx, target); err != nil {
 					if k8serrors.IsConflict(err) {
 						log.Error(err, "conflict")
-						return reconcile.Result{
-							Requeue:      true,
-							RequeueAfter: 5 * time.Second,
-						}, nil
+						log.Debug(err, " conflict ", instance, " target ", target)
 					}
 					return reconcile.Result{}, err
 				}
@@ -128,6 +125,8 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 						" phase-to:", targetPhase,
 					)
 				}
+				// this will auto-queue since the update is successful
+				return reconcile.Result{}, err
 			}
 		} else {
 			continue
