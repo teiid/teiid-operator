@@ -73,8 +73,9 @@ type Repository struct {
 
 // RepositoryPolicy --
 type RepositoryPolicy struct {
-	Enabled      bool   `xml:"enabled"`
-	UpdatePolicy string `xml:"updatePolicy,omitempty"`
+	Enabled        bool   `xml:"enabled"`
+	UpdatePolicy   string `xml:"updatePolicy,omitempty"`
+	ChecksumPolicy string `xml:"checksumPolicy,omitempty"`
 }
 
 // Build --
@@ -122,6 +123,37 @@ type Properties map[string]string
 type propertiesEntry struct {
 	XMLName xml.Name
 	Value   string `xml:",chardata"`
+}
+
+// Settings represent a maven settings
+type Settings struct {
+	XMLName           xml.Name
+	XMLNs             string    `xml:"xmlns,attr"`
+	XMLNsXsi          string    `xml:"xmlns:xsi,attr"`
+	XsiSchemaLocation string    `xml:"xsi:schemaLocation,attr"`
+	LocalRepository   string    `xml:"localRepository"`
+	Profiles          []Profile `xml:"profiles>profile,omitempty"`
+}
+
+// Profile --
+type Profile struct {
+	ID                 string       `xml:"id"`
+	Activation         Activation   `xml:"activation,omitempty"`
+	Properties         Properties   `xml:"properties,omitempty"`
+	Repositories       []Repository `xml:"repositories>repository,omitempty"`
+	PluginRepositories []Repository `xml:"pluginRepositories>pluginRepository,omitempty"`
+}
+
+// Activation --
+type Activation struct {
+	ActiveByDefault bool                `xml:"activeByDefault"`
+	Property        *PropertyActivation `xml:"property,omitempty"`
+}
+
+// PropertyActivation --
+type PropertyActivation struct {
+	Name  string `xml:"name"`
+	Value string `xml:"value"`
 }
 
 // MarshalXML --

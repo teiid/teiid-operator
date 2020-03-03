@@ -1,0 +1,204 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package kubernetes
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	yaml2 "gopkg.in/yaml.v2"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/json"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+// ToJSON --
+func ToJSON(value runtime.Object) ([]byte, error) {
+	return json.Marshal(value)
+}
+
+// ToYAML --
+func ToYAML(value runtime.Object) ([]byte, error) {
+	data, err := ToJSON(value)
+	if err != nil {
+		return nil, err
+	}
+
+	return JSONToYAML(data)
+}
+
+// JSONToYAML --
+func JSONToYAML(src []byte) ([]byte, error) {
+	jsondata := map[string]interface{}{}
+	err := json.Unmarshal(src, &jsondata)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshalling json: %v", err)
+	}
+	yamldata, err := yaml2.Marshal(&jsondata)
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling to yaml: %v", err)
+	}
+
+	return yamldata, nil
+}
+
+// GetConfigMap --
+func GetConfigMap(context context.Context, client k8sclient.Reader, name string, namespace string) (*corev1.ConfigMap, error) {
+	key := k8sclient.ObjectKey{
+		Name:      name,
+		Namespace: namespace,
+	}
+
+	answer := corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	if err := client.Get(context, key, &answer); err != nil {
+		return nil, err
+	}
+
+	return &answer, nil
+}
+
+// HasConfigMap --
+func HasConfigMap(context context.Context, client k8sclient.Reader, name string, namespace string) bool {
+	key := k8sclient.ObjectKey{
+		Name:      name,
+		Namespace: namespace,
+	}
+
+	answer := corev1.ConfigMap{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "ConfigMap",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	if err := client.Get(context, key, &answer); err != nil {
+		return false
+	}
+
+	return true
+}
+
+// GetSecret --
+func GetSecret(context context.Context, client k8sclient.Reader, name string, namespace string) (*corev1.Secret, error) {
+	key := k8sclient.ObjectKey{
+		Name:      name,
+		Namespace: namespace,
+	}
+
+	answer := corev1.Secret{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	if err := client.Get(context, key, &answer); err != nil {
+		return nil, err
+	}
+
+	return &answer, nil
+}
+
+// GetService --
+func GetService(context context.Context, client k8sclient.Reader, name string, namespace string) (*corev1.Service, error) {
+	key := k8sclient.ObjectKey{
+		Name:      name,
+		Namespace: namespace,
+	}
+
+	answer := corev1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+	}
+
+	if err := client.Get(context, key, &answer); err != nil {
+		return nil, err
+	}
+
+	return &answer, nil
+}
+
+// GetSecretRefValue returns the value of a secret in the supplied namespace --
+func GetSecretRefValue(ctx context.Context, client k8sclient.Reader, namespace string, selector *corev1.SecretKeySelector) (string, error) {
+	secret, err := GetSecret(ctx, client, selector.Name, namespace)
+	if err != nil {
+		return "", err
+	}
+
+	if data, ok := secret.Data[selector.Key]; ok {
+		return string(data), nil
+	}
+
+	return "", fmt.Errorf("key %s not found in secret %s", selector.Key, selector.Name)
+}
+
+// GetConfigMapRefValue returns the value of a configmap in the supplied namespace
+func GetConfigMapRefValue(ctx context.Context, client k8sclient.Reader, namespace string, selector *corev1.ConfigMapKeySelector) (string, error) {
+	cm, err := GetConfigMap(ctx, client, selector.Name, namespace)
+	if err != nil {
+		return "", err
+	}
+
+	if data, ok := cm.Data[selector.Key]; ok {
+		return data, nil
+	}
+
+	return "", fmt.Errorf("key %s not found in config map %s", selector.Key, selector.Name)
+}
+
+// ResolveValueSource --
+func ResolveValueSource(ctx context.Context, client k8sclient.Reader, namespace string, valueSource *v1alpha1.ValueSource) (string, error) {
+	if valueSource.ConfigMapKeyRef != nil && valueSource.SecretKeyRef != nil {
+		return "", fmt.Errorf("value source has bot config map and secret configured")
+	}
+	if valueSource.ConfigMapKeyRef != nil {
+		return GetConfigMapRefValue(ctx, client, namespace, valueSource.ConfigMapKeyRef)
+	}
+	if valueSource.SecretKeyRef != nil {
+		return GetSecretRefValue(ctx, client, namespace, valueSource.SecretKeyRef)
+	}
+
+	return "", nil
+}

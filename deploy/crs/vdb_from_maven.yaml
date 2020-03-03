@@ -5,17 +5,21 @@ metadata:
 spec:
   replicas: 1
   env:
-  - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
-    value: user
-  - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
-    value: mypassword
-  - name: SPRING_DATASOURCE_SAMPLEDB_DATABASENAME
-    value: sampledb
-  - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
-    value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
+    - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
+      value: user
+    - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
+      value: mypassword
+    - name: SPRING_DATASOURCE_SAMPLEDB_DATABASENAME
+      value: sampledb
+    - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
+      value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
   resources:
     memory: 1024Mi
     cpu: 2.0
   build:
     source:
+      mavenSettings:
+        configMapKeyRef:
+          key: settings.xml
+          name: my-maven-settings
       maven: org.teiid:dv-customer:vdb:1.1

@@ -1,0 +1,238 @@
+/*
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package maven
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+const expectedSettings = `<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
+	`xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <localRepository>/tmp/artifacts/m2</localRepository>
+  <profiles>
+    <profile>
+      <id>my-profile</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>warn</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </repository>
+      </repositories>
+      <pluginRepositories></pluginRepositories>
+    </profile>
+  </profiles>
+</settings>`
+
+const expectedDefaultSettings = `<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
+	`xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <localRepository></localRepository>
+  <profiles>
+    <profile>
+      <id>maven-settings</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+</settings>`
+
+const expectedDefaultSettingsWithExtraRepo = `<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ` +
+	`xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <localRepository></localRepository>
+  <profiles>
+    <profile>
+      <id>maven-settings</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <repositories>
+        <repository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </repository>
+        <repository>
+          <id>foo</id>
+          <url>https://foo.bar.org/repo</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>https://repo1.maven.org/maven2</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </pluginRepository>
+        <pluginRepository>
+          <id>foo</id>
+          <url>https://foo.bar.org/repo</url>
+          <snapshots>
+            <enabled>false</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </snapshots>
+          <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>fail</checksumPolicy>
+          </releases>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+</settings>`
+
+func TestSettingsGeneration(t *testing.T) {
+	settings := NewSettings()
+	settings.LocalRepository = "/tmp/artifacts/m2"
+	settings.Profiles = []Profile{
+		{
+			ID: "my-profile",
+			Activation: Activation{
+				ActiveByDefault: true,
+			},
+			Repositories: []Repository{
+				{
+					ID:  "central",
+					URL: "https://repo.maven.apache.org/maven2",
+					Snapshots: RepositoryPolicy{
+						Enabled:        false,
+						ChecksumPolicy: "warn",
+					},
+					Releases: RepositoryPolicy{
+						Enabled:        true,
+						UpdatePolicy:   "never",
+						ChecksumPolicy: "fail",
+					},
+				},
+			},
+		},
+	}
+
+	content, err := EncodeXML(settings)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, settings)
+
+	assert.Equal(t, expectedSettings, string(content))
+}
+
+func TestDefaultSettingsGeneration(t *testing.T) {
+	settings := NewDefaultSettings([]Repository{})
+
+	content, err := EncodeXML(settings)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, settings)
+
+	assert.Equal(t, expectedDefaultSettings, string(content))
+}
+
+func TestDefaultSettingsGenerationWithAdditionalRepo(t *testing.T) {
+	repositories := []Repository{
+		NewRepository("https://repo1.maven.org/maven2@id=central"),
+		NewRepository("https://foo.bar.org/repo@id=foo"),
+	}
+	settings := NewDefaultSettings(repositories)
+
+	content, err := EncodeXML(settings)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, settings)
+
+	assert.Equal(t, expectedDefaultSettingsWithExtraRepo, string(content))
+}
+
+func TestCreateSettingsConfigMap(t *testing.T) {
+	settings := NewDefaultSettings([]Repository{})
+
+	configMap, err := CreateSettingsConfigMap("foo", "bar", settings)
+	assert.Nil(t, err)
+	assert.NotNil(t, configMap)
+
+	content, err := EncodeXML(settings)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, settings)
+
+	assert.Equal(t, string(content), configMap.Data["settings.xml"])
+}

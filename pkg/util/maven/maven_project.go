@@ -161,10 +161,12 @@ func NewRepository(repo string) Repository {
 	r := Repository{
 		URL: repo,
 		Releases: RepositoryPolicy{
-			Enabled: true,
+			Enabled:        true,
+			ChecksumPolicy: "fail",
 		},
 		Snapshots: RepositoryPolicy{
-			Enabled: false,
+			Enabled:        false,
+			ChecksumPolicy: "fail",
 		},
 	}
 

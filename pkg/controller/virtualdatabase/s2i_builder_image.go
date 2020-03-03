@@ -115,7 +115,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		// Trigger first build of "builder" and binary BCs
 		if bc.Status.LastVersion == 0 {
 			log.Info("triggering the base builder image build")
-			if err = action.triggerBuild(*bc, vdb.Spec.Build.Source.MavenRepositories, r); err != nil {
+			if err = action.triggerBuild(ctx, *bc, vdb.Spec.Build.Source.MavenRepositories, r); err != nil {
 				return err
 			}
 		}
@@ -152,7 +152,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	bc := obuildv1.BuildConfig{}
 	env := []corev1.EnvVar{}
 	envvar.SetVal(&env, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
-	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "clean package -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8")
+	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "clean package -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -s settings.xml")
 	envvar.SetVal(&env, "ARTIFACT_DIR", "target/")
 
 	incremental := true
@@ -192,7 +192,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 }
 
 // triggerBuild triggers a BuildConfig to start a new build
-func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, mavenRepositories map[string]string, r *ReconcileVirtualDatabase) error {
+func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuildv1.BuildConfig, mavenRepositories map[string]string, r *ReconcileVirtualDatabase) error {
 	log := log.With("kind", "BuildConfig", "name", bc.GetName(), "namespace", bc.GetNamespace())
 	log.Info("starting the build for base image")
 	buildConfig, err := r.buildClient.BuildConfigs(bc.Namespace).Get(bc.Name, metav1.GetOptions{})
@@ -221,12 +221,20 @@ func (action *s2iBuilderImageAction) triggerBuild(bc obuildv1.BuildConfig, maven
 	addCopyPlugIn(jarDependency, "jar", "app.jar", "/tmp", &pom)
 
 	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl")
-	pomContent, err := maven.GeneratePomContent(pom)
+	pomContent, err := maven.EncodeXML(pom)
 	if err != nil {
 		return err
 	}
 	log.Debug(" Base Build Pom ", pomContent)
 
+	// read the settings file
+	settingsContent, err := readMavenSettingsFile(ctx, vdb, r, pom)
+	if err != nil {
+		log.Debugf("Failed reading the settings.xml file for vdb %s", vdb.ObjectMeta.Name)
+		return err
+	}
+
+	files["/settings.xml"] = settingsContent
 	files["/pom.xml"] = pomContent
 	files["/src/main/resources/teiid.ddl"] = action.ddlFile()
 

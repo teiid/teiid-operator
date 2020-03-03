@@ -116,14 +116,14 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 		}
 
 		var payload map[string]string
-		if isDockerBuild(vdb) {
+		if isFatJarBuild(vdb) {
 			files, err := buildJarBasedPayload(vdb)
 			if err != nil {
 				return nil
 			}
 			payload = files
 		} else {
-			files, err := buildVdbBasedPayload(vdb)
+			files, err := buildVdbBasedPayload(ctx, vdb, r)
 			if err != nil {
 				return nil
 			}
@@ -137,7 +137,7 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 	return nil
 }
 
-func isDockerBuild(vdb *v1alpha1.VirtualDatabase) bool {
+func isFatJarBuild(vdb *v1alpha1.VirtualDatabase) bool {
 	if vdb.Spec.Build.Source.Maven != "" {
 		if !strings.Contains(vdb.Spec.Build.Source.Maven, ":vdb:") {
 			return true
@@ -191,7 +191,7 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 	// set it back original default
 	envvar.SetVal(&vdb.Spec.Build.Env, "DEPLOYMENTS_DIR", "/deployments")
 	// this below is add clean, to remove the previous jar file in target from builder image
-	envvar.SetVal(&vdb.Spec.Build.Env, "MAVEN_ARGS", "clean package -DskipTests -Dmaven.javadoc.skip=true -Dmaven.site.skip=true -Dmaven.source.skip=true -Djacoco.skip=true -Dcheckstyle.skip=true -Dfindbugs.skip=true -Dpmd.skip=true -Dfabric8.skip=true -e -B")
+	envvar.SetVal(&vdb.Spec.Build.Env, "MAVEN_ARGS", "clean package -s settings.xml -DskipTests -Dmaven.javadoc.skip=true -Dmaven.site.skip=true -Dmaven.source.skip=true -Djacoco.skip=true -Dcheckstyle.skip=true -Dfindbugs.skip=true -Dpmd.skip=true -Dfabric8.skip=true -e -B")
 	envvar.SetVal(&vdb.Spec.Build.Env, "DIGEST", vdb.Status.Digest)
 
 	bc := obuildv1.BuildConfig{}
@@ -275,7 +275,7 @@ func buildJarBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, err
 	// configure pom.xml to copy the teiid.vdb into classpath
 	addCopyPlugIn(jarDependency, "jar", "app.jar", "${project.build.directory}", &pom)
 
-	pomContent, err := maven.GeneratePomContent(pom)
+	pomContent, err := maven.EncodeXML(pom)
 	if err != nil {
 		return files, err
 	}
@@ -288,7 +288,7 @@ func buildJarBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, err
 	return files, nil
 }
 
-func buildVdbBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, error) {
+func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (map[string]string, error) {
 	files := map[string]string{}
 
 	// add OpenAPI document
@@ -338,13 +338,23 @@ func buildVdbBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, err
 		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
 	}
 
-	pomContent, err := maven.GeneratePomContent(pom)
+	pomContent, err := maven.EncodeXML(pom)
 	if err != nil {
 		return files, err
 	}
 
 	log.Debugf("Pom file generated %s", pomContent)
 
+	// read the settings file
+	settingsContent, err := readMavenSettingsFile(ctx, vdb, r, pom)
+	if err != nil {
+		log.Debugf("Failed reading the settings.xml file for vdb %s", vdb.ObjectMeta.Name)
+		return files, err
+	}
+
+	log.Debugf("settings.xml file generated %s", settingsContent)
+
+	files["/settings.xml"] = settingsContent
 	files["/pom.xml"] = pomContent
 	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
 	files["/src/main/resources/application.properties"] = applicationProperties(mavenVdb, vdb.ObjectMeta.Name)
