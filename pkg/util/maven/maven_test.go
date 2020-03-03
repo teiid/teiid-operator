@@ -138,7 +138,7 @@ func TestPomGeneration(t *testing.T) {
 		},
 	}
 
-	pom, err := GeneratePomContent(project)
+	pom, err := EncodeXML(project)
 
 	assert.Nil(t, err)
 	assert.NotNil(t, pom)

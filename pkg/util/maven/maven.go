@@ -36,15 +36,15 @@ import (
 // Log --
 var Log = logs.GetLogger("maven")
 
-// GeneratePomContent generate a pom.xml file from the given project definition
-func GeneratePomContent(project Project) (string, error) {
+// EncodeXML generate a pom.xml file from the given project definition
+func EncodeXML(content interface{}) (string, error) {
 	w := &bytes.Buffer{}
 	w.WriteString(xml.Header)
 
 	e := xml.NewEncoder(w)
 	e.Indent("", "  ")
 
-	err := e.Encode(project)
+	err := e.Encode(content)
 	if err != nil {
 		return "", err
 	}
@@ -56,7 +56,7 @@ func GeneratePomContent(project Project) (string, error) {
 func CreateStructure(buildDir string, project Project) error {
 	Log.Infof("write project: %+v", project)
 
-	pom, err := GeneratePomContent(project)
+	pom, err := EncodeXML(project)
 	if err != nil {
 		return err
 	}

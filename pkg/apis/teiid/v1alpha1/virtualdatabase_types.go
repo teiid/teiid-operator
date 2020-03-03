@@ -88,6 +88,16 @@ type Source struct {
 	Dependencies []string `json:"dependencies,omitempty"`
 	// Custom maven repositories that need to be used for the S2I build
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
+	// Custom Maven settings.xml file to go with build in a configmap or secret
+	MavenSettings ValueSource `json:"mavenSettings,omitempty"`
+}
+
+// ValueSource --
+type ValueSource struct {
+	// Selects a key of a ConfigMap.
+	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
+	// Selects a key of a secret.
+	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
 }
 
 // S2i Git coordinates to locate the s2i image

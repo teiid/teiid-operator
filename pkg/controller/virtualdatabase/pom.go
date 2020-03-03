@@ -18,13 +18,16 @@ limitations under the License.
 package virtualdatabase
 
 import (
+	"context"
 	"encoding/xml"
 	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // GenerateVdbPom -- Generate the POM file based on the VDb provided
@@ -524,4 +527,20 @@ func createPlainMavenProject(name string) maven.Project {
 		},
 	}
 	return project
+}
+
+func readMavenSettingsFile(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase, pom maven.Project) (string, error) {
+	settingsContent, err := maven.EncodeXML(maven.NewDefaultSettings(pom.Repositories))
+	if vdb.Spec.Build.Source.MavenSettings.ConfigMapKeyRef != nil || vdb.Spec.Build.Source.MavenSettings.SecretKeyRef != nil {
+		settingsContent, err = kubernetes.ResolveValueSource(ctx, r.client, vdb.ObjectMeta.Namespace, &vdb.Spec.Build.Source.MavenSettings)
+	} else if kubernetes.HasConfigMap(ctx, r.client, "teiid-maven-settings", vdb.ObjectMeta.Namespace) {
+		selector := &corev1.ConfigMapKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: "teiid-maven-settings",
+			},
+			Key: "settings.xml",
+		}
+		settingsContent, err = kubernetes.GetConfigMapRefValue(ctx, r.client, vdb.ObjectMeta.Namespace, selector)
+	}
+	return settingsContent, err
 }
