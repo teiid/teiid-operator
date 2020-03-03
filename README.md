@@ -1,18 +1,18 @@
 # Teiid Operator
+
 Teiid Operator for OpenShift/Kubernetes
 
 [![Go Report](https://goreportcard.com/badge/github.com/teiid/teiid-operator)](https://goreportcard.com/report/github.com/teiid/teiid-operator)
 [![Build Status](https://travis-ci.org/teiid/teiid-operator.svg?branch=master)](https://travis-ci.org/teiid/teiid-operator)
 
-
-## Deploy operator to OpenShift 3.11 
+## Deploy operator to OpenShift 3.11
 
 To deploy the Operator to OpenShift 3.11, first login to your OpenShift instance using below. You need to have cluster admin previlages to add the CRD for the operator.
 
 ```bash
 git clone git@github.com:teiid/teiid-operator.git
 cd teiid-operator
-oc login 
+oc login
 oc create -f deploy/crds/virtualdatabase.crd.yaml
 oc create -f deploy/service_account.yaml
 oc create -f deploy/role.yaml
@@ -29,13 +29,13 @@ To install this operator on OpenShift 4 for end-to-end testing, make sure you ha
 Push the operator bundle to your quay application repository as follows:
 
 ```bash
-operator-courier push deploy/courier/0.2.0 teiid teiid 0.2.0 "basic XXXXXXXXX"
+operator-courier push deploy/olm-catalog/0.2.0 teiid teiid 0.2.0 "basic XXXXXXXXX"
 ```
 
 If pushing to another quay repository, replace _teiid_ with your username or other namespace. Also note that the push command does not overwrite an existing repository, and it needs to be deleted before a new version can be built and uploaded. Once the bundle has been uploaded, create an [Operator Source](https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md#linking-the-quay-application-repository-to-your-openshift-40-cluster) to load your operator bundle in OpenShift.
 
 ```bash
-oc create -f deploy/courier/teiid-operatorsource.yaml
+oc create -f deploy/olm-catalog/teiid-operatorsource.yaml
 ```
 
 Remember to replace _registryNamespace_ with your quay namespace. The name, display name and publisher of the operator are the only other attributes that may be modified.
@@ -65,7 +65,7 @@ oc rsh postgresql-xxxx
 
 psql -U user sampledb
 
-psql> 
+psql>
 
 CREATE TABLE CUSTOMER
 (
@@ -91,6 +91,7 @@ INSERT INTO CUSTOMER (ID,SSN,NAME) VALUES (12, 'CST01004','Jane Aire');
 
 INSERT INTO ADDRESS (ID, STREET, ZIP, CUSTOMER_ID) VALUES (10, 'Main St', '12345', 10);
 ```
+
 The above sets you up with sample database. Now lets create the Virtual Database using below command
 
 ```shell
@@ -137,4 +138,44 @@ make deploy
 ```
 
 ## OLM Notes
+
 https://github.com/operator-framework/community-operators/blob/master/docs/contributing.md
+
+## Operator Testing before Release
+
+```bash
+# Generate CSV from Code
+$operator-sdk generate csv --csv-channel beta --csv-version 0.2.0-SNAPSHOT --from-version 0.1.0 --operator-name teiid
+
+# fix couple of attributes in CSV File
+containerImage: fix this
+teiid-operator/Image  - fix this
+
+# copy additional files into the olm-catalog directory
+$cp crd into olm-catalog/teiid/{version}
+$cp package olm-catalog/teiid/{version}
+
+# push image to quay.io
+$docker push quay.io/teiid/teiid-operator:0.2.0-SNAPSHOT
+
+# start OpenShift 4.x and give developer few rols
+$oc adm policy --as system:admin add-cluster-role-to-user cluster-admin developer
+
+# quay login for testing
+$curl -sH "Content-Type: application/json" -XPOST https://quay.io/cnr/api/v1/users/login -d '
+{
+    "user": {
+        "username": "'"${QUAY_USERNAME}"'",
+        "password": "'"${QUAY_PASSWORD}"'"
+    }
+}'
+
+# deploy operator in OpenShift 4.x
+$operator-courier push deploy/olm-catalog/teiid/0.2.0-SNAPSHOT rareddy teiid 0.2.0-SNAPSHOT "basic cmFyZWRkeTpXaWxkMDBkMg=="
+
+# run Operator source to push the Operator to local OperatorHub for OKD
+oc apply -f deploy/olm-catalog/teiid/teiid-operatorsource.yaml
+
+# Run the scorecard
+$operator-sdk scorecard --bundle deploy/olm-catalog/teiid/0.2.0-SNAPSHOT/
+```
