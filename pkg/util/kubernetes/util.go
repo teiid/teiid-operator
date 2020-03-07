@@ -22,13 +22,17 @@ import (
 	"fmt"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/util/logs"
 	yaml2 "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+var log = logs.GetLogger("kubernetes-util")
 
 // ToJSON --
 func ToJSON(value runtime.Object) ([]byte, error) {
@@ -201,4 +205,26 @@ func ResolveValueSource(ctx context.Context, client k8sclient.Reader, namespace 
 	}
 
 	return "", nil
+}
+
+// EnsureObject creates an object based on the error passed in from a `client.Get`
+func EnsureObject(obj v1alpha1.OpenShiftObject, err error, client k8sclient.Writer) error {
+	log := log.With("kind", obj.GetObjectKind().GroupVersionKind().Kind, "name", obj.GetName(), "namespace", obj.GetNamespace())
+
+	if err != nil && errors.IsNotFound(err) {
+		// Define a new Object
+		log.Info("Creating")
+		err = client.Create(context.TODO(), obj)
+		if err != nil {
+			log.Warn("Failed to create object. ", err)
+			return err
+		}
+		// Object created successfully - return and requeue
+		return nil
+	} else if err != nil {
+		log.Error("Failed to get object. ", err)
+		return err
+	}
+	log.Debug("Skip reconcile - object already exists")
+	return nil
 }

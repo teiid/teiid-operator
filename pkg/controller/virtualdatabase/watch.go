@@ -30,6 +30,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -74,6 +75,12 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		return &ReconcileVirtualDatabase{}
 	}
 
+	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		log.Errorf("Error getting kube client: %v", err)
+		return &ReconcileVirtualDatabase{}
+	}
+
 	return &ReconcileVirtualDatabase{
 		client:           mgr.GetClient(),
 		scheme:           mgr.GetScheme(),
@@ -82,6 +89,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		buildClient:      buildClient,
 		prometheusClient: monitorClient,
 		jaegerClient:     jaegerClient,
+		kubeClient:       clientset,
 	}
 }
 

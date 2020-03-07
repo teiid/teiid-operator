@@ -31,6 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
 	cachev1 "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -50,6 +51,7 @@ type ReconcileVirtualDatabase struct {
 	buildClient      *buildv1client.BuildV1Client
 	prometheusClient monitoringv1.MonitoringV1Interface
 	jaegerClient     *otclient.JaegertracingV1Client
+	kubeClient       kubernetes.Interface
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read
@@ -77,6 +79,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		NewInitializeAction(),
 		News2IBuilderImageAction(),
 		NewServiceImageAction(),
+		NewCreateServiceAction(),
 		NewDeploymentAction(),
 		NewPrometheusMonitorAction(),
 	}
@@ -111,7 +114,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 				if err := r.client.Update(ctx, target); err != nil {
 					if k8serrors.IsConflict(err) {
 						log.Error(err, "conflict")
-						log.Debug(err, " conflict ", instance, " target ", target)
+						//log.Debug(err, " conflict ", instance, " target ", target)
 					}
 					return reconcile.Result{}, err
 				}

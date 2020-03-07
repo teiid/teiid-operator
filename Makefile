@@ -33,7 +33,7 @@ sdk-generate: dep
 .PHONY: build
 build: test
 	go generate ./...
-	operator-sdk build $(IMAGE_NAME)
+	operator-sdk build --image-builder buildah $(IMAGE_NAME)
 
 .PHONY: clean
 clean:
