@@ -41,6 +41,33 @@ func TestGetEnvVar(t *testing.T) {
 	assert.Nil(t, Get(vars, "NotMyEnv"))
 }
 
+func TestCombine(t *testing.T) {
+	vars := []corev1.EnvVar{
+		{
+			Name:  "MyEnv",
+			Value: "MyValue",
+		},
+	}
+
+	vars2 := []corev1.EnvVar{
+		{
+			Name:  "MyEnv2",
+			Value: "MyValue2",
+		},
+	}
+
+	expected := []corev1.EnvVar{
+		{
+			Name:  "MyEnv",
+			Value: "MyValue",
+		},
+		{
+			Name:  "MyEnv2",
+			Value: "MyValue2",
+		},
+	}
+	assert.Equal(t, expected, Combine(vars, vars2))
+}
 func TestModifyEnvVar(t *testing.T) {
 	vars := []corev1.EnvVar{
 		{

@@ -38,6 +38,10 @@ type VirtualDatabaseSpec struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Jaeger Name"
 	Jaeger string `json:"jaeger,omitempty"`
+	// DataSources configuration for this Virtual Database
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Datasources Configuration"
+	DataSources []DataSourceObject `json:"datasources,omitempty"`
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
@@ -114,9 +118,27 @@ type S2i struct {
 }
 
 // RuntimeType - type of condition
+// +k8s:openapi-gen=true
 type RuntimeType struct {
 	Type    string `json:"type,omitempty"`
 	Version string `json:"version,omitempty"`
+}
+
+// DataSourceObject - define the datasources that this Virtual Database integrates
+// +k8s:openapi-gen=true
+type DataSourceObject struct {
+	// Name of the Data Source
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Properties"
+	Name string `json:"name,omitempty"`
+	// Type of Data Source. ex: Oracle, PostgreSQL, MySQL, Salesforce etc.
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Properties"
+	Type string `json:"type,omitempty"`
+	// Properties required for Data Source connection
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Properties"
+	Properties []corev1.EnvVar `json:"properties,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -171,6 +193,9 @@ const (
 	ReconcilerPhaseServiceImageFinished ReconcilerPhase = "Service Image Finished"
 	// ReconcilerPhaseServiceImageFailed --
 	ReconcilerPhaseServiceImageFailed ReconcilerPhase = "Service Image Failed"
+
+	//ReconcilerPhaseServiceCreated --
+	ReconcilerPhaseServiceCreated ReconcilerPhase = "Service Created"
 
 	// ReconcilerPhaseDeploying --
 	ReconcilerPhaseDeploying ReconcilerPhase = "Deploying"

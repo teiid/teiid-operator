@@ -19,19 +19,15 @@ package virtualdatabase
 
 import (
 	"context"
-	"fmt"
 	"reflect"
-	"time"
 
 	obuildv1 "github.com/openshift/api/build/v1"
-	oroutev1 "github.com/openshift/api/route/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -53,84 +49,48 @@ func (action *deploymentAction) Name() string {
 
 // CanHandle tells whether this action can handle the virtualdatabase
 func (action *deploymentAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImageFinished || vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying ||
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceCreated || vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying ||
 		vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning
 }
 
 // Handle handles the virtualdatabase
 func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 
-	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImageFinished {
+	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceCreated {
 		log.Info("Running the deployment")
 		bc, err := r.buildClient.BuildConfigs(vdb.ObjectMeta.Namespace).Get(vdb.ObjectMeta.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
 
-		// check to see if the user configured a secret with certificates
-		// if not have generate self signed
-		hasCertSecret := false
-		_, err = findSecret(vdb, r)
-		if err == nil {
-			hasCertSecret = true
-		}
-
-		dc, err := action.deploymentConfig(vdb, *bc, r)
-		if err != nil {
-			return err
-		}
-
 		existing, err := findDC(vdb, r)
 		if err != nil {
-			err = action.ensureObj(&dc, err, r)
+			dc, err2 := action.deploymentConfig(vdb, *bc, r)
+			if err2 != nil {
+				return err2
+			}
+
+			_, err = r.kubeClient.AppsV1().Deployments(vdb.ObjectMeta.Namespace).Create(&dc)
+			//err = kubernetes.EnsureObject(&dc, err, r.client)
 			if err != nil {
 				return err
 			}
 		} else {
 			// if a new image is created then update the deployment with it
 			if existing.Spec.Template.Spec.Containers[0].Image != bc.Spec.Output.To.Name {
-				dc.Spec.Template.Spec.Containers[0].Image = bc.Spec.Output.To.Name
-			}
-			err = r.client.Update(context.TODO(), &dc)
-			if err != nil {
-				log.Warn("Failed to update object. ", err)
-				return err
-			}
-		}
-
-		existing, err = findDC(vdb, r)
-		if err != nil {
-			// wait until the dc is found, no need report error
-			log.Debug(err)
-			return nil
-		}
-		// Create the service and route needed. We are creating service
-		// before so that we can use the service annotation to create certificate
-		// that can be loaded in a deployment
-		_, err = findService(vdb, r)
-		if err != nil {
-			service, err := action.createService(*existing, vdb, r, hasCertSecret)
-			if err != nil {
-				vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
-				vdb.Status.Failure = "Failed to create Service"
-			} else {
-				log.Info("Services created:" + vdb.ObjectMeta.Name)
-				if vdb.Spec.ExposeVia3Scale {
-					log.Info("creation of Route skipped as it is configured to be exposed through 3scale")
-				} else {
-					route, err := action.createRoute(service, vdb, r)
-					if err != nil {
-						vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
-						vdb.Status.Failure = "Failed to create route"
-					} else {
-						log.Info("Route created:" + vdb.ObjectMeta.Name)
-						vdb.Status.Route = fmt.Sprintf("https://%s/odata", route.Spec.Host)
-					}
+				existing.Spec.Template.Spec.Containers[0].Image = bc.Spec.Output.To.Name
+				_, err = r.kubeClient.AppsV1().Deployments(vdb.ObjectMeta.Namespace).Update(existing)
+				//err = r.client.Update(context.TODO(), existing)
+				if err != nil {
+					log.Warn("Failed to update object. ", err)
+					return err
 				}
 			}
 		}
-		// change the status
+
+		// change the status, needs to be done before next method.
 		vdb.Status.Phase = v1alpha1.ReconcilerPhaseDeploying
+		return nil
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying {
 		item, _ := findDC(vdb, r)
 		if item != nil && action.isDeploymentInReadyState(*item) {
@@ -155,14 +115,21 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
 	item *appsv1.Deployment, r *ReconcileVirtualDatabase) error {
 
+	deploymentEnvs := deploymentEnvs(vdb)
+
+	update := false
 	if vdb.Spec.Replicas != item.Spec.Replicas {
 		item.Spec.Replicas = vdb.Spec.Replicas
+		update = true
 	}
-	if !reflect.DeepEqual(vdb.Spec.Env, item.Spec.Template.Spec.Containers[0].Env) {
-		item.Spec.Template.Spec.Containers[0].Env = vdb.Spec.Env
+	if !reflect.DeepEqual(deploymentEnvs, item.Spec.Template.Spec.Containers[0].Env) {
+		item.Spec.Template.Spec.Containers[0].Env = deploymentEnvs
+		update = true
 	}
-	if err := r.client.Update(ctx, item); err != nil {
-		return err
+	if update {
+		if err := r.client.Update(ctx, item); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -181,13 +148,6 @@ func findSecret(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*co
 	return &obj, err
 }
 
-func findService(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*corev1.Service, error) {
-	obj := corev1.Service{}
-	key := client.ObjectKey{Namespace: vdb.ObjectMeta.Namespace, Name: vdb.ObjectMeta.Name}
-	err := r.client.Get(context.TODO(), key, &obj)
-	return &obj, err
-}
-
 func getTargetPort(port corev1.ContainerPort) intstr.IntOrString {
 	p := int(port.ContainerPort)
 	if p == 35443 {
@@ -196,124 +156,6 @@ func getTargetPort(port corev1.ContainerPort) intstr.IntOrString {
 		p = 5432
 	}
 	return intstr.FromInt(p)
-}
-
-func (action *deploymentAction) createService(dc appsv1.Deployment, vdb *v1alpha1.VirtualDatabase,
-	r *ReconcileVirtualDatabase, hasCertSecret bool) (corev1.Service, error) {
-
-	servicePorts := []corev1.ServicePort{}
-	for _, port := range dc.Spec.Template.Spec.Containers[0].Ports {
-		servicePorts = append(servicePorts, corev1.ServicePort{
-			Name:       port.Name,
-			Protocol:   port.Protocol,
-			Port:       port.ContainerPort,
-			TargetPort: getTargetPort(port),
-		},
-		)
-	}
-
-	labels := map[string]string{
-		"discovery.3scale.net":        "true",
-		"teiid.io/VirtualDatabase":    vdb.ObjectMeta.Name,
-		"app":                         vdb.ObjectMeta.Name,
-		"teiid.io/deployment-version": vdb.Status.Version,
-	}
-
-	// if openapi is in use then use the openapi for it
-	apiLink := "/odata/openapi.json"
-	if len(vdb.Spec.Build.Source.OpenAPI) > 0 {
-		apiLink = "/openapi.json"
-	}
-
-	annotations := map[string]string{
-		"discovery.3scale.net/scheme":           "http",
-		"discovery.3scale.net/port":             "8080",
-		"discovery.3scale.net/description-path": apiLink,
-	}
-
-	// if there is no secret certificate then annotate to create one
-	if !hasCertSecret {
-		annotations["service.alpha.openshift.io/serving-cert-secret-name"] = vdb.ObjectMeta.Name
-	}
-
-	meta := metav1.ObjectMeta{
-		Name:        vdb.ObjectMeta.Name,
-		Namespace:   vdb.Namespace,
-		Labels:      labels,
-		Annotations: annotations,
-	}
-	timeout := int32(86400)
-	service := corev1.Service{
-		ObjectMeta: meta,
-		Spec: corev1.ServiceSpec{
-			Selector:        dc.Spec.Selector.MatchLabels,
-			Type:            corev1.ServiceTypeClusterIP,
-			Ports:           servicePorts,
-			SessionAffinity: corev1.ServiceAffinityClientIP,
-			SessionAffinityConfig: &corev1.SessionAffinityConfig{
-				ClientIP: &corev1.ClientIPConfig{
-					TimeoutSeconds: &timeout,
-				},
-			},
-		},
-	}
-	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
-	err := controllerutil.SetControllerReference(vdb, &service, r.scheme)
-	if err != nil {
-		log.Error(err)
-	}
-
-	service.ResourceVersion = ""
-	err = action.ensureObj(&service,
-		r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &corev1.Service{}), r)
-	if err != nil {
-		return corev1.Service{}, err
-	}
-	return service, nil
-}
-
-func (action *deploymentAction) createRoute(service corev1.Service, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (oroutev1.Route, error) {
-	metadata := service.ObjectMeta.DeepCopy()
-	metadata.Labels["teiid.io/api"] = "odata"
-	route := oroutev1.Route{
-		ObjectMeta: *metadata,
-		Spec: oroutev1.RouteSpec{
-			Port: &oroutev1.RoutePort{
-				TargetPort: intstr.FromInt(8080),
-			},
-			To: oroutev1.RouteTargetReference{
-				Kind: "Service",
-				Name: service.Name,
-			},
-			TLS: &oroutev1.TLSConfig{
-				Termination: oroutev1.TLSTerminationEdge,
-			},
-		},
-	}
-	route.SetGroupVersionKind(oroutev1.SchemeGroupVersion.WithKind("Route"))
-	err := controllerutil.SetControllerReference(vdb, &route, r.scheme)
-	if err != nil {
-		log.Error("Error setting controller reference. ", err)
-	}
-	err = r.client.Get(context.TODO(), types.NamespacedName{Name: route.Name, Namespace: route.Namespace}, &oroutev1.Route{})
-	if err != nil && errors.IsNotFound(err) {
-		route.ResourceVersion = ""
-		err = action.ensureObj(&route, err, r)
-		if err != nil {
-			log.Error("Error creating Route. ", err)
-		}
-	}
-
-	// wait until route is created
-	found := &oroutev1.Route{}
-	for i := 1; i < 60; i++ {
-		time.Sleep(time.Duration(100) * time.Millisecond)
-		err = r.client.Get(context.TODO(), types.NamespacedName{Name: route.Name, Namespace: route.Namespace}, found)
-		if err == nil {
-			break
-		}
-	}
-	return *found, err
 }
 
 func (action *deploymentAction) isDeploymentInReadyState(dc appsv1.Deployment) bool {
@@ -343,21 +185,7 @@ func (action *deploymentAction) isDeploymentProgressing(dc appsv1.Deployment) bo
 	return true
 }
 
-// newDCForCR returns a BuildConfig with the same name/namespace as the cr
-func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, serviceBC obuildv1.BuildConfig,
-	r *ReconcileVirtualDatabase) (appsv1.Deployment, error) {
-
-	var probe *corev1.Probe
-	labels := map[string]string{
-		"app":                      vdb.Name,
-		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
-		"teiid.io/type":            "VirtualDatabase",
-	}
-	// Add any custom labels
-	for k := range constants.Config.Labels {
-		labels[k] = constants.Config.Labels[k]
-	}
-
+func containerPorts() []corev1.ContainerPort {
 	ports := []corev1.ContainerPort{}
 	ports = append(ports, corev1.ContainerPort{Name: "http", ContainerPort: int32(8080), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "jolokia", ContainerPort: int32(8778), Protocol: corev1.ProtocolTCP})
@@ -366,6 +194,40 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 	ports = append(ports, corev1.ContainerPort{Name: "pg", ContainerPort: int32(35432), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "teiid-secure", ContainerPort: int32(31443), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "pg-secure", ContainerPort: int32(35443), Protocol: corev1.ProtocolTCP})
+	return ports
+}
+
+func matchLabels(vdb *v1alpha1.VirtualDatabase) map[string]string {
+	labels := map[string]string{
+		"app":                      vdb.ObjectMeta.Name,
+		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
+		"teiid.io/type":            "VirtualDatabase",
+	}
+	return labels
+}
+
+func deploymentEnvs(vdb *v1alpha1.VirtualDatabase) []corev1.EnvVar {
+	dataSourceConfig := convert2SpringProperties(vdb.Spec.DataSources)
+	return envvar.Combine(vdb.Spec.Env, dataSourceConfig)
+}
+
+// newDCForCR returns a BuildConfig with the same name/namespace as the cr
+func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, serviceBC obuildv1.BuildConfig,
+	r *ReconcileVirtualDatabase) (appsv1.Deployment, error) {
+
+	var probe *corev1.Probe
+	matchLabels := matchLabels(vdb)
+
+	labels := map[string]string{
+		"app":                      vdb.Name,
+		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
+		"teiid.io/type":            "VirtualDatabase",
+	}
+
+	// Add any custom labels
+	for k := range constants.Config.Labels {
+		labels[k] = constants.Config.Labels[k]
+	}
 
 	// liveness and readiness probes
 	probe = &corev1.Probe{
@@ -380,6 +242,8 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 		Port: intstr.FromInt(8080),
 	}
 
+	deploymentEnvs := deploymentEnvs(vdb)
+
 	dc := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        vdb.ObjectMeta.Name,
@@ -390,7 +254,7 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 		Spec: appsv1.DeploymentSpec{
 			Replicas: vdb.Spec.Replicas,
 			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: matchLabels,
 			},
 			Strategy: appsv1.DeploymentStrategy{
 				Type: appsv1.RollingUpdateDeploymentStrategyType,
@@ -408,11 +272,11 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 					Containers: []corev1.Container{
 						{
 							Name:            vdb.ObjectMeta.Name,
-							Env:             vdb.Spec.Env,
+							Env:             deploymentEnvs,
 							Resources:       vdb.Spec.Resources,
 							Image:           serviceBC.Spec.Output.To.Name,
 							ImagePullPolicy: corev1.PullAlways,
-							Ports:           ports,
+							Ports:           containerPorts(),
 							LivenessProbe:   probe,
 							ReadinessProbe:  probe,
 							WorkingDir:      "/deployments",
@@ -436,26 +300,4 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 	}
 
 	return dc, nil
-}
-
-// ensureObj creates an object based on the error passed in from a `client.Get`
-func (action *deploymentAction) ensureObj(obj v1alpha1.OpenShiftObject, err error, r *ReconcileVirtualDatabase) error {
-	log := log.With("kind", obj.GetObjectKind().GroupVersionKind().Kind, "name", obj.GetName(), "namespace", obj.GetNamespace())
-
-	if err != nil && errors.IsNotFound(err) {
-		// Define a new Object
-		log.Info("Creating")
-		err = r.client.Create(context.TODO(), obj)
-		if err != nil {
-			log.Warn("Failed to create object. ", err)
-			return err
-		}
-		// Object created successfully - return and requeue
-		return nil
-	} else if err != nil {
-		log.Error("Failed to get object. ", err)
-		return err
-	}
-	log.Debug("Skip reconcile - object already exists")
-	return nil
 }

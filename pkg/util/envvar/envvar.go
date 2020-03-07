@@ -102,3 +102,36 @@ func SetValFrom(vars *[]corev1.EnvVar, name string, path string) {
 		})
 	}
 }
+
+// SetValueFrom --
+func SetValueFrom(vars *[]corev1.EnvVar, name string, from *corev1.EnvVarSource) {
+	envVar := Get(*vars, name)
+
+	if envVar != nil {
+		envVar.Value = ""
+		envVar.ValueFrom = from
+	} else {
+		*vars = append(*vars, corev1.EnvVar{
+			Name:      name,
+			ValueFrom: from,
+		})
+	}
+}
+
+//Combine two sets into a new variable
+func Combine(setA []corev1.EnvVar, setB []corev1.EnvVar) []corev1.EnvVar {
+	envs := make([]corev1.EnvVar, 0)
+
+	for _, v := range setA {
+		if Get(envs, v.Name) == nil {
+			SetVar(&envs, v)
+		}
+	}
+
+	for _, v := range setB {
+		if Get(envs, v.Name) == nil {
+			SetVar(&envs, v)
+		}
+	}
+	return envs
+}

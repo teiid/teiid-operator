@@ -4,15 +4,16 @@ metadata:
   name: dv-customer
 spec:
   replicas: 1
-  env:
-    - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
-      value: user
-    - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
-      value: mypassword
-    - name: SPRING_DATASOURCE_SAMPLEDB_DATABASENAME
-      value: sampledb
-    - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
-      value: jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)
+  datasources:
+    - name: sampledb
+      type: postgresql
+      properties:
+        - name: username
+          value: user
+        - name: password
+          value: mypassword
+        - name: jdbc-url
+          value: jdbc:postgresql://sampledb/sampledb
   resources:
     memory: 1024Mi
     cpu: 2.0
