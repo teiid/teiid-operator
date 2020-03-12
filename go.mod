@@ -4,7 +4,6 @@ require (
 	//github.com/Azure/go-autorest/autorest v0.9.3 // indirect
 	github.com/RHsyseng/operator-utils v0.0.0-20191024171829-7e918ca09e5e
 	github.com/coreos/prometheus-operator v0.34.0
-	github.com/docker/cli v0.0.0-20190506213505-d88565df0c2d
 	github.com/docker/compose-on-kubernetes v0.4.24 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/logr v0.1.0
@@ -15,6 +14,7 @@ require (
 	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
 	github.com/openshift/client-go v0.0.0-20190923180330-3b6373338c9b
 	github.com/operator-framework/operator-sdk v0.15.1
+	github.com/pavel-v-chernykh/keystore-go v2.1.0+incompatible
 	github.com/pkg/errors v0.8.1
 	github.com/scylladb/go-set v1.0.2
 	github.com/spf13/pflag v1.0.5

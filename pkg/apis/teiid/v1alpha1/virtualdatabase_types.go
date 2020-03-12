@@ -197,6 +197,9 @@ const (
 	//ReconcilerPhaseServiceCreated --
 	ReconcilerPhaseServiceCreated ReconcilerPhase = "Service Created"
 
+	//ReconcilerPhaseKeystoreCreated --
+	ReconcilerPhaseKeystoreCreated ReconcilerPhase = "Keystore Created"
+
 	// ReconcilerPhaseDeploying --
 	ReconcilerPhaseDeploying ReconcilerPhase = "Deploying"
 	// ReconcilerPhaseRunning --

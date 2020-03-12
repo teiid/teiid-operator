@@ -80,6 +80,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 		News2IBuilderImageAction(),
 		NewServiceImageAction(),
 		NewCreateServiceAction(),
+		NewCreateCertificateAction(),
 		NewDeploymentAction(),
 		NewPrometheusMonitorAction(),
 	}

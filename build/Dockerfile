@@ -1,4 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
+FROM adoptopenjdk/openjdk11:jdk-11.0.6_10-ubi-minimal
 
 ENV OPERATOR=/usr/local/bin/teiid-operator
 

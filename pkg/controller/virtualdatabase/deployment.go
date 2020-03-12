@@ -49,14 +49,14 @@ func (action *deploymentAction) Name() string {
 
 // CanHandle tells whether this action can handle the virtualdatabase
 func (action *deploymentAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
-	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceCreated || vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying ||
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseKeystoreCreated || vdb.Status.Phase == v1alpha1.ReconcilerPhaseDeploying ||
 		vdb.Status.Phase == v1alpha1.ReconcilerPhaseRunning
 }
 
 // Handle handles the virtualdatabase
 func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 
-	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceCreated {
+	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseKeystoreCreated {
 		log.Info("Running the deployment")
 		bc, err := r.buildClient.BuildConfigs(vdb.ObjectMeta.Namespace).Get(vdb.ObjectMeta.Name, metav1.GetOptions{})
 		if err != nil {
@@ -65,7 +65,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 
 		existing, err := findDC(vdb, r)
 		if err != nil {
-			dc, err2 := action.deploymentConfig(vdb, *bc, r)
+			dc, err2 := action.buildDeployment(vdb, *bc, r)
 			if err2 != nil {
 				return err2
 			}
@@ -212,7 +212,7 @@ func deploymentEnvs(vdb *v1alpha1.VirtualDatabase) []corev1.EnvVar {
 }
 
 // newDCForCR returns a BuildConfig with the same name/namespace as the cr
-func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, serviceBC obuildv1.BuildConfig,
+func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, serviceBC obuildv1.BuildConfig,
 	r *ReconcileVirtualDatabase) (appsv1.Deployment, error) {
 
 	var probe *corev1.Probe
@@ -280,6 +280,23 @@ func (action *deploymentAction) deploymentConfig(vdb *v1alpha1.VirtualDatabase, 
 							LivenessProbe:   probe,
 							ReadinessProbe:  probe,
 							WorkingDir:      "/deployments",
+							VolumeMounts: []corev1.VolumeMount{
+								{
+									Name:      "keystore",
+									ReadOnly:  true,
+									MountPath: "/etc/tls/private",
+								},
+							},
+						},
+					},
+					Volumes: []corev1.Volume{
+						{
+							Name: "keystore",
+							VolumeSource: corev1.VolumeSource{
+								Secret: &corev1.SecretVolumeSource{
+									SecretName: getKeystoreSecretName(vdb),
+								},
+							},
 						},
 					},
 				},
