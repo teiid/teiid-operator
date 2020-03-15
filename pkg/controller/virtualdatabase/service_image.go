@@ -412,20 +412,29 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, files ma
 }
 
 func applicationProperties(addVDB bool, vdbName string) string {
-	str := `logging.level.io.jaegertracing.internal.reporters=WARN
-	logging.level.i.j.internal.reporters.LoggingReporter=WARN
-	logging.level.org.teiid.SECURITY=WARN
-	spring.main.allow-bean-definition-overriding=true
-	teiid.jdbc-secure-enable=true
-	teiid.pg-secure-enable=true
-	teiid.jdbc-enable=true
-	teiid.pg-enable=true	
-	springfox.documentation.swagger.v2.path=/openapi.json
-	spring.teiid.model.package=io.integration
-	`
+	str := strings.Join([]string{
+		"logging.level.io.jaegertracing.internal.reporters=WARN",
+		"logging.level.i.j.internal.reporters.LoggingReporter=WARN",
+		"logging.level.org.teiid.SECURITY=WARN",
+		"spring.main.allow-bean-definition-overriding=true",
+		"teiid.jdbc-secure-enable=true",
+		"teiid.pg-secure-enable=true",
+		"teiid.jdbc-enable=true",
+		"teiid.pg-enable=true",
+		"teiid.ssl.keyStoreType=pkcs12",
+		"teiid.ssl.keyStoreFileName=" + constants.KeystoreLocation + "/" + constants.KeystoreName,
+		"teiid.ssl.keyStorePassword=" + constants.KeystorePassword,
+		"teiid.ssl.trustStoreFileName=" + constants.KeystoreLocation + "/" + constants.TruststoreName,
+		"teiid.ssl.trustStorePassword=" + constants.KeystorePassword,
+		"keycloak.truststore=" + constants.KeystoreLocation + "/" + constants.TruststoreName,
+		"keycloak.truststore-password=" + constants.KeystorePassword,
+		"springfox.documentation.swagger.v2.path=/openapi.json",
+		"spring.teiid.model.package=io.integration",
+		"spring.application.name=" + vdbName,
+	}, "\n")
+
 	if addVDB {
-		str = str + "teiid.vdb-file=teiid.vdb\n"
+		strings.Join([]string{str, "teiid.vdb-file=teiid.vdb"}, "\n")
 	}
-	str = str + "spring.application.name=" + vdbName + "\n"
 	return str
 }

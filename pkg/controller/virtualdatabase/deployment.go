@@ -284,7 +284,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 								{
 									Name:      "keystore",
 									ReadOnly:  true,
-									MountPath: "/etc/tls/private",
+									MountPath: constants.KeystoreLocation,
 								},
 							},
 						},

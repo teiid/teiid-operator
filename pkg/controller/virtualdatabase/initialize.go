@@ -121,28 +121,6 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 				},
 			},
 		},
-		{
-			Name: "TEIID_TLS_CERTIFICATE",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: vdb.ObjectMeta.Name,
-					},
-					Key: "tls.crt",
-				},
-			},
-		},
-		{
-			Name: "TEIID_TLS_KEY",
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: vdb.ObjectMeta.Name,
-					},
-					Key: "tls.key",
-				},
-			},
-		},
 	}
 
 	// merge/update env with user defined

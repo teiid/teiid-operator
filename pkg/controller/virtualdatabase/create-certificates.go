@@ -19,11 +19,11 @@ package virtualdatabase
 
 import (
 	"context"
-	"encoding/base64"
 	"io/ioutil"
 
-	"github.com/teiid/teiid-operator/pkg/util/keystore"
+	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
+	"github.com/teiid/teiid-operator/pkg/util/pkcs12"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -60,25 +60,14 @@ func (action *createCertificateAction) Handle(ctx context.Context, vdb *v1alpha1
 	}
 
 	// if key store is not found then look for the either provided ir generated certificates and create a keystore with it
-	certs, err := kubernetes.GetSecret(ctx, r.client, vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace)
+	certs, err := kubernetes.GetSecret(ctx, r.client, getCertificateSecretName(vdb), vdb.ObjectMeta.Namespace)
 	if err != nil {
 		log.Error("Failed to read certificate/key for encryption")
 		return err
 	}
 
-	// decode from base 64 first
-	pemCert, err := base64.StdEncoding.DecodeString(string(certs.Data["tls.crt"]))
-	if err != nil {
-		return err
-	}
-	
-	pemKey, err := base64.StdEncoding.DecodeString(string(certs.Data["tls.key"]))
-	if err != nil {
-		return err
-	}
-	
 	// build the keystore from the pem cert and key
-	keystoreJks, err := keystore.GenerateKeyStoreFromPem("teiid", "changeit", pemCert, pemKey)
+	keystorePkcs12, err := pkcs12.CreatePkcs12Keystore(certs.Data["tls.crt"], certs.Data["tls.key"], constants.KeystorePassword)
 	if err != nil {
 		log.Error("Failed to create the Keystore")
 		return err
@@ -90,7 +79,7 @@ func (action *createCertificateAction) Handle(ctx context.Context, vdb *v1alpha1
 		log.Error("Failed to read /var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
 		return err
 	}
-	truststoreJks, err := keystore.GenerateTrustStoreFromPem("teiid", "changeit", defaultTrustCert)
+	truststorePkcs12, err := pkcs12.CreatePkcs12Truststore(constants.KeystorePassword, defaultTrustCert)
 	if err != nil {
 		log.Error("Failed to create the Truststore")
 		return err
@@ -107,8 +96,8 @@ func (action *createCertificateAction) Handle(ctx context.Context, vdb *v1alpha1
 			},
 		},
 		Data: map[string][]byte{
-			"keystore.jks":   keystoreJks,
-			"truststore.jks": truststoreJks,
+			constants.KeystoreName:   keystorePkcs12,
+			constants.TruststoreName: truststorePkcs12,
 		},
 	}
 
@@ -131,4 +120,8 @@ func (action *createCertificateAction) Handle(ctx context.Context, vdb *v1alpha1
 
 func getKeystoreSecretName(vdb *v1alpha1.VirtualDatabase) string {
 	return vdb.ObjectMeta.Name + "-" + "keystore"
+}
+
+func getCertificateSecretName(vdb *v1alpha1.VirtualDatabase) string {
+	return vdb.ObjectMeta.Name + "-" + "certificates"
 }

@@ -129,7 +129,7 @@ func (action *createServiceAction) createService(vdb *v1alpha1.VirtualDatabase,
 
 	// if there is no secret certificate then annotate to create one
 	if !hasCertSecret {
-		annotations["service.alpha.openshift.io/serving-cert-secret-name"] = vdb.ObjectMeta.Name
+		annotations["service.alpha.openshift.io/serving-cert-secret-name"] = getCertificateSecretName(vdb)
 	}
 
 	meta := metav1.ObjectMeta{
