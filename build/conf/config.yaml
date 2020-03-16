@@ -1,4 +1,4 @@
-teiidSpringBootVersion: 1.3.0
+teiidSpringBootVersion: 1.4.0-SNAPSHOT
 teiidVersion: 13.0.2
 springBootVersion: 2.1.6.RELEASE
 mavenRepositories:

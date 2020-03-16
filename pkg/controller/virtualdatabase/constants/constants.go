@@ -12,6 +12,15 @@ const (
 	BuilderImageTargetName = "virtualdatabase-builder"
 	// TSB --
 	TSB = "teiid-spring-boot"
+
+	// KeystoreLocation --
+	KeystoreLocation = "/etc/tls/private"
+	// KeystorePassword --
+	KeystorePassword = "changeit"
+	// KeystoreName --
+	KeystoreName = "keystore.pkcs12"
+	// TruststoreName --
+	TruststoreName = "truststore.pkcs12"
 )
 
 // Config from /conf/config.yml file
