@@ -113,7 +113,7 @@ func (action *createServiceAction) createService(vdb *v1alpha1.VirtualDatabase,
 		"teiid.io/deployment-version": vdb.Status.Version,
 	}
 
-	matchLables := matchLabels(vdb)
+	matchLables := matchLabels(vdb.ObjectMeta.Name)
 
 	// if openapi is in use then use the openapi for it
 	apiLink := "/odata/openapi.json"

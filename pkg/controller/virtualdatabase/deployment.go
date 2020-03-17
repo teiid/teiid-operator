@@ -19,6 +19,7 @@ package virtualdatabase
 
 import (
 	"context"
+	"os"
 	"reflect"
 
 	obuildv1 "github.com/openshift/api/build/v1"
@@ -197,10 +198,10 @@ func containerPorts() []corev1.ContainerPort {
 	return ports
 }
 
-func matchLabels(vdb *v1alpha1.VirtualDatabase) map[string]string {
+func matchLabels(vdbName string) map[string]string {
 	labels := map[string]string{
-		"app":                      vdb.ObjectMeta.Name,
-		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
+		"app":                      vdbName,
+		"teiid.io/VirtualDatabase": vdbName,
 		"teiid.io/type":            "VirtualDatabase",
 	}
 	return labels
@@ -216,7 +217,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	r *ReconcileVirtualDatabase) (appsv1.Deployment, error) {
 
 	var probe *corev1.Probe
-	matchLabels := matchLabels(vdb)
+	matchLabels := matchLabels(vdb.ObjectMeta.Name)
 
 	labels := map[string]string{
 		"app":                      vdb.Name,
@@ -242,7 +243,11 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 		Port: intstr.FromInt(8080),
 	}
 
+	// convert data source properties into ENV properties
 	deploymentEnvs := deploymentEnvs(vdb)
+
+	// Passing down cluster proxy config to Operands
+	deploymentEnvs = handleClusterProxySettings(deploymentEnvs)
 
 	dc := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -317,4 +322,28 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	return dc, nil
+}
+
+func handleClusterProxySettings(envs []corev1.EnvVar) []corev1.EnvVar {
+
+	userDefinedProxy := envvar.Get(envs, "HTTPS_PROXY") != nil || envvar.Get(envs, "HTTP_PROXY") != nil || envvar.Get(envs, "NO_PROXY") != nil
+
+	if !userDefinedProxy {
+		clusterDefinedProxy := os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" || os.Getenv("NO_PROXY") != ""
+		// if cluster defined properties available
+		if clusterDefinedProxy {
+			if os.Getenv("HTTPS_PROXY") != "" {
+				envvar.SetVal(&envs, "HTTPS_PROXY", os.Getenv("HTTPS_PROXY"))
+			}
+
+			if os.Getenv("HTTP_PROXY") != "" {
+				envvar.SetVal(&envs, "HTTP_PROXY", os.Getenv("HTTP_PROXY"))
+			}
+
+			if os.Getenv("NO_PROXY") != "" {
+				envvar.SetVal(&envs, "NO_PROXY", os.Getenv("NO_PROXY"))
+			}
+		}
+	}
+	return envs
 }
