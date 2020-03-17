@@ -213,13 +213,8 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 	if includeAllDependencies || strings.Contains(lowerDDL, "openapi") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
-			ArtifactID: "spring-data-rest",
+			ArtifactID: "spring-data-openapi",
 			Version:    constants.Config.TeiidSpringBootVersion,
-		})
-		project.AddDependencies(maven.Dependency{
-			GroupID:    "org.teiid.connectors",
-			ArtifactID: "translator-openapi",
-			Version:    constants.Config.TeiidVersion,
 		})
 	}
 
