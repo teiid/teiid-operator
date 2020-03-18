@@ -28,6 +28,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -39,6 +40,11 @@ import (
 
 var log = logs.GetLogger("virtualdatabase")
 var _ reconcile.Reconciler = &ReconcileVirtualDatabase{}
+
+// VdbContext --
+type VdbContext struct {
+	Env []corev1.EnvVar
+}
 
 // ReconcileVirtualDatabase reconciles a VirtualDatabase object
 type ReconcileVirtualDatabase struct {
@@ -52,6 +58,7 @@ type ReconcileVirtualDatabase struct {
 	prometheusClient monitoringv1.MonitoringV1Interface
 	jaegerClient     *otclient.JaegertracingV1Client
 	kubeClient       kubernetes.Interface
+	vdbContext       VdbContext
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read

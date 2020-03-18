@@ -31,6 +31,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/image"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
+	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -150,10 +151,25 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 // newBCForCR returns a BuildConfig with the same name/namespace as the cr
 func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (obuildv1.BuildConfig, error) {
 	bc := obuildv1.BuildConfig{}
-	env := []corev1.EnvVar{}
-	envvar.SetVal(&env, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
-	envvar.SetVal(&env, "MAVEN_ARGS_APPEND", "clean package -Dmaven.compiler.source=1.8 -Dmaven.compiler.target=1.8 -s settings.xml")
-	envvar.SetVal(&env, "ARTIFACT_DIR", "target/")
+	envs := []corev1.EnvVar{}
+
+	// handle proxy settings
+	envs, jp := proxy.HTTPSettings(envs)
+	var javaProperties string
+	for _, p := range jp {
+		javaProperties = javaProperties + "-D" + p
+	}
+
+	str := strings.Join([]string{
+		" ",
+		"-Djava.net.useSystemProxies=true",
+		"-Dmaven.compiler.source=1.8",
+		"-Dmaven.compiler.target=1.8",
+	}, " ")
+
+	envvar.SetVal(&envs, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
+	envvar.SetVal(&envs, "MAVEN_ARGS_APPEND", "clean package -s settings.xml "+javaProperties+str)
+	envvar.SetVal(&envs, "ARTIFACT_DIR", "target/")
 
 	incremental := true
 
@@ -181,7 +197,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	bc.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
 	bc.Spec.Strategy.SourceStrategy = &obuildv1.SourceBuildStrategy{
 		Incremental: &incremental,
-		Env:         env,
+		Env:         envs,
 		From: corev1.ObjectReference{
 			Name:      imageName,
 			Namespace: isNamespace,

@@ -20,11 +20,13 @@ package virtualdatabase
 import (
 	"context"
 	"reflect"
+	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
+	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -95,6 +97,22 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		}
 	}
 
+	// Passing down cluster proxy config to Operands
+	envs := envvar.Clone(vdb.Spec.Env)
+	envs, jp := proxy.HTTPSettings(envs)
+	var javaProperties string
+	for _, p := range jp {
+		javaProperties = javaProperties + "-D" + p
+	}
+
+	str := strings.Join([]string{
+		" ",
+		"-Djava.net.preferIPv4Stack=true",
+		"-Duser.home=/tmp",
+		"-Djava.net.preferIPv4Addresses=true",
+		"-Djava.net.useSystemProxies=true",
+	}, " ")
+
 	// environment variables
 	defaultEnv := []corev1.EnvVar{
 		{
@@ -103,7 +121,7 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		},
 		{
 			Name:  "JAVA_OPTIONS",
-			Value: "-Djava.net.preferIPv4Stack=true -Duser.home=/tmp -Djava.net.preferIPv4Addresses=true",
+			Value: javaProperties + str,
 		},
 		{
 			Name:  "JAVA_DEBUG",
@@ -123,23 +141,26 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		},
 	}
 
+	// make a local copy of env
+	r.vdbContext.Env = envvar.Clone(vdb.Spec.Env)
+
 	// merge/update env with user defined
 	for _, v := range defaultEnv {
-		if envvar.Get(vdb.Spec.Env, v.Name) == nil {
-			envvar.SetVar(&vdb.Spec.Env, v)
+		if envvar.Get(r.vdbContext.Env, v.Name) == nil {
+			envvar.SetVar(&r.vdbContext.Env, v)
 		}
 	}
 
 	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
-		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
+		envvar.SetVar(&r.vdbContext.Env, corev1.EnvVar{
 			Name:  "JAEGER_AGENT_HOST",
 			Value: "localhost",
 		})
-		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
+		envvar.SetVar(&r.vdbContext.Env, corev1.EnvVar{
 			Name:  "JAEGER_AGENT_PORT",
 			Value: "6831",
 		})
-		envvar.SetVar(&vdb.Spec.Env, corev1.EnvVar{
+		envvar.SetVar(&r.vdbContext.Env, corev1.EnvVar{
 			Name:  "JAEGER_SERVICE_NAME",
 			Value: vdb.ObjectMeta.Name,
 		})

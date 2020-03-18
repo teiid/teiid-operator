@@ -23,6 +23,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -34,7 +35,7 @@ func TestHandleClusterProxySettings(t *testing.T) {
 		},
 	}
 
-	vars = handleClusterProxySettings(vars)
+	vars, _ = proxy.HTTPSettings(vars)
 
 	ev := envvar.Get(vars, "MyEnv")
 	assert.NotNil(t, ev)
@@ -43,7 +44,7 @@ func TestHandleClusterProxySettings(t *testing.T) {
 	assert.Equal(t, 1, len(vars))
 
 	envvar.SetVal(&vars, "HTTPS_PROXY", "foobar")
-	vars = handleClusterProxySettings(vars)
+	vars, _ = proxy.HTTPSettings(vars)
 
 	assert.Equal(t, 2, len(vars))
 	ev = envvar.Get(vars, "HTTPS_PROXY")
@@ -61,7 +62,7 @@ func TestHandleClusterProxySettingsFromCluster(t *testing.T) {
 
 	err := os.Setenv("HTTP_PROXY", "foobar")
 	assert.Nil(t, err)
-	vars = handleClusterProxySettings(vars)
+	vars, _ = proxy.HTTPSettings(vars)
 	assert.Equal(t, 2, len(vars))
 
 	ev := envvar.Get(vars, "MyEnv")
