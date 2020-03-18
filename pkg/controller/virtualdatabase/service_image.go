@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/util/maven"
+	"github.com/teiid/teiid-operator/pkg/util/proxy"
 
 	obuildv1 "github.com/openshift/api/build/v1"
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
@@ -188,12 +189,40 @@ func (action *serviceImageAction) monitorServiceImage(ctx context.Context, vdb *
 func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (obuildv1.BuildConfig, error) {
 	baseImage := strings.Join([]string{constants.BuilderImageTargetName, "latest"}, ":")
 
-	// set it back original default
-	envvar.SetVal(&vdb.Spec.Build.Env, "DEPLOYMENTS_DIR", "/deployments")
-	// this below is add clean, to remove the previous jar file in target from builder image
-	envvar.SetVal(&vdb.Spec.Build.Env, "MAVEN_ARGS", "clean package -s settings.xml -DskipTests -Dmaven.javadoc.skip=true -Dmaven.site.skip=true -Dmaven.source.skip=true -Djacoco.skip=true -Dcheckstyle.skip=true -Dfindbugs.skip=true -Dpmd.skip=true -Dfabric8.skip=true -e -B")
-	envvar.SetVal(&vdb.Spec.Build.Env, "DIGEST", vdb.Status.Digest)
+	envs := envvar.Clone(vdb.Spec.Build.Env)
 
+	// handle proxy settings
+	envs, jp := proxy.HTTPSettings(envs)
+	var javaProperties string
+	for _, p := range jp {
+		javaProperties = javaProperties + "-D" + p
+	}
+
+	str := strings.Join([]string{
+		" ",
+		"-Djava.net.useSystemProxies=true",
+		"-Dmaven.compiler.source=1.8",
+		"-Dmaven.compiler.target=1.8",
+		"-DskipTests",
+		"-Dmaven.javadoc.skip=true",
+		"-Dmaven.site.skip=true",
+		"-Dmaven.source.skip=true",
+		"-Djacoco.skip=true",
+		"-Dcheckstyle.skip=true",
+		"-Dfindbugs.skip=true",
+		"-Dpmd.skip=true",
+		"-Dfabric8.skip=true",
+		"-e",
+		"-B",
+	}, " ")
+
+	// set it back original default
+	envvar.SetVal(&envs, "DEPLOYMENTS_DIR", "/deployments")
+	// this below is add clean, to remove the previous jar file in target from builder image
+	envvar.SetVal(&envs, "MAVEN_ARGS", "clean package -s settings.xml "+javaProperties+str)
+	envvar.SetVal(&envs, "DIGEST", vdb.Status.Digest)
+
+	// build config
 	bc := obuildv1.BuildConfig{}
 	bc = obuildv1.BuildConfig{
 		ObjectMeta: metav1.ObjectMeta{
@@ -216,7 +245,7 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 		From:        corev1.ObjectReference{Name: baseImage, Kind: "ImageStreamTag"},
 		ForcePull:   false,
 		Incremental: vdb.Spec.Build.Incremental,
-		Env:         vdb.Spec.Build.Env,
+		Env:         envs,
 	}
 
 	if vdb.Spec.Build.Source.DDL != "" {

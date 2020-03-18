@@ -19,13 +19,13 @@ package virtualdatabase
 
 import (
 	"context"
-	"os"
 	"reflect"
 
 	obuildv1 "github.com/openshift/api/build/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -116,7 +116,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
 	item *appsv1.Deployment, r *ReconcileVirtualDatabase) error {
 
-	deploymentEnvs := deploymentEnvs(vdb)
+	deploymentEnvs := deploymentEnvs(vdb, r)
 
 	update := false
 	if vdb.Spec.Replicas != item.Spec.Replicas {
@@ -207,9 +207,9 @@ func matchLabels(vdbName string) map[string]string {
 	return labels
 }
 
-func deploymentEnvs(vdb *v1alpha1.VirtualDatabase) []corev1.EnvVar {
+func deploymentEnvs(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) []corev1.EnvVar {
 	dataSourceConfig := convert2SpringProperties(vdb.Spec.DataSources)
-	return envvar.Combine(vdb.Spec.Env, dataSourceConfig)
+	return envvar.Combine(r.vdbContext.Env, dataSourceConfig)
 }
 
 // newDCForCR returns a BuildConfig with the same name/namespace as the cr
@@ -244,10 +244,10 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	// convert data source properties into ENV properties
-	deploymentEnvs := deploymentEnvs(vdb)
+	deploymentEnvs := deploymentEnvs(vdb, r)
 
 	// Passing down cluster proxy config to Operands
-	deploymentEnvs = handleClusterProxySettings(deploymentEnvs)
+	deploymentEnvs, _ = proxy.HTTPSettings(deploymentEnvs)
 
 	dc := appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -322,28 +322,4 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	return dc, nil
-}
-
-func handleClusterProxySettings(envs []corev1.EnvVar) []corev1.EnvVar {
-
-	userDefinedProxy := envvar.Get(envs, "HTTPS_PROXY") != nil || envvar.Get(envs, "HTTP_PROXY") != nil || envvar.Get(envs, "NO_PROXY") != nil
-
-	if !userDefinedProxy {
-		clusterDefinedProxy := os.Getenv("HTTPS_PROXY") != "" || os.Getenv("HTTP_PROXY") != "" || os.Getenv("NO_PROXY") != ""
-		// if cluster defined properties available
-		if clusterDefinedProxy {
-			if os.Getenv("HTTPS_PROXY") != "" {
-				envvar.SetVal(&envs, "HTTPS_PROXY", os.Getenv("HTTPS_PROXY"))
-			}
-
-			if os.Getenv("HTTP_PROXY") != "" {
-				envvar.SetVal(&envs, "HTTP_PROXY", os.Getenv("HTTP_PROXY"))
-			}
-
-			if os.Getenv("NO_PROXY") != "" {
-				envvar.SetVal(&envs, "NO_PROXY", os.Getenv("NO_PROXY"))
-			}
-		}
-	}
-	return envs
 }

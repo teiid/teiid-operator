@@ -135,3 +135,15 @@ func Combine(setA []corev1.EnvVar, setB []corev1.EnvVar) []corev1.EnvVar {
 	}
 	return envs
 }
+
+//Clone two sets into a new variable
+func Clone(from []corev1.EnvVar) []corev1.EnvVar {
+	envs := make([]corev1.EnvVar, 0)
+
+	for _, v := range from {
+		if Get(envs, v.Name) == nil {
+			SetVar(&envs, v)
+		}
+	}
+	return envs
+}
