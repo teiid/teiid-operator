@@ -25,6 +25,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	corev1 "k8s.io/api/core/v1"
@@ -59,7 +60,23 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 	}
 
 	if &vdb.Status.Phase == nil || vdb.Status.Phase == v1alpha1.ReconcilerPhaseInitial {
+
+		// make sure all env properties exist before proceeding
+		if !kubernetes.EnvironmentPropertiesExists(ctx, r.client, vdb.ObjectMeta.Namespace, vdb.Spec.Env) {
+			vdb.Status.Failure = "Configuration missing, make sure to supply all the ConfigMaps and Secrets required"
+			return nil
+		}
+
+		// make sure all the data source properties exist
+		for _, ds := range vdb.Spec.DataSources {
+			if !kubernetes.EnvironmentPropertiesExists(ctx, r.client, vdb.ObjectMeta.Namespace, ds.Properties) {
+				vdb.Status.Failure = "Configuration missing, make sure to supply all the ConfigMaps and Secrets required"
+				return nil
+			}
+		}
+
 		// initialize with defaults
+		vdb.Status.Failure = ""
 		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
 		if err := action.init(ctx, vdb, r); err != nil {
 			return err

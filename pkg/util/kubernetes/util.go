@@ -228,3 +228,29 @@ func EnsureObject(obj v1alpha1.OpenShiftObject, err error, client k8sclient.Writ
 	log.Debug("Skip reconcile - object already exists")
 	return nil
 }
+
+// EnvironmentPropertiesExists --
+func EnvironmentPropertiesExists(ctx context.Context, client k8sclient.Reader, namespace string, envs []corev1.EnvVar) bool {
+	for _, env := range envs {
+		if env.ValueFrom != nil {
+			// check if this ConfigMap
+			if env.ValueFrom.ConfigMapKeyRef != nil {
+				_, err := GetConfigMapRefValue(ctx, client, namespace, env.ValueFrom.ConfigMapKeyRef)
+				if err != nil {
+					log.Infof("Error reading ConfigMap %s, for property: %s", env.ValueFrom.ConfigMapKeyRef.Name, env.Name)
+					return false
+				}
+			} else if env.ValueFrom.SecretKeyRef != nil {
+				_, err := GetSecretRefValue(ctx, client, namespace, env.ValueFrom.SecretKeyRef)
+				if err != nil {
+					log.Infof("Error reading Secret %s, for property: %s", env.ValueFrom.SecretKeyRef.Name, env.Name)
+					return false
+				}
+			} else {
+				log.Infof("Unknown type of ValueFrom configured for environment property: %s", env.Name)
+				return false
+			}
+		}
+	}
+	return true
+}
