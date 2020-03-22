@@ -24,8 +24,6 @@ type VirtualDatabaseSpec struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Properties"
 	Env []corev1.EnvVar `json:"env,omitempty"`
-	// Runtime engine type (ex: spring boot)
-	Runtime RuntimeType `json:"runtime,omitempty"`
 	// memory, disk cpu requirements
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Resources"
@@ -67,14 +65,10 @@ type OpenShiftObject interface {
 // VirtualDatabaseBuildObject Data to define how to build an application from source
 // +k8s:openapi-gen=true
 type VirtualDatabaseBuildObject struct {
-	// Should incremental build is being used
-	Incremental *bool `json:"incremental,omitempty"`
 	// Environment properties set build purpose
 	Env []corev1.EnvVar `json:"env,omitempty"`
 	// VDB Source details
 	Source Source `json:"source,omitempty"`
-	// source to image details
-	S2i S2i `json:"s2i,omitempty"`
 }
 
 // Source VDB coordinates to locate the source code to build
@@ -102,26 +96,6 @@ type ValueSource struct {
 	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
 	// Selects a key of a secret.
 	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
-}
-
-// S2i Git coordinates to locate the s2i image
-// +k8s:openapi-gen=true
-type S2i struct {
-	// S2I image registry
-	Registry string `json:"registry,omitempty"`
-	// S2I image prefix
-	ImagePrefix string `json:"imagePrefix,omitempty"`
-	// S2I image name
-	ImageName string `json:"imageName,omitempty"`
-	// S2I image tag
-	Tag string `json:"tag,omitempty"`
-}
-
-// RuntimeType - type of condition
-// +k8s:openapi-gen=true
-type RuntimeType struct {
-	Type    string `json:"type,omitempty"`
-	Version string `json:"version,omitempty"`
 }
 
 // DataSourceObject - define the datasources that this Virtual Database integrates

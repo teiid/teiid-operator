@@ -238,13 +238,14 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 
 	// for some reason "vdb.Spec.Build.Source" comes in as empty object rather than nil
 	// create the source build object
+	inc := false
 	bc.Spec.Source.Type = obuildv1.BuildSourceBinary
 	bc.Spec.Source.Binary = &obuildv1.BinaryBuildSource{}
 	bc.Spec.Strategy.Type = obuildv1.SourceBuildStrategyType
 	bc.Spec.Strategy.SourceStrategy = &obuildv1.SourceBuildStrategy{
 		From:        corev1.ObjectReference{Name: baseImage, Kind: "ImageStreamTag"},
 		ForcePull:   false,
-		Incremental: vdb.Spec.Build.Incremental,
+		Incremental: &inc,
 		Env:         envs,
 	}
 
@@ -269,7 +270,8 @@ func readDdlFromMavenRepo(vdb *v1alpha1.VirtualDatabase, targetName string) (str
 	if err != nil {
 		return "", err
 	}
-	vdbFile, err := maven.DownloadDependency(dep, targetName, vdb.Spec.Build.Source.MavenRepositories)
+	mavenRepos := constants.GetMavenRepositories(vdb)
+	vdbFile, err := maven.DownloadDependency(dep, targetName, mavenRepos)
 	if err != nil {
 		return "", err
 	}
