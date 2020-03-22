@@ -36,7 +36,7 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
 
-	mavenRepos := vdb.Spec.Build.Source.MavenRepositories
+	mavenRepos := constants.GetMavenRepositories(vdb)
 	for k, v := range mavenRepos {
 		project.AddRepository(maven.NewRepository(v + "@id=" + k))
 		project.AddPluginRepository(maven.NewRepository(v + "@id=" + k))
@@ -297,7 +297,7 @@ func GenerateJarPom(vdb *v1alpha1.VirtualDatabase) (maven.Project, error) {
 	// generate pom.xml
 	project := createPlainMavenProject(vdb.ObjectMeta.Name)
 
-	mavenRepos := vdb.Spec.Build.Source.MavenRepositories
+	mavenRepos := constants.GetMavenRepositories(vdb)
 	for k, v := range mavenRepos {
 		project.AddRepository(maven.NewRepository(v + "@id=" + k))
 		project.AddPluginRepository(maven.NewRepository(v + "@id=" + k))

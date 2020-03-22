@@ -218,6 +218,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 
 	var probe *corev1.Probe
 	matchLabels := matchLabels(vdb.ObjectMeta.Name)
+	computingResources := constants.GetComputingResources(vdb)
 
 	labels := map[string]string{
 		"app":                      vdb.Name,
@@ -278,7 +279,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 						{
 							Name:            vdb.ObjectMeta.Name,
 							Env:             deploymentEnvs,
-							Resources:       vdb.Spec.Resources,
+							Resources:       computingResources,
 							Image:           serviceBC.Spec.Output.To.Name,
 							ImagePullPolicy: corev1.PullAlways,
 							Ports:           containerPorts(),

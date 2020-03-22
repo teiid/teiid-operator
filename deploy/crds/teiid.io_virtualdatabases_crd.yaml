@@ -137,25 +137,6 @@ spec:
                     - name
                     type: object
                   type: array
-                incremental:
-                  description: Should incremental build is being used
-                  type: boolean
-                s2i:
-                  description: source to image details
-                  properties:
-                    imageName:
-                      description: S2I image name
-                      type: string
-                    imagePrefix:
-                      description: S2I image prefix
-                      type: string
-                    registry:
-                      description: S2I image registry
-                      type: string
-                    tag:
-                      description: S2I image tag
-                      type: string
-                  type: object
                 source:
                   description: VDB Source details
                   properties:
@@ -471,14 +452,6 @@ spec:
                     to Limits if that is explicitly specified, otherwise to an implementation-defined
                     value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   type: object
-              type: object
-            runtime:
-              description: 'Runtime engine type (ex: spring boot)'
-              properties:
-                type:
-                  type: string
-                version:
-                  type: string
               type: object
           required:
           - build

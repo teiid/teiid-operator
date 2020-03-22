@@ -19,17 +19,14 @@ package virtualdatabase
 
 import (
 	"context"
-	"reflect"
 	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // NewInitializeAction creates a new initialize action
@@ -87,15 +84,6 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 }
 
 func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
-
-	if &vdb.Spec.Runtime == nil || !reflect.DeepEqual(vdb.Spec.Runtime, constants.SpringBootRuntime) {
-		vdb.Spec.Runtime = constants.SpringBootRuntime
-	}
-
-	if vdb.Spec.Build.Incremental == nil {
-		inc := false
-		vdb.Spec.Build.Incremental = &inc
-	}
 
 	replicas := int32(1)
 	if vdb.Spec.Replicas == nil {
@@ -183,40 +171,5 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 		})
 	}
 
-	// resources for the container
-	if &vdb.Spec.Resources == nil {
-		vdb.Spec.Resources = corev1.ResourceRequirements{
-			Limits: corev1.ResourceList{
-				"memory": resource.MustParse("512Mi"),
-				"cpu":    resource.MustParse("1.0"),
-			},
-			Requests: corev1.ResourceList{
-				"memory": resource.MustParse("256Mi"),
-				"cpu":    resource.MustParse("0.2"),
-			},
-		}
-	}
-
-	// S2I image default co-ordinates
-	if vdb.Spec.Build.S2i.Registry == "" {
-		vdb.Spec.Build.S2i = v1alpha1.S2i{
-			Registry:    constants.Config.BuildImage.Registry,
-			ImagePrefix: constants.Config.BuildImage.ImagePrefix,
-			ImageName:   constants.Config.BuildImage.ImageName,
-			Tag:         constants.Config.BuildImage.Tag,
-		}
-	}
-
-	// configure default repositories
-	if len(vdb.Spec.Build.Source.MavenRepositories) == 0 {
-		if vdb.Spec.Build.Source.MavenRepositories == nil {
-			vdb.Spec.Build.Source.MavenRepositories = make(map[string]string)
-		}
-	}
-	if len(constants.Config.MavenRepositories) != 0 {
-		for k, v := range constants.Config.MavenRepositories {
-			vdb.Spec.Build.Source.MavenRepositories[k] = v
-		}
-	}
 	return nil
 }

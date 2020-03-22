@@ -116,7 +116,8 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		// Trigger first build of "builder" and binary BCs
 		if bc.Status.LastVersion == 0 {
 			log.Info("triggering the base builder image build")
-			if err = action.triggerBuild(ctx, *bc, vdb.Spec.Build.Source.MavenRepositories, r); err != nil {
+			mavenRepos := constants.GetMavenRepositories(vdb)
+			if err = action.triggerBuild(ctx, *bc, mavenRepos, r); err != nil {
 				return err
 			}
 		}
@@ -172,13 +173,13 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	envvar.SetVal(&envs, "ARTIFACT_DIR", "target/")
 
 	incremental := true
-
-	imageName := fmt.Sprintf("%s:%s", vdb.Spec.Build.S2i.ImageName, vdb.Spec.Build.S2i.Tag)
+	bi := constants.Config.BuildImage
+	imageName := fmt.Sprintf("%s:%s", bi.ImageName, bi.Tag)
 	isNamespace := vdb.ObjectMeta.Namespace
 	// check if the base image is found otherwise use from dockerhub, add to local images
 	if !image.CheckImageStream(imageName, isNamespace, r.imageClient) {
-		dockerImage := fmt.Sprintf("%s/%s/%s", vdb.Spec.Build.S2i.Registry, vdb.Spec.Build.S2i.ImagePrefix, vdb.Spec.Build.S2i.ImageName)
-		err := image.CreateImageStream(vdb.Spec.Build.S2i.ImageName, vdb.ObjectMeta.Namespace, dockerImage, vdb.Spec.Build.S2i.Tag, r.imageClient, r.scheme)
+		dockerImage := fmt.Sprintf("%s/%s/%s", bi.Registry, bi.ImagePrefix, bi.ImageName)
+		err := image.CreateImageStream(bi.ImageName, vdb.ObjectMeta.Namespace, dockerImage, bi.Tag, r.imageClient, r.scheme)
 		if err != nil {
 			return bc, err
 		}
@@ -215,15 +216,15 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 	if err != nil {
 		return err
 	}
-	vdb := &v1alpha1.VirtualDatabase{}
-	vdb.ObjectMeta.Name = "virtualdatabase-image"
-	vdb.ObjectMeta.Namespace = bc.GetNamespace()
-	vdb.Spec.Build.Source.DDL = action.ddlFile()
-	vdb.Spec.Build.Source.MavenRepositories = mavenRepositories
+	vdbCopy := &v1alpha1.VirtualDatabase{}
+	vdbCopy.ObjectMeta.Name = "virtualdatabase-image"
+	vdbCopy.ObjectMeta.Namespace = bc.GetNamespace()
+	vdbCopy.Spec.Build.Source.DDL = action.ddlFile()
+	vdbCopy.Spec.Build.Source.MavenRepositories = mavenRepositories
 
 	files := map[string]string{}
 
-	pom, err := GenerateVdbPom(vdb, vdb.Spec.Build.Source.DDL, true, true)
+	pom, err := GenerateVdbPom(vdbCopy, vdbCopy.Spec.Build.Source.DDL, true, true)
 	if err != nil {
 		return err
 	}
@@ -244,9 +245,9 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 	log.Debug(" Base Build Pom ", pomContent)
 
 	// read the settings file
-	settingsContent, err := readMavenSettingsFile(ctx, vdb, r, pom)
+	settingsContent, err := readMavenSettingsFile(ctx, vdbCopy, r, pom)
 	if err != nil {
-		log.Debugf("Failed reading the settings.xml file for vdb %s", vdb.ObjectMeta.Name)
+		log.Debugf("Failed reading the settings.xml file for vdb %s", vdbCopy.ObjectMeta.Name)
 		return err
 	}
 
