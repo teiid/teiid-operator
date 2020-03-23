@@ -459,6 +459,9 @@ spec:
         status:
           description: Virtual Database Status
           properties:
+            configdigest:
+              description: ConfigDigest value of the vdb
+              type: string
             digest:
               description: Digest value of the vdb
               type: string

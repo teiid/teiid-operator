@@ -18,6 +18,7 @@ limitations under the License.
 package virtualdatabase
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/base64"
 	"math/rand"
@@ -25,9 +26,27 @@ import (
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
+	corev1 "k8s.io/api/core/v1"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// ComputeForVirtualDatabase a digest of the fields that are relevant for the deployment
+//ComputeConfigDigest --875040
+func ComputeConfigDigest(ctx context.Context, client k8sclient.Reader, vdb *v1alpha1.VirtualDatabase, envs []corev1.EnvVar) (string, error) {
+	// check to see if any of the secrets or configmaps changed
+	hash := sha256.New()
+	for _, env := range envs {
+		str, err := kubernetes.RevisionOfConfigMapOrSecret(ctx, client, vdb.ObjectMeta.Namespace, env)
+		if err != nil {
+			return "", err
+		}
+		hash.Write([]byte(str))
+	}
+	configdigest := "c" + base64.RawURLEncoding.EncodeToString(hash.Sum(nil))
+	return configdigest, nil
+}
+
+// ComputeForVirtualDatabase a digest of the fields that are relevant for the build
 // Produces a digest that can be used as docker image tag
 func ComputeForVirtualDatabase(vdb *v1alpha1.VirtualDatabase) (string, error) {
 	hash := sha256.New()

@@ -79,6 +79,10 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			return err
 		}
 		vdb.Status.Digest = digest
+		vdb.Status.ConfigDigest, err = ComputeConfigDigest(ctx, r.client, vdb, DeploymentEnvironments(vdb, r))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
