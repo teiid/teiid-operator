@@ -48,6 +48,8 @@ type VirtualDatabaseStatus struct {
 	Phase ReconcilerPhase `json:"phase,omitempty"`
 	// Digest value of the vdb
 	Digest string `json:"digest,omitempty"`
+	// ConfigDigest value of the vdb
+	ConfigDigest string `json:"configdigest,omitempty"`
 	// Failure message if deployment ended in failure
 	Failure string `json:"failure,omitempty"`
 	// Route information that is exposed for clients

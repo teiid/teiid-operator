@@ -24,7 +24,6 @@ import (
 	obuildv1 "github.com/openshift/api/build/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
-	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -116,10 +115,10 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
 	item *appsv1.Deployment, r *ReconcileVirtualDatabase) error {
 
-	deploymentEnvs := deploymentEnvs(vdb, r)
+	deploymentEnvs := DeploymentEnvironments(vdb, r)
 
 	update := false
-	if vdb.Spec.Replicas != item.Spec.Replicas {
+	if *vdb.Spec.Replicas != *item.Spec.Replicas {
 		item.Spec.Replicas = vdb.Spec.Replicas
 		update = true
 	}
@@ -127,6 +126,22 @@ func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha
 		item.Spec.Template.Spec.Containers[0].Env = deploymentEnvs
 		update = true
 	}
+
+	if !update {
+		// check to see if any of the secrets or configmaps changed
+		configdigest, err := ComputeConfigDigest(ctx, r.client, vdb, deploymentEnvs)
+		if err != nil {
+			return err
+		}
+
+		if configdigest != vdb.Status.ConfigDigest {
+			log.Info("ConfigMap or Secret has changed redeploying")
+			update = true
+			vdb.Status.ConfigDigest = configdigest
+			item.Spec.Template.ObjectMeta.Annotations["configHash"] = configdigest
+		}
+	}
+
 	if update {
 		if err := r.client.Update(ctx, item); err != nil {
 			return err
@@ -207,11 +222,6 @@ func matchLabels(vdbName string) map[string]string {
 	return labels
 }
 
-func deploymentEnvs(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) []corev1.EnvVar {
-	dataSourceConfig := convert2SpringProperties(vdb.Spec.DataSources)
-	return envvar.Combine(r.vdbContext.Env, dataSourceConfig)
-}
-
 // newDCForCR returns a BuildConfig with the same name/namespace as the cr
 func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, serviceBC obuildv1.BuildConfig,
 	r *ReconcileVirtualDatabase) (appsv1.Deployment, error) {
@@ -231,6 +241,10 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 		labels[k] = constants.Config.Labels[k]
 	}
 
+	annotations := map[string]string{
+		"configHash": vdb.Status.ConfigDigest,
+	}
+
 	// liveness and readiness probes
 	probe = &corev1.Probe{
 		TimeoutSeconds:      int32(5),
@@ -245,7 +259,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	// convert data source properties into ENV properties
-	deploymentEnvs := deploymentEnvs(vdb, r)
+	deploymentEnvs := DeploymentEnvironments(vdb, r)
 
 	// Passing down cluster proxy config to Operands
 	deploymentEnvs, _ = proxy.HTTPSettings(deploymentEnvs)
@@ -267,12 +281,9 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-					Name:   vdb.ObjectMeta.Name,
-					Annotations: map[string]string{
-						"prometheus.io/scrape": "true",
-						"prometheus.io/port":   "9779",
-					},
+					Labels:      labels,
+					Name:        vdb.ObjectMeta.Name,
+					Annotations: annotations,
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{

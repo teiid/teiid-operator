@@ -26,6 +26,12 @@ import (
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 )
 
+// DeploymentEnvironments --
+func DeploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) []corev1.EnvVar {
+	dataSourceConfig := convert2SpringProperties(vdb.Spec.DataSources)
+	return envvar.Combine(r.vdbContext.Env, dataSourceConfig)
+}
+
 func convert2SpringProperties(datasources []v1alpha1.DataSourceObject) []corev1.EnvVar {
 	envs := make([]corev1.EnvVar, 0)
 
