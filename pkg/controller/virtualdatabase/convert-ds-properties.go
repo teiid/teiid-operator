@@ -42,6 +42,7 @@ func convert2SpringProperties(datasources []v1alpha1.DataSourceObject) []corev1.
 	dsConfig["amazon-s3"] = "spring.teiid.data.amazon-s3"
 	dsConfig["infinispan-hotrod"] = "spring.teiid.data.infinispan"
 	dsConfig["mongodb"] = "spring.teiid.data.mongodb"
+	dsConfig["soap"] = "spring.teiid.data.soap"
 	dsConfig["rest"] = "spring.teiid.rest"
 	dsConfig["odata"] = "spring.teiid.rest"
 	dsConfig["odata4"] = "spring.teiid.rest"

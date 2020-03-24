@@ -10,7 +10,8 @@ Teiid Operator for OpenShift/Kubernetes
 ### Requirements
 
 - go v1.13+
-- operator-sdk v1.15.0+
+- operator-sdk v0.15.0+
+- buildah v1.14.2+
 
 ### SetUp the OpenShift 4.x
 
@@ -68,7 +69,7 @@ make ci
 To deploy the Operator to locally running Openshift or wherever the oc command connected instance
 
 ```bash
-make ci
+make deploy
 ```
 
 ### Cleanup
@@ -115,7 +116,7 @@ $curl -sH "Content-Type: application/json" -XPOST https://quay.io/cnr/api/v1/use
 }'
 
 # deploy operator in OpenShift 4.x
-$operator-courier push deploy/olm-catalog/teiid/0.2.0 ${user-name} teiid 0.2.0 "basic cmFyZWRkeTpXaWxkMDBkMg=="
+$operator-courier push deploy/olm-catalog/teiid/0.2.0 ${user-name} teiid 0.2.0 "basic token_from_login"
 
 # run Operator source to push the Operator to local OperatorHub for OKD
 oc apply -f deploy/olm-catalog/teiid/teiid-operatorsource.yaml

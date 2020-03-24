@@ -210,6 +210,14 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, ddl string, includeAllDepende
 		})
 	}
 
+	if includeAllDependencies || strings.Contains(lowerDDL, "soap") || strings.Contains(lowerDDL, "ws") {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-data-soap",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+	}
+
 	if includeAllDependencies || strings.Contains(lowerDDL, "openapi") {
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
