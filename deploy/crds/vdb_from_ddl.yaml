@@ -9,11 +9,11 @@ spec:
       type: postgresql
       properties:
         - name: username
-          value: user
+          value: postgres
         - name: password
-          value: mypassword
+          value: postgres
         - name: jdbc-url
-          value: jdbc:postgresql://sampledb/sampledb
+          value: jdbc:postgresql://database/postgres
   build:
     source:
       ddl: |

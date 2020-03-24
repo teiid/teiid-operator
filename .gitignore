@@ -80,3 +80,4 @@ tags
 
 # vendor exceptions
 !vendor/**
+fmt.log

@@ -60,7 +60,6 @@ func GetComputingResources(vdb *v1alpha1.VirtualDatabase) corev1.ResourceRequire
 				"cpu":    resource.MustParse("0.2"),
 			},
 		}
-	} else {
-		return vdb.Spec.Resources
 	}
+	return vdb.Spec.Resources
 }
