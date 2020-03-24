@@ -9,7 +9,7 @@ import (
 
 const (
 	// Version --
-	Version = "0.2.0"
+	Version = "0.3.0"
 	// BuilderImageTargetName target build image name
 	BuilderImageTargetName = "virtualdatabase-builder"
 	// TSB --
