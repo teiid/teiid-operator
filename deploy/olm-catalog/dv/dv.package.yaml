@@ -1,0 +1,5 @@
+#! package-manifest: deploy/olm-catalog/dv/8.0.0/dv.v8.0.0.clusterserviceversion.yaml
+packageName: dv
+channels:
+  - name: beta
+    currentCSV: dv.v8.0.0
