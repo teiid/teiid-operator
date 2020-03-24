@@ -1,7 +1,7 @@
 REGISTRY=quay.io/teiid
 #REGISTRY?=`whoami`
-IMAGE=teiid-operator
-TAG=0.2.0
+IMAGE=dv-operator
+TAG=8.0.0
 
 IMAGE_NAME=$(REGISTRY)/$(IMAGE):$(TAG)
 GO_FLAGS ?= GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GO111MODULE=on

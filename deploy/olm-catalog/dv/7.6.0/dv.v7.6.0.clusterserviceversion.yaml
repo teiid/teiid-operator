@@ -1,0 +1,464 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  name: dv.v7.6.0
+  namespace: placeholder
+  annotations:
+    capabilities: Seamless Upgrades
+    categories: "Database, Integration & Delivery"
+    certified: "false"
+    description: Red Hat Data Virtualization Operator for deployment and management of data integration services on OpenShift based on Teiid technologies.
+    repository: https://github.com/teiid/teiid-operator
+    containerImage: registry.redhat.io/fuse7-tech-preview/dv-rhel7-operator:7.6.0
+    createdAt: 2019-06-24T12:48:22Z
+    support: Red Hat
+    tectonic-visibility: ocs
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "teiid.io/v1alpha1",
+          "kind": "VirtualDatabase",
+          "metadata": {
+            "name": "customer-vdb"
+          },
+          "spec": {
+            "replicas": 1,
+            "env": [
+              {
+                "name": "SPRING_DATASOURCE_SAMPLEDB_USERNAME",
+                "value": "user"
+              },
+              {
+                "name": "SPRING_DATASOURCE_SAMPLEDB_PASSWORD",
+                "value": "mypassword"
+              },
+              {
+                "name": "SPRING_DATASOURCE_SAMPLEDB_DATABASENAME",
+                "value": "sampledb"
+              },
+              {
+                "name": "SPRING_DATASOURCE_SAMPLEDB_JDBCURL",
+                "value": "jdbc:postgresql://postgresql/$(SPRING_DATASOURCE_SAMPLEDB_DATABASENAME)"
+              }
+            ],
+            "resources": {
+              "memory": "512Mi",
+              "cpu": 1
+            },
+            "build": {
+              "source": {
+                "ddl": "CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');\nUSE DATABASE customer;\n\nCREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;\n\nCREATE SCHEMA accounts SERVER sampledb;\nCREATE VIRTUAL SCHEMA portfolio;\n\nSET SCHEMA accounts;\nIMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS(\"importer.useFullSchemaName\" 'false');\n\nSET SCHEMA portfolio;\n\nCREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS \n    SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip \n    FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a \n    ON c.ID = a.CUSTOMER_ID;\n"
+              }
+            }
+          }
+        }
+      ]
+  labels:
+    operator-teiid: "true"
+spec:
+  displayName: Red Hat Integration - Data Virtualization
+  description: |-
+    **Red Hat Data Virtualization** is a system that allows you to convert your existing data assets from the "Data that you have into the data that you want."
+
+    Red Hat Data Virtualization is a highly performant, optimized, in-memory relational database engine that allows applications to federate data from multiple disparate, heterogeneous data stores. For example, you can access all of your data from Oracle, PostgreSQL, MongoDB, Amazon S3, REST API, and other data sources with a single request. Though the data virtualization abstraction and federation layers, data is integrated in real-time from across your distributed data sources, and users can access all of the data without copying or otherwise moving data from its system of record.
+
+    To assist organizations that want to migrate their data from monolithic services to microservices, the logical and abstraction layers of Red Hat Data Virtualization enable you to apply a consistent policy to data access, schema versioning, and domain model support.
+
+    **Red Hat Data Virtualization** gives you all the tools required to build a logical/abstraction layer that hides the complexity of your source data, exposing it through a virtual database. Because there is no ETL process to run, data integration occurs in real time so that data always remains fresh. For users, a virtual database appears to be like any relational database, and it can be accessed using JDBC, ODBC, OData V4, and PostgreSQL protocols, in other words, from any language that you have your application written in.
+
+    **The core capabilities include:**
+
+    * Highly optimized and performant database engine with abstraction layer, to decouple your databases from your application layer.
+
+    * Single access layer for one or more data sources.
+
+    * Ability to define logical/domain models without affecting the physical models. Define an enterprise domain model, or a domain model for microservices, over your existing data assets.
+
+    * Secure data access to all data sources from a single location.
+
+    * Ability to define a single data governance policy across your all your data sources in a single location and enable monitoring through audit logs.
+
+    * Data access over multiple protocols and programing languages such as JDBC, ODBC, OData V4 (Rest API), SQLAlchemy, ADO.NET.
+
+    * Locally cached data for faster response time.
+
+    * Easy access to data from business intelligence tools such as Tableau, Business Objects, Qlik.
+
+    * Access to data through OpenAPI, and integration with Red Hat 3scale for API management.
+
+    * Other features include SQL/MED for view definition, transaction support, source hints, query plans, virtual procedures, temp-tables, user-defined functions, extensible translator layer to name a few.
+
+    ### What is new in Data Virtualization 7.6.0
+
+    * Support for Maven-based virtual databases.
+
+    * Support for Fat JAR-based vrtual databases.
+
+    * Seamless upgrades.
+
+    * Prometheus-based metrics support.
+
+    * Support for Amazon S3, Amazon Athena, Infinispan as data sources.
+
+    ### Security
+
+    Red Hat Data Virtualization supports authentication, authorization, and TLS encryption of JDBC and ODBC transports. It supports username and password, and OAuth-based authentication through Red Hat SSO integration.
+
+    Data-level security can be defined by establishing "Data Roles", in which an individual's access to data is monitored and verified at the table, column, or row level.
+
+    ### Monitoring
+
+    Red Hat Data Virtualization has support for Prometheus metrics. After you configure a Prometheus server, the Operator can register data virtualization Pods for metrics scraping.
+
+    ### Documentation
+    Documentation for the current release can be found on the Red Hat [Customer Portal](https://access.redhat.com/documentation/en-us/red_hat_integration/).
+
+    ### Before you begin
+
+    You must configure authentication to Red Hat container registry before you can import and use the Red Hat Fuse OpenShift Image Streams. Follow instruction given below to configure the registration to container registry.
+
+    1. Log in to the OpenShift Server as an administrator, as follow:
+        ```
+        oc login -u system:admin
+        ```
+    2. Log in to the OpenShift project where you will be installing the operator.
+        ```
+        oc project dv-project
+        ```
+    3. Create a docker-registry secret using either Red Hat Customer Portal account or Red Hat Developer Program account credentials.
+        ```
+        oc create secret docker-registry dv-pull-secret \
+          --docker-server=registry.redhat.io \
+          --docker-username=CUSTOMER_PORTAL_USERNAME \
+          --docker-password=CUSTOMER_PORTAL_PASSWORD \
+          --docker-email=EMAIL_ADDRESS
+        
+        oc secrets link builder dv-pull-secret
+        oc secrets link builder dv-pull-secret --for=pull
+        ```
+        NOTE: You need to create a docker-registry secret in every new namespace where the image streams reside and which use registry.redhat.io.
+
+        If you do not wish to use your Red Hat account username and password to create the secret, it is recommended to create an authentication token using a [registry service account](https://access.redhat.com/terms-based-registry/).
+
+    ### How to install
+
+    - When the operator is installed (you have created a subscription and the operator is running in the selected namespace) and before you create a new CR of Kind VirtualDatabase, you have to link the secret created in the previous section to the operator service account.
+    ```
+    oc secrets link dv-operator dv-pull-secret --for=pull
+    ```
+    - Create a new CR of Kind VirtualDatabase (click the Create New button). The CR spec contains all defaults (see below).
+  keywords:
+    - teiid
+    - vdb
+    - datavirt
+    - operator
+    - springboot
+    - data
+    - database
+    - federation
+    - proxy
+  version: 7.6.0
+  maturity: beta
+  maintainers:
+    - name: Red Hat
+      email: customerservice@redhat.com
+  provider:
+    name: Red Hat
+  links:
+    - name: Product Page
+      url: https://access.redhat.com/products/red-hat-integration
+  icon:
+    - base64data: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjEuMTUgNzIxLjE1Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2RkMzkyNjt9LmNscy0ye2ZpbGw6I2NjMzQyNzt9LmNscy0ze2ZpbGw6I2ZmZjt9LmNscy00e2ZpbGw6I2U1ZTVlNDt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPlByb2R1Y3RfSWNvbi1SZWRfSGF0LURhdGFfVmlydHVhbGl6YXRpb24tUkdCPC90aXRsZT48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjM2MC41NyIgY3k9IjM2MC41NyIgcj0iMzU4LjU4Ii8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNjE0LjEyLDEwNy4wOSwxMDcuMDYsNjE0LjE2YzE0MC4xNCwxMzguNjIsMzY2LjExLDEzOC4xNiw1MDUuNjctMS40Uzc1Mi43NCwyNDcuMjQsNjE0LjEyLDEwNy4wOVoiLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjM2MC41OCIgY3k9IjE1Ny43NCIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjM2MC41OCIgY3k9IjU2My40MSIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjE1Ny43NCIgY3k9IjM2MC41NyIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjU2My40MSIgY3k9IjM2MC41OCIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjUwNCIgY3k9IjIxNy4xNSIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjIxNy4xNSIgY3k9IjUwNCIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjIxNy4xNSIgY3k9IjIxNy4xNSIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjUwNCIgY3k9IjUwNCIgcj0iMjYuNjciLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0yODcuNTEsMzg2LjI5Yy0xMS4zOS0zLjQ3LTIwLjE1LTcuNzUtMjYtMTIuNTh2MzAuMTJjMCw5LDEyLjg4LDE3LjA1LDMzLjMxLDIyLjU4bDMyLjUyLTMyLjUyQTIxNi41LDIxNi41LDAsMCwxLDI4Ny41MSwzODYuMjlaIi8+PHBhdGggY2xhc3M9ImNscy0zIiBkPSJNMjYxLjUxLDQyOS4wOXYzMC4xMmMwLC4xNiwwLC4zMiwwLC40OGwyMC0yMEMyNzMsNDM2LjYyLDI2Ni4yOSw0MzMsMjYxLjUxLDQyOS4wOVoiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0zNjAuNTgsMjMxLjc1Yy01NC43MiwwLTk5LjA3LDEzLjUyLTk5LjA3LDMwLjE5djMwLjE5YzAsMTYuNjcsNDQuMzUsMzAuMTksOTkuMDcsMzAuMTlhMzAwLjI4LDMwMC4yOCwwLDAsMCw0MS0yLjcxbDU4LTU4QzQ1OSwyNDUuMDgsNDE0LjkyLDIzMS43NSwzNjAuNTgsMjMxLjc1WiIvPjxwYXRoIGNsYXNzPSJjbHMtMyIgZD0iTTM2MC41OCwzMzkuNzJjLTI3LjQ3LDAtNTMuNDItMy4zLTczLjA3LTkuMjktMTEuMzktMy40Ny0yMC4xNS03Ljc0LTI2LTEyLjU4VjM0OGMwLDE0LjksMzUuNDIsMjcuMjcsODIsMjkuNzRMMzgyLjIxLDMzOUMzNzUuMTYsMzM5LjQ4LDM2Ny45MywzMzkuNzIsMzYwLjU4LDMzOS43MloiLz48cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik00NTkuNjQsNDAzLjgzVjM3My43MWMtNS44NSw0LjgzLTE0LjYxLDkuMTEtMjYsMTIuNTgtMTkuNjUsNi00NS42LDkuMjgtNzMuMDYsOS4yOGEzMjMsMzIzLDAsMCwxLTMzLjI0LTEuNjhsLTMyLjUyLDMyLjUyYzE3LjQ5LDQuNzMsNDAuNTIsNy42MSw2NS43Niw3LjYxQzQxNS4yOSw0MzQsNDU5LjY0LDQyMC41LDQ1OS42NCw0MDMuODNaIi8+PHBhdGggY2xhc3M9ImNscy00IiBkPSJNNDU5LjY0LDI5Mi4xM1YyNjEuOTRjMC0uMTIsMC0uMjMsMC0uMzRsLTU4LDU4QzQzNS44NCwzMTQuODYsNDU5LjY0LDMwNC4zNCw0NTkuNjQsMjkyLjEzWiIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTM2MC41OCw0ODkuNGM1NC43MSwwLDk5LjA2LTEzLjUyLDk5LjA2LTMwLjE5VjQyOS4wOWMtNS44NSw0LjgzLTE0LjYxLDkuMTEtMjYsMTIuNThDNDE0LDQ0Ny42NiwzODgsNDUxLDM2MC41OCw0NTFzLTUzLjQyLTMuMjktNzMuMDctOS4yOHEtMy4xMi0xLTYtMmwtMjAsMjBDMjYyLjM3LDQ3Ni4xNCwzMDYuMzksNDg5LjQsMzYwLjU4LDQ4OS40WiIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQ1OS42NCwzNDhWMzE3Ljg1Yy01Ljg1LDQuODQtMTQuNjEsOS4xMS0yNiwxMi41OC0xNC4zOSw0LjM5LTMyLjE2LDcuMzItNTEuNDMsOC41OWwtMzguNzEsMzguN2M1LjU1LjI5LDExLjI1LjQ1LDE3LjA4LjQ1QzQxNS4yOSwzNzguMTcsNDU5LjY0LDM2NC42NSw0NTkuNjQsMzQ4WiIvPjwvc3ZnPg==
+      mediatype: image/svg+xml
+  labels:
+    alm-owner-teiid: dv-operator
+    operated-by: teiid.0.1.0
+  selector:
+    matchLabels:
+      alm-owner-teiid: dv-operator
+      operated-by: teiid.0.1.0
+  installModes:
+    - type: OwnNamespace
+      supported: true
+    - type: SingleNamespace
+      supported: true
+    - type: MultiNamespace
+      supported: false
+    - type: AllNamespaces
+      supported: false
+  customresourcedefinitions:
+    owned:
+      - version: v1alpha1
+        kind: VirtualDatabase
+        description: An example built using PostgreSQL database.
+        displayName: VirtualDatabase
+        name: virtualdatabases.teiid.io
+        resources:
+          - kind: DeploymentConfig
+            version: apps.openshift.io/v1
+          - kind: Secret
+            version: v1
+          - kind: PersistentVolumeClaim
+            version: v1
+          - kind: Service
+            version: v1
+          - kind: Route
+            version: route.openshift.io/v1
+          - kind: BuildConfig
+            version: build.openshift.io/v1
+          - kind: Build
+            version: build.openshift.io/v1
+          - kind: ImageStream
+            version: image.openshift.io/v1
+        specDescriptors:
+          - description: Type
+            displayName: Type
+            path: runtime.type
+            x-descriptors:
+              - "urn:alm:descriptor:com.tectonic.ui:fieldGroup:Runtime"
+              - "urn:alm:descriptor:com.tectonic.ui:text"
+          - description: Version
+            displayName: Version
+            path: runtime.version
+            x-descriptors:
+              - "urn:alm:descriptor:com.tectonic.ui:fieldGroup:Runtime"
+              - "urn:alm:descriptor:com.tectonic.ui:text"
+          - description: Expose Via 3 Scale
+            displayName: Expose Via 3 Scale
+            path: exposeVia3scale
+            value: [false]
+            x-descriptors:
+              - "urn:alm:descriptor:com.tectonic.ui:booleanSwitch"
+          - description: Desired number of Pods for the cluster
+            displayName: Size
+            path: replicas
+            x-descriptors:
+              - "urn:alm:descriptor:com.tectonic.ui:podCount"
+        statusDescriptors:
+          - description: The address for accessing teiid service, if it is deployed.
+            displayName: Route
+            path: route
+            x-descriptors:
+              - "urn:alm:descriptor:org.w3:link"
+  install:
+    strategy: deployment
+    spec:
+      permissions:
+        - serviceAccountName: dv-operator
+          rules:
+            - apiGroups:
+                - teiid.io
+              resources:
+                - "*"
+                - "*/finalizers"
+              verbs: [get, list, create, update, delete, deletecollection, watch]
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - configmaps
+                - secrets
+                - serviceaccounts
+              verbs: [get, list, create, update, delete, deletecollection, watch]
+            - apiGroups:
+                - ""
+              resources:
+                - replicationcontrollers
+                - replicationcontrollers/scale
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - apps
+              resources:
+                - daemonsets
+                - deployments
+                - deployments/scale
+                - replicasets
+                - replicasets/scale
+                - statefulsets
+                - statefulsets/scale
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - extensions
+              resources:
+                - daemonsets
+                - deployments
+                - deployments/scale
+                - ingresses
+                - networkpolicies
+                - replicasets
+                - replicasets/scale
+                - replicationcontrollers/scale
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - ""
+              resources:
+                - bindings
+                - events
+                - limitranges
+                - namespaces/status
+                - pods/log
+                - pods/status
+                - replicationcontrollers/status
+                - resourcequotas
+                - resourcequotas/status
+              verbs: [get, list, watch]
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - buildconfigs
+                - buildconfigs/webhooks
+                - builds
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - buildconfigs/instantiate
+                - buildconfigs/instantiatebinary
+                - builds/clone
+              verbs: [create]
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - builds/details
+              verbs: [update]
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - builds/log
+              verbs: [get, list, watch]
+            - apiGroups:
+                - ""
+                - apps.openshift.io
+              resources:
+                - deploymentconfigs
+                - deploymentconfigs/scale
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - ""
+                - apps.openshift.io
+              resources:
+                - deploymentconfigrollbacks
+                - deploymentconfigs/instantiate
+                - deploymentconfigs/rollback
+              verbs: [create]
+            - apiGroups:
+                - ""
+                - apps.openshift.io
+              resources:
+                - deploymentconfigs/log
+                - deploymentconfigs/status
+              verbs: [get, list, watch]
+            - apiGroups:
+                - ""
+                - image.openshift.io
+              resources:
+                - imagestreams
+                - imagestreamimages
+                - imagestreammappings
+                - imagestreams/secrets
+                - imagestreamtags
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - ""
+                - image.openshift.io
+              resources:
+                - imagestreamimports
+              verbs: [create]
+            - apiGroups:
+                - ""
+                - image.openshift.io
+              resources:
+                - imagestreams/status
+              verbs: [get, list, watch]
+            - apiGroups:
+                - ""
+              resources:
+                - events
+              verbs: [get, list]
+            - apiGroups:
+                - rbac.authorization.k8s.io
+              resources:
+                - roles
+                - rolebindings
+              verbs: [get, list, create, update, delete, deletecollection, watch]
+            - apiGroups:
+                - ""
+                - template.openshift.io
+              resources:
+                - processedtemplates
+                - templateconfigs
+                - templateinstances
+                - templates
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - buildlogs
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - authorization.openshift.io
+              resources:
+                - rolebindings
+              verbs: [get, list, create, update, delete, deletecollection, watch]
+            - apiGroups:
+                - route.openshift.io
+              resources:
+                - routes
+                - routes/custom-host
+              verbs: [get, list, create, update, delete, deletecollection, watch, patch]
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - alertmanagers
+                - prometheuses
+                - servicemonitors
+                - prometheusrules
+              verbs: [get, list, create, update, delete, deletecollection, watch]
+            - apiGroups:
+                - apps
+              resourceNames:
+                - dv-operator
+              resources:
+                - deployments/finalizers
+              verbs:
+                - update
+      deployments:
+        - name: dv-operator
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                name: dv-operator
+            template:
+              metadata:
+                labels:
+                  name: dv-operator
+              spec:
+                serviceAccountName: dv-operator
+                containers:
+                  - name: dv-operator
+                    image: registry.redhat.io/fuse7-tech-preview/dv-rhel7-operator:1.6
+                    command:
+                      - teiid-operator
+                    imagePullPolicy: Always
+                    env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.namespace
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.labels['name']
