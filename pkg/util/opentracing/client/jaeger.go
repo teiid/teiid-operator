@@ -21,13 +21,14 @@ package client
 import (
 	"time"
 
-	v1 "github.com/jaegertracing/jaeger-operator/pkg/apis/jaegertracing/v1"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	scheme "github.com/teiid/teiid-operator/pkg/util/opentracing/client/scheme"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
+
+	v1 "github.com/jaegertracing/jaeger-operator/pkg/apis/jaegertracing/v1"
 )
 
 var log = logs.GetLogger("jaeger")

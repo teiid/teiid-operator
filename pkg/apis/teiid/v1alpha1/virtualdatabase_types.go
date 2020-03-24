@@ -45,16 +45,35 @@ type VirtualDatabaseSpec struct {
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
 // +k8s:openapi-gen=true
 type VirtualDatabaseStatus struct {
+
+	// The current phase of the build the operator deployment is running
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Phase"
 	Phase ReconcilerPhase `json:"phase,omitempty"`
+
 	// Digest value of the vdb
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="SHA Of the VDB"
 	Digest string `json:"digest,omitempty"`
+
 	// ConfigDigest value of the vdb
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="SHA Of the Configuration"
 	ConfigDigest string `json:"configdigest,omitempty"`
+
 	// Failure message if deployment ended in failure
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Failure Message"
 	Failure string `json:"failure,omitempty"`
+
 	// Route information that is exposed for clients
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Route Exposed for OData"
 	Route string `json:"route,omitempty"`
+
 	// Deployed vdb version.
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Version Of the VDB deployed"
 	Version string `json:"version,omitempty"`
 }
 
@@ -77,22 +96,43 @@ type VirtualDatabaseBuildObject struct {
 // +k8s:openapi-gen=true
 type Source struct {
 	// Deployed vdb version. For embedded DDL version this will be implicitly provided when ignored, for maven based vdb the maven version is always
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Version Of the VDB"
 	Version string `json:"version,omitempty"`
+
 	// DDL based VDB
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="DDL Of the VDB"
 	DDL string `json:"ddl,omitempty"`
+
 	// A VDB defined in GAV format
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Maven Coordinates for VDB"
 	Maven string `json:"maven,omitempty"`
+
 	// Open API contract that is exposed by the VDB
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="OpenAPI of exposed"
 	OpenAPI string `json:"openapi,omitempty"`
+
 	// List of maven dependencies for the build in GAV format
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Maven Dependencies for VDB"
 	Dependencies []string `json:"dependencies,omitempty"`
+
 	// Custom maven repositories that need to be used for the S2I build
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Custom Maven Repositories"
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
+
 	// Custom Maven settings.xml file to go with build in a configmap or secret
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Maven Settings File"
 	MavenSettings ValueSource `json:"mavenSettings,omitempty"`
 }
 
 // ValueSource --
+// +k8s:openapi-gen=true
 type ValueSource struct {
 	// Selects a key of a ConfigMap.
 	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`

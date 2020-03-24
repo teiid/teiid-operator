@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 
-	perror "github.com/pkg/errors"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	yaml2 "gopkg.in/yaml.v2"
@@ -258,6 +257,9 @@ func EnvironmentPropertiesExists(ctx context.Context, client k8sclient.Reader, n
 
 // RevisionOfConfigMapOrSecret --
 func RevisionOfConfigMapOrSecret(ctx context.Context, client k8sclient.Reader, namespace string, env corev1.EnvVar) (string, error) {
+	if env.Value != "" {
+		return env.Value, nil
+	}
 	if env.ValueFrom != nil {
 		// check if this ConfigMap
 		if env.ValueFrom.ConfigMapKeyRef != nil {
@@ -265,9 +267,8 @@ func RevisionOfConfigMapOrSecret(ctx context.Context, client k8sclient.Reader, n
 			if err != nil {
 				log.Infof("Error reading ConfigMap %s, for property: %s", env.ValueFrom.ConfigMapKeyRef.Name, env.Name)
 				return "", err
-			} else {
-				return cm.ObjectMeta.ResourceVersion, nil
 			}
+			return cm.ObjectMeta.ResourceVersion, nil
 		} else if env.ValueFrom.SecretKeyRef != nil {
 			s, err := GetSecret(ctx, client, env.ValueFrom.SecretKeyRef.Name, namespace)
 			if err != nil {
@@ -276,9 +277,9 @@ func RevisionOfConfigMapOrSecret(ctx context.Context, client k8sclient.Reader, n
 			}
 			return s.ObjectMeta.ResourceVersion, nil
 		} else {
-			return "", perror.New("Only ConfigMap and Secret are supported for configuration")
+			// ignore these as these field refs are not supplied directly by user
+			return "", nil
 		}
-	} else {
-		return env.Value, nil
 	}
+	return env.Value, nil
 }

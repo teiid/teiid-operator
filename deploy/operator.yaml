@@ -15,7 +15,7 @@ spec:
       serviceAccountName: teiid-operator
       containers:
         - name: teiid-operator
-          image: $IMAGE_LOCATION
+          image: quay.io/teiid/teiid-operator:0.2.0
           command:
             - teiid-operator
           imagePullPolicy: Always

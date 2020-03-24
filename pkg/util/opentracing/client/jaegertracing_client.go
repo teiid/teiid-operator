@@ -19,9 +19,10 @@ limitations under the License.
 package client
 
 import (
-	v1 "github.com/jaegertracing/jaeger-operator/pkg/apis/jaegertracing/v1"
 	scheme "github.com/teiid/teiid-operator/pkg/util/opentracing/client/scheme"
 	rest "k8s.io/client-go/rest"
+
+	v1 "github.com/jaegertracing/jaeger-operator/pkg/apis/jaegertracing/v1"
 )
 
 type JaegertracingV1Interface interface {
