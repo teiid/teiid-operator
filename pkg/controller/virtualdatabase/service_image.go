@@ -462,6 +462,8 @@ func applicationProperties(addVDB bool, vdbName string) string {
 		"springfox.documentation.swagger.v2.path=/openapi.json",
 		"spring.teiid.model.package=io.integration",
 		"spring.application.name=" + vdbName,
+		"management.health.mongo.enabled=false",
+		"management.health.db.enabled=false",
 	}, "\n")
 
 	if addVDB {
