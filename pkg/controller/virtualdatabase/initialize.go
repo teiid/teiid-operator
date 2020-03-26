@@ -108,10 +108,10 @@ func (action *initializeAction) init(ctx context.Context, vdb *v1alpha1.VirtualD
 
 	// Passing down cluster proxy config to Operands
 	envs := envvar.Clone(vdb.Spec.Env)
-	envs, jp := proxy.HTTPSettings(envs)
+	envs, properties := proxy.HTTPSettings(envs)
 	var javaProperties string
-	for _, p := range jp {
-		javaProperties = javaProperties + "-D" + p
+	for k, v := range properties {
+		javaProperties = javaProperties + "-D" + k + "=" + v + " "
 	}
 
 	str := strings.Join([]string{
