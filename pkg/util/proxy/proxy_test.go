@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	corev1 "k8s.io/api/core/v1"
 )
 
 func TestParseProxyHost(t *testing.T) {
@@ -53,4 +54,35 @@ func TestParseNoProxy(t *testing.T) {
 	actual := parseNoProxy("localhost,   foo.bat.com, linux.net")
 
 	assert.Equal(t, "localhost|foo.bat.com|linux.net", actual)
+}
+
+func TestParseHTTPSettings(t *testing.T) {
+
+	vars := []corev1.EnvVar{
+		{
+			Name:  "HTTP_PROXY",
+			Value: "http://myhost:8080",
+		},
+		{
+			Name:  "NO_PROXY",
+			Value: "localhost,foo.com",
+		},
+	}
+
+	_, m := HTTPSettings(vars)
+
+	assert.NotNil(t, m["http.proxyHost"])
+	assert.NotNil(t, m["http.proxyPort"])
+	assert.NotNil(t, m["http.nonProxyHosts"])
+
+	assert.Equal(t, "myhost", m["http.proxyHost"])
+	assert.Equal(t, "8080", m["http.proxyPort"])
+	assert.Equal(t, "localhost|foo.com", m["http.nonProxyHosts"])
+
+	var javaProperties string
+	for k, v := range m {
+		javaProperties = javaProperties + "-D" + k + "=" + v + " "
+	}
+
+	//assert.Equal(t, "-Dhttp.nonProxyHosts=localhost|foo.com -Dhttp.proxyHost=myhost -Dhttp.proxyPort=8080 ", javaProperties)
 }

@@ -194,8 +194,8 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 	// handle proxy settings
 	envs, jp := proxy.HTTPSettings(envs)
 	var javaProperties string
-	for _, p := range jp {
-		javaProperties = javaProperties + "-D" + p
+	for k, v := range jp {
+		javaProperties = javaProperties + "-D" + k + "=" + v + " "
 	}
 
 	str := strings.Join([]string{
