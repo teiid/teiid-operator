@@ -38,11 +38,6 @@ func NewSettings() Settings {
 func NewDefaultSettings(repositories []Repository) Settings {
 	settings := NewSettings()
 
-	if !containsMvnCentral(repositories) {
-		repository := NewRepository("https://repo.maven.apache.org/maven2@id=central")
-		repositories = append([]Repository{repository}, repositories...)
-	}
-
 	settings.Profiles = []Profile{
 		{
 			ID: "maven-settings",
@@ -73,22 +68,14 @@ func CreateSettingsConfigMap(namespace string, name string, settings Settings) (
 			Name:      name + "-maven-settings",
 			Namespace: namespace,
 			Labels: map[string]string{
-				"app": "teiid",
+				"app":                      name,
+				"teiid.io/VirtualDatabase": name,
+				"teiid.io/type":            "VirtualDatabase",
 			},
 		},
 		Data: map[string]string{
 			"settings.xml": string(data),
 		},
 	}
-
 	return cm, nil
-}
-
-func containsMvnCentral(repositories []Repository) bool {
-	for _, r := range repositories {
-		if r.ID == "central" {
-			return true
-		}
-	}
-	return false
 }
