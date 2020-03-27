@@ -393,17 +393,6 @@ func createMavenProject(name string) maven.Project {
 		},
 		Repositories: []maven.Repository{
 			{
-				ID:  "central",
-				URL: "https://repo.maven.apache.org/maven2",
-				Snapshots: maven.RepositoryPolicy{
-					Enabled: false,
-				},
-				Releases: maven.RepositoryPolicy{
-					Enabled:      true,
-					UpdatePolicy: "never",
-				},
-			},
-			{
 				ID:  "snapshots-repo",
 				URL: "https://oss.sonatype.org/content/repositories/snapshots",
 				Snapshots: maven.RepositoryPolicy{
@@ -415,17 +404,6 @@ func createMavenProject(name string) maven.Project {
 			},
 		},
 		PluginRepositories: []maven.Repository{
-			{
-				ID:  "central",
-				URL: "https://repo.maven.apache.org/maven2",
-				Snapshots: maven.RepositoryPolicy{
-					Enabled: false,
-				},
-				Releases: maven.RepositoryPolicy{
-					Enabled:      true,
-					UpdatePolicy: "never",
-				},
-			},
 			{
 				ID:  "snapshots-repo",
 				URL: "https://oss.sonatype.org/content/repositories/snapshots",
@@ -473,17 +451,6 @@ func createPlainMavenProject(name string) maven.Project {
 
 		Repositories: []maven.Repository{
 			{
-				ID:  "central",
-				URL: "https://repo.maven.apache.org/maven2",
-				Snapshots: maven.RepositoryPolicy{
-					Enabled: false,
-				},
-				Releases: maven.RepositoryPolicy{
-					Enabled:      true,
-					UpdatePolicy: "never",
-				},
-			},
-			{
 				ID:  "snapshots-repo",
 				URL: "https://oss.sonatype.org/content/repositories/snapshots",
 				Snapshots: maven.RepositoryPolicy{
@@ -495,17 +462,6 @@ func createPlainMavenProject(name string) maven.Project {
 			},
 		},
 		PluginRepositories: []maven.Repository{
-			{
-				ID:  "central",
-				URL: "https://repo.maven.apache.org/maven2",
-				Snapshots: maven.RepositoryPolicy{
-					Enabled: false,
-				},
-				Releases: maven.RepositoryPolicy{
-					Enabled:      true,
-					UpdatePolicy: "never",
-				},
-			},
 			{
 				ID:  "snapshots-repo",
 				URL: "https://oss.sonatype.org/content/repositories/snapshots",
