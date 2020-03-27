@@ -131,9 +131,6 @@ func DownloadDependency(d Dependency, filepath string, mavenRepos map[string]str
 	parts := append(strings.Split(d.GroupID, "."), d.ArtifactID)
 	artifactName := strings.Join(append(parts, d.Version), "/") + "/" + fileName(d)
 
-	if mavenRepos["central"] == "" {
-		mavenRepos["central"] = "https://repo1.maven.org/maven2/"
-	}
 	for _, v := range mavenRepos {
 		url := v + artifactName
 		if !strings.HasSuffix(v, "/") {
@@ -144,7 +141,7 @@ func DownloadDependency(d Dependency, filepath string, mavenRepos map[string]str
 			return filepath, nil
 		}
 	}
-	return "", errors.New("Failed to download the artfact from configured maven repositories and maven central")
+	return "", errors.New("Failed to download the artfact from configured maven repositories")
 }
 
 func fileName(a Dependency) string {

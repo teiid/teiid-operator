@@ -63,34 +63,8 @@ const expectedDefaultSettings = `<?xml version="1.0" encoding="UTF-8"?>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2</url>
-          <snapshots>
-            <enabled>false</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-          </releases>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>central</id>
-          <url>https://repo.maven.apache.org/maven2</url>
-          <snapshots>
-            <enabled>false</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-            <checksumPolicy>fail</checksumPolicy>
-          </releases>
-        </pluginRepository>
-      </pluginRepositories>
+      <repositories></repositories>
+      <pluginRepositories></pluginRepositories>
     </profile>
   </profiles>
 </settings>`
