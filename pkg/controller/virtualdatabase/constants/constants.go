@@ -37,10 +37,11 @@ func GetMavenRepositories(vdb *v1alpha1.VirtualDatabase) map[string]string {
 		for k, v := range vdb.Spec.Build.Source.MavenRepositories {
 			repos[k] = v
 		}
-	}
-	if len(Config.MavenRepositories) != 0 {
-		for k, v := range Config.MavenRepositories {
-			repos[k] = v
+	} else {
+		if len(Config.MavenRepositories) != 0 {
+			for k, v := range Config.MavenRepositories {
+				repos[k] = v
+			}
 		}
 	}
 	return repos
