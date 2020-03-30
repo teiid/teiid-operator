@@ -25,6 +25,7 @@ crc stop
 crc delete
 crc config set memory 12288
 crc config set cpus 8
+crc setup
 sudo qemu-img resize ~/.crc/machines/crc/crc +30G
 sudo qemu-img info ~/.crc/machines/crc/crc | grep 'virtual size'
 
