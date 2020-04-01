@@ -1,5 +1,13 @@
 #!/bin/sh
 IMAGE=$1
+CRC_IMAGE=$2
+CRC_EXTERNAL=default-route-openshift-image-registry.apps-crc.testing
+
+
+if [[ $IMAGE =~ ^$CRC_EXTERNAL ]]
+then
+  IMAGE=$CRC_IMAGE  
+fi
 
 sed "s|quay\.io\/teiid\/teiid-operator\:0\.3\.0|${IMAGE}|g" deploy/operator.yaml > deploy/operator-`whoami`.yaml
 
