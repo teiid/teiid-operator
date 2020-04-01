@@ -12,7 +12,9 @@ Teiid Operator for OpenShift/Kubernetes
 - go v1.13+
 - operator-sdk v0.15.0+
 - buildah v1.14.2+
-- Docker Hub accont
+- golint
+- Optional Docker Hub account
+
 
 ### SetUp the OpenShift 4.x Cluster (Code Ready Containers) on Laptop
 
@@ -26,21 +28,47 @@ crc delete
 crc config set memory 12288
 crc config set cpus 8
 crc setup
-sudo qemu-img resize ~/.crc/machines/crc/crc +30G
-sudo qemu-img info ~/.crc/machines/crc/crc | grep 'virtual size'
-
+# create a new instance
 crc start
-
-oc login {find-addess-from-last-statement}
-
+# shut down the instance to adjust disk size
+crc stop
+# default size is 30, up it to 60
+sudo qemu-img resize ~/.crc/machines/crc/crc +30G
+# verify the new size
+sudo qemu-img info ~/.crc/machines/crc/crc | grep 'virtual size'
+# we're ready, start again and give cluster admin to the developer account
+crc start
+eval $(crc oc-env)
+oc login -u developer -p developer
 oc adm policy --as system:admin add-cluster-role-to-user cluster-admin developer
 
 # after startup
-# The below is to increase the disk size by 30GB
-crc ip
-ssh -i /home/${your-username}/.crc/machines/crc/id_rsa core@192.168.130.11
+# The below is to increase the disk size to 30GB
+ssh -i ~/.crc/machines/crc/id_rsa core@`crc ip`
 sudo xfs_growfs /sysroot
+# confirm the new size of sysroot
 df -h
+exit
+```
+
+If you do not have/want a Docker Hub account, then you need to target your crc registry:
+```bash
+# add access and login
+oc extract secret/router-ca --keys=tls.crt -n openshift-ingress-operator
+sudo mkdir -p /etc/docker/certs.d/default-route-openshift-image-registry.apps-crc.testing/ 
+sudo cp tls.crt /etc/docker/certs.d/default-route-openshift-image-registry.apps-crc.testing/
+sudo chmod 644 /etc/docker/certs.d/default-route-openshift-image-registry.apps-crc.testing/tls.crt
+buildah login -u developer -p $(oc whoami -t) default-route-openshift-image-registry.apps-crc.testing
+
+# create a target project if needed
+oc new-project {your-project-name}
+export REGISTRY=default-route-openshift-image-registry.apps-crc.testing/{your-project-name}
+```
+
+If you have want to use your Docker Hub account note that the Makefile defaults to your local username as your dockerid.  
+If your dockerid is differnt then do:
+```bash
+export REGISTRY={my-dockerid}
 ```
 
 ### Setup Teiid Operator Workspace
@@ -60,7 +88,7 @@ This should install necessary `Go` libraries and tools.
 ```bash
 make build
 ```
-When you run this command, the Operator is built and (docker) container image is created on your local machine under `{yourname}/teiid-operator:{current-version}` using `buildah` tool.
+When you run this command the Operator is built and a (docker) container image is created on your local machine under `{yourname}/teiid-operator:{current-version}` using the `buildah` tool.
 
 Before submitting PR, please be sure to generate, vet, format, and test your code. This all can be done with one command.
 
@@ -75,7 +103,7 @@ To deploy the Operator to running Openshift that is installed above or to any Op
 ```bash
 make deploy
 ```
-This will push the image to your [Docker Hub](https://hub.docker.com/) account, then from there it will deploy into the available OpenShift instance. if you do not have Docker Hub account create one.
+This will push the image to the regestry.  By default it will be your [Docker Hub](https://hub.docker.com/) account, then from there it will deploy into the available OpenShift instance.
 
 NOTE: This is not going to use the OperatorHub, you are installing directly into the Namespace that you are connected to on the OpenShift. For OperatorHub see below.
 
