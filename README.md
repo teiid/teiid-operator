@@ -50,6 +50,10 @@ sudo xfs_growfs /sysroot
 df -h
 exit
 ```
+Create a new project:
+```bash
+oc new-project {your-project-name}
+```
 
 If you do not have/want a Docker Hub account, then you need to target your crc registry:
 ```bash
@@ -59,13 +63,10 @@ sudo mkdir -p /etc/docker/certs.d/default-route-openshift-image-registry.apps-cr
 sudo cp tls.crt /etc/docker/certs.d/default-route-openshift-image-registry.apps-crc.testing/
 sudo chmod 644 /etc/docker/certs.d/default-route-openshift-image-registry.apps-crc.testing/tls.crt
 buildah login -u developer -p $(oc whoami -t) default-route-openshift-image-registry.apps-crc.testing
-
-# create a target project if needed
-oc new-project {your-project-name}
-export REGISTRY=default-route-openshift-image-registry.apps-crc.testing/{your-project-name}
+export REGISTRY=default-route-openshift-image-registry.apps-crc.testing/`oc project --short`
 ```
 
-If you have want to use your Docker Hub account note that the Makefile defaults to your local username as your dockerid.  
+Otherwise if you have want to use your Docker Hub account note that the Makefile defaults to your local username as your dockerid.  
 If your dockerid is differnt then do:
 ```bash
 export REGISTRY={my-dockerid}
@@ -88,7 +89,7 @@ This should install necessary `Go` libraries and tools.
 ```bash
 make build
 ```
-When you run this command the Operator is built and a (docker) container image is created on your local machine under `{yourname}/teiid-operator:{current-version}` using the `buildah` tool.
+When you run this command the Operator is built and a (docker) container image is created on your local machine under `{REGISTRY}/teiid-operator:{current-version}` using the `buildah` tool.
 
 Before submitting PR, please be sure to generate, vet, format, and test your code. This all can be done with one command.
 

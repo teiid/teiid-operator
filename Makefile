@@ -1,11 +1,11 @@
 #REGISTRY=quay.io/teiid
 REGISTRY?=`whoami`
 IMAGE=teiid-operator
-TAG=0.3.0
+TAG?=latest
 CRC_REGISTRY=image-registry.openshift-image-registry.svc:5000
 
 IMAGE_NAME=$(REGISTRY)/$(IMAGE):$(TAG)
-CRC_IMAGE_NAME=$(CRC_REGISTRY)/$(IMAGE):$(TAG)
+CRC_IMAGE_NAME=$(CRC_REGISTRY)/`oc project --short`/$(IMAGE):$(TAG)
 GO_FLAGS ?= GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GO111MODULE=on
 SDK_VERSION=v0.15.1
 GOPATH ?= "$(HOME)/go"
