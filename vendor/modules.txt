@@ -132,7 +132,6 @@ github.com/openshift/client-go/image/clientset/versioned/scheme
 github.com/openshift/client-go/image/clientset/versioned/typed/image/v1
 # github.com/operator-framework/operator-sdk v0.15.1
 github.com/operator-framework/operator-sdk/pkg/k8sutil
-github.com/operator-framework/operator-sdk/pkg/kube-metrics
 github.com/operator-framework/operator-sdk/pkg/leader
 github.com/operator-framework/operator-sdk/pkg/log/zap
 github.com/operator-framework/operator-sdk/pkg/metrics
@@ -192,7 +191,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
+# golang.org/x/crypto v0.0.0-20191028145041-f83a4685e152
 golang.org/x/crypto/ssh/terminal
 # golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933
 golang.org/x/net/context
@@ -215,7 +214,7 @@ golang.org/x/text/unicode/norm
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20191024005414-555d28b269f0
 golang.org/x/time/rate
-# golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
+# golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # gomodules.xyz/jsonpatch/v2 v2.0.1
@@ -234,7 +233,7 @@ gopkg.in/fsnotify.v1
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.2.7
 gopkg.in/yaml.v2
-# k8s.io/api v0.17.4 => k8s.io/api v0.0.0-20191016110408-35e52d86657a
+# k8s.io/api v0.17.0 => k8s.io/api v0.0.0-20191016110408-35e52d86657a
 k8s.io/api/admission/v1beta1
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
@@ -274,7 +273,7 @@ k8s.io/api/settings/v1alpha1
 k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
-# k8s.io/apimachinery v0.17.4 => k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8
+# k8s.io/apimachinery v0.17.0 => k8s.io/apimachinery v0.0.0-20191004115801-a2eda9f80ab8
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
 k8s.io/apimachinery/pkg/api/resource
@@ -395,9 +394,6 @@ k8s.io/klog
 # k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
 k8s.io/kube-openapi/pkg/common
 k8s.io/kube-openapi/pkg/util/proto
-# k8s.io/kube-state-metrics v1.7.2
-k8s.io/kube-state-metrics/pkg/metric
-k8s.io/kube-state-metrics/pkg/metrics_store
 # k8s.io/utils v0.0.0-20191010214722-8d271d903fe4
 k8s.io/utils/buffer
 k8s.io/utils/integer
