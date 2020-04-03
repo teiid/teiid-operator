@@ -14,6 +14,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/rest"
 
+	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
@@ -103,7 +104,7 @@ func main() {
 	}
 
 	// Add the Metrics Service
-	addMetrics(ctx, cfg, namespace)
+	addMetrics(ctx, cfg)
 
 	log.Info("Starting the Cmd.")
 
@@ -116,7 +117,7 @@ func main() {
 
 // addMetrics will create the Services and Service Monitors to allow the operator export the metrics by using
 // the Prometheus operator
-func addMetrics(ctx context.Context, cfg *rest.Config, namespace string) {
+func addMetrics(ctx context.Context, cfg *rest.Config) {
 	if err := serveCRMetrics(cfg); err != nil {
 		if errors.Is(err, k8sutil.ErrRunLocal) {
 			log.Info("Skipping CR metrics server creation; not running in a cluster.")
@@ -137,10 +138,16 @@ func addMetrics(ctx context.Context, cfg *rest.Config, namespace string) {
 		log.Info("Could not create metrics Service", "error", err.Error())
 	}
 
+	// Retrieve the namespace the operator is running in
+	operatorNs, err := k8sutil.GetOperatorNamespace()
+	if err != nil {
+		log.Error(err, "Failed to get operator namespace")
+	}
+
 	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
 	// necessary to configure Prometheus to scrape metrics from this operator.
 	services := []*v1.Service{service}
-	_, err = metrics.CreateServiceMonitors(cfg, namespace, services)
+	_, err = metrics.CreateServiceMonitors(cfg, operatorNs, services, addMonitoringKeyLabelToOperatorServiceMonitor)
 	if err != nil {
 		log.Info("Could not create ServiceMonitor object", "error", err.Error())
 		// If this operator is deployed to a cluster without the prometheus-operator running, it will return
@@ -149,6 +156,16 @@ func addMetrics(ctx context.Context, cfg *rest.Config, namespace string) {
 			log.Info("Install prometheus-operator in your cluster to create ServiceMonitor objects", "error", err.Error())
 		}
 	}
+}
+
+func addMonitoringKeyLabelToOperatorServiceMonitor(serviceMonitor *monitoringv1.ServiceMonitor) error {
+	updatedLabels := map[string]string{"monitoring-key": "middleware"}
+	for k, v := range serviceMonitor.ObjectMeta.Labels {
+		updatedLabels[k] = v
+	}
+	serviceMonitor.SetLabels(updatedLabels)
+
+	return nil
 }
 
 // serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.
