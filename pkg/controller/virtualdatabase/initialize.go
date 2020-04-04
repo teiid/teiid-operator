@@ -72,6 +72,11 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			}
 		}
 
+		envs, err := DeploymentEnvironments(vdb, r)
+		if err != nil {
+			return err
+		}
+
 		// initialize with defaults
 		vdb.Status.Failure = ""
 		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
@@ -79,7 +84,7 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			return err
 		}
 		vdb.Status.Digest = digest
-		vdb.Status.ConfigDigest, err = ComputeConfigDigest(ctx, r.client, vdb, DeploymentEnvironments(vdb, r))
+		vdb.Status.ConfigDigest, err = ComputeConfigDigest(ctx, r.client, vdb, envs)
 		if err != nil {
 			return err
 		}

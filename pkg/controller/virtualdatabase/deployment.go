@@ -115,7 +115,10 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
 	item *appsv1.Deployment, r *ReconcileVirtualDatabase) error {
 
-	deploymentEnvs := DeploymentEnvironments(vdb, r)
+	deploymentEnvs, err := DeploymentEnvironments(vdb, r)
+	if err != nil {
+		return err
+	}
 
 	update := false
 	if *vdb.Spec.Replicas != *item.Spec.Replicas {
@@ -259,7 +262,10 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	// convert data source properties into ENV properties
-	deploymentEnvs := DeploymentEnvironments(vdb, r)
+	deploymentEnvs, err := DeploymentEnvironments(vdb, r)
+	if err != nil {
+		return appsv1.Deployment{}, err
+	}
 
 	// Passing down cluster proxy config to Operands
 	deploymentEnvs, _ = proxy.HTTPSettings(deploymentEnvs)
@@ -327,7 +333,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	dc.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
-	var err = controllerutil.SetControllerReference(vdb, &dc, r.scheme)
+	err = controllerutil.SetControllerReference(vdb, &dc, r.scheme)
 	if err != nil {
 		log.Error(err)
 		return appsv1.Deployment{}, err
