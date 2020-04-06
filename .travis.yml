@@ -1,5 +1,4 @@
 language: go
-go_import_path: github.com/teiid/teiid-operator
 
 go:
   - 1.13.x
@@ -7,14 +6,11 @@ go:
 dist: bionic
   
 sudo: required
-  
-env:
-  - DEP_RELEASE_TAG="v0.5.1"
 
+git:
+  depth: 1
+  
 before_install:
-  # Setup dependency management tool
-  - curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-  - dep version
   - . /etc/os-release
   - sudo sh -c "echo 'deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/x${ID^}_${VERSION_ID}/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list"
   - wget -nv https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/x${ID^}_${VERSION_ID}/Release.key -O Release.key
@@ -31,10 +27,14 @@ script:
 
 deploy:
   provider: script
-  condition: -n "$QUAY_USERNAME"
   script: "buildah login -u $QUAY_USERNAME -p $QUAY_PASSWORD quay.io && make quay-push"
   skip_cleanup: true
   on: 
     tags: false
     branch: master
     repo: teiid/teiid-operator
+    condition: -n "$QUAY_USERNAME"
+    
+cache:
+  directories:
+    - $GOPATH/pkg/mod
