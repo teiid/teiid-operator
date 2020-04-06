@@ -147,11 +147,15 @@ This should generate couple files in `deploy/olm-catalog/teiid/{version}` folder
 
 ### Image Promotion to Quay.io & OpenShift
 
-For this to work, one needs a `quay.io` account as OperatorHub does not work with Docker Hub, then modify the `Makefile` to generate the image you want to deploy. The below example assumes that the user already generated an image ` quay.io/teiid/teiid-operator:0.2.0`, however this could be different for others as only Teiid admins have access to the `teiid` organization on `quay.io`.
+For this to work, one needs a `quay.io` account as OperatorHub does not work with Docker Hub. By default this pushes to the quay repository quay.io/teiid/teiid-operator.  If you have a different target repository set it via the QUAY_REPOSITORY env variable.
+
+```bash
+export QUAY_REPOSITORY=quay.io/my-org/teiid-operator
+```
 
 ```bash
 # push image to quay.io
-$buildah push quay.io/teiid/teiid-operator:0.2.0
+$make quay-push
 
 # start OpenShift 4.x and give developer few rols
 $oc adm policy --as system:admin add-cluster-role-to-user cluster-admin developer
