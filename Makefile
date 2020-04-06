@@ -3,6 +3,7 @@ REGISTRY?=`whoami`
 IMAGE=teiid-operator
 TAG?=latest
 CRC_REGISTRY=image-registry.openshift-image-registry.svc:5000
+QUAY_REPOSITORY?=quay.io/teiid/teiid-operator
 
 IMAGE_NAME=$(REGISTRY)/$(IMAGE):$(TAG)
 CRC_IMAGE_NAME=$(CRC_REGISTRY)/`oc project --short`/$(IMAGE):$(TAG)
@@ -53,6 +54,10 @@ lint:
 
 images-push:
 	buildah push $(IMAGE_NAME)
+	
+.PHONY: quay-push
+quay-push:
+	buildah push $(IMAGE_NAME) $(QUAY_REPOSITORY):$(TAG)
 
 .PHONY: deploy
 deploy: images-push
