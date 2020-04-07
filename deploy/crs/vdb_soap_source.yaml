@@ -1,0 +1,37 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: dv-soap
+spec:
+  replicas: 1
+  datasources:
+    - name: soapCountry
+      type: soap
+      properties:
+        - name: wsdl
+          value: http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL
+        - name: namespaceUri
+          value: http://www.oorsprong.org/websamples.countryinfo
+        - name: serviceName
+          value: CountryInfoService
+        - name: endPointName
+          value: CountryInfoServiceSoap12
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE soap;
+        USE DATABASE soap;
+        
+        --sources
+        CREATE SERVER soapCountry FOREIGN DATA WRAPPER soap;
+
+        --schema
+        CREATE SCHEMA countrySource SERVER soapCountry;
+        CREATE VIRTUAL SCHEMA country;
+        
+        IMPORT FROM SERVER soapCountry INTO countrySource;
+        
+        SET SCHEMA country;
+        
+        CREATE VIRTUAL PROCEDURE GetCapitalCity (code string) returns string as 
+          select xpathValue(CapitalCitySoapResponse, '//*:CapitalCityResult') from (call countrySource.CapitalCity(xmlelement("CapitalCity", xmlnamespaces(default 'http://www.oorsprong.org/websamples.countryinfo'), xmlelement("sCountryISOCode",code)))) x;
