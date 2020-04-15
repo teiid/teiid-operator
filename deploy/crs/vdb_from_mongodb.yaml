@@ -1,0 +1,29 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: dv-movies
+spec:
+  datasources:
+    - name: moviesdb
+      type: mongodb
+      properties:
+        - name: user
+          value: user
+        - name: password
+          value: password
+        - name: remoteServerList
+          value: mongodb:27017
+        - name: database
+          value: sampledb
+  build:
+    source:
+      ddl: >
+        CREATE DATABASE movies OPTIONS (ANNOTATION 'Movies Database'); 
+        USE DATABASE movies;
+
+        CREATE FOREIGN DATA WRAPPER mongodb;
+        CREATE SERVER "moviesdb" FOREIGN DATA WRAPPER mongodb;
+
+        CREATE SCHEMA catalog SERVER "moviesdb";
+        SET SCHEMA catalog;
+        IMPORT FROM SERVER "moviesdb" INTO catalog;

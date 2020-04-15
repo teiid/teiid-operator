@@ -22,7 +22,9 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
+	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
@@ -30,46 +32,47 @@ import (
 
 // DeploymentEnvironments --
 func DeploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) ([]corev1.EnvVar, error) {
-	dataSourceConfig, err := convert2SpringProperties(vdb.Spec.DataSources)
+	ddlString, err := vdbutil.FetchDdl(vdb)
+	if err != nil {
+		return nil, err
+	}
+	dataSourceInfos := vdbutil.ParseDataSourcesInfoFromDdl(ddlString)
+	dataSourceConfig, err := convert2SpringProperties(vdb.Spec.DataSources, dataSourceInfos)
 	if err != nil {
 		return nil, err
 	}
 	return envvar.Combine(r.vdbContext.Env, dataSourceConfig), nil
 }
 
-func convert2SpringProperties(datasources []v1alpha1.DataSourceObject) ([]corev1.EnvVar, error) {
+func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sourcesFromDdl []vdbutil.DatasourceInfo) ([]corev1.EnvVar, error) {
 	envs := make([]corev1.EnvVar, 0)
 
-	dsConfig := make(map[string]string)
-	dsConfig["salesforce"] = "spring.teiid.data.salesforce"
-	dsConfig["google-spreadsheet"] = "spring.teiid.data.google.sheets"
-	dsConfig["amazon-s3"] = "spring.teiid.data.amazon-s3"
-	dsConfig["infinispan-hotrod"] = "spring.teiid.data.infinispan"
-	dsConfig["mongodb"] = "spring.teiid.data.mongodb"
-	dsConfig["soap"] = "spring.teiid.data.soap"
-	dsConfig["rest"] = "spring.teiid.rest"
-	dsConfig["odata"] = "spring.teiid.rest"
-	dsConfig["odata4"] = "spring.teiid.rest"
-	dsConfig["openapi"] = "spring.teiid.rest"
-	dsConfig["sap-gateway"] = "spring.teiid.rest"
-	dsConfig["excel"] = "spring.teiid.file"
-	dsConfig["file"] = "spring.teiid.file"
-
-	for _, v := range datasources {
+	for _, source := range sourcesFromDdl {
 		prefix := "SPRING_DATASOURCE"
 
-		if strings.Contains(v.Name, " ") || strings.Contains(v.Type, " ") {
-			return nil, errors.New("Datasource " + v.Name + " or its Type " + v.Type + " has spaces, which is not allowed")
+		datasourceName := sanitizeName(source.Name)
+		configuredSource, err := findConfiguredProperties(source.Name, sourcesConfigured)
+		if err != nil {
+			log.Info(err)
+			continue
 		}
 
-		if c, ok := dsConfig[strings.ToLower(v.Type)]; ok {
-			prefix = c
+		// Make sure we do not have incompatible names
+		if strings.Contains(configuredSource.Name, " ") {
+			return nil, errors.New("Configured Datasource " + configuredSource.Name + " has spaces, which is not allowed")
 		}
-		datasourceName := sanitizeName(v.Name)
+
+		if c, ok := constants.ConnectionFactories[strings.ToLower(source.Type)]; ok {
+			prefix = c.SpringBootPropertyPrefix
+		} else {
+			// Custom translators must map to this property prefix
+			prefix = "spring.teiid.data." + strings.ToLower(source.Type)
+		}
+
 		// covert properties
-		for _, p := range v.Properties {
+		for _, p := range configuredSource.Properties {
 			if strings.Contains(p.Name, " ") {
-				return nil, errors.New("Datasource " + v.Name + " has a Property " + p.Name + " which has spaces in its name, which is not allowed")
+				return nil, errors.New("Datasource " + configuredSource.Name + " has a Property " + p.Name + " which has spaces in its name, which is not allowed")
 			}
 			propertyName := sanitizeName(p.Name)
 			if p.Value != "" {
@@ -81,6 +84,15 @@ func convert2SpringProperties(datasources []v1alpha1.DataSourceObject) ([]corev1
 		}
 	}
 	return envs, nil
+}
+
+func findConfiguredProperties(name string, configured []v1alpha1.DataSourceObject) (v1alpha1.DataSourceObject, error) {
+	for _, ds := range configured {
+		if ds.Name == name {
+			return ds, nil
+		}
+	}
+	return v1alpha1.DataSourceObject{}, errors.New("Configuration for the Data Source " + name + " not found in DataSources, one can define the configuration also using the ENV properties otherwise the deployment will fail")
 }
 
 func envReady(v string) string {

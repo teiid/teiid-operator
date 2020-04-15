@@ -27,22 +27,31 @@ import (
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
-	corev1 "k8s.io/api/core/v1"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 //ComputeConfigDigest --875040
-func ComputeConfigDigest(ctx context.Context, client k8sclient.Reader, vdb *v1alpha1.VirtualDatabase, envs []corev1.EnvVar) (string, error) {
+func ComputeConfigDigest(ctx context.Context, client k8sclient.Reader, vdb *v1alpha1.VirtualDatabase) (string, error) {
 	// check to see if any of the secrets or configmaps changed
-	hash := sha256.New()
-	for _, env := range envs {
+	hashVal := sha256.New()
+	for _, env := range vdb.Spec.Env {
 		str, err := kubernetes.RevisionOfConfigMapOrSecret(ctx, client, vdb.ObjectMeta.Namespace, env)
 		if err != nil {
 			return "", err
 		}
-		hash.Write([]byte(str))
+		hashVal.Write([]byte(str))
 	}
-	configdigest := "c" + base64.RawURLEncoding.EncodeToString(hash.Sum(nil))
+	for _, source := range vdb.Spec.DataSources {
+		hashVal.Write([]byte(source.Name))
+		for _, env := range source.Properties {
+			str, err := kubernetes.RevisionOfConfigMapOrSecret(ctx, client, vdb.ObjectMeta.Namespace, env)
+			if err != nil {
+				return "", err
+			}
+			hashVal.Write([]byte(str))
+		}
+	}
+	configdigest := "c" + base64.RawURLEncoding.EncodeToString(hashVal.Sum(nil))
 	return configdigest, nil
 }
 

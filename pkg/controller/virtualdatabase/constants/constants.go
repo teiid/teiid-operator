@@ -28,6 +28,9 @@ const (
 // Config from /conf/config.yml file
 var Config = conf.GetConfiguration()
 
+// ConnectionFactories All source types that are supported by Teiid
+var ConnectionFactories = conf.GetConnectionFactories()
+
 // GetMavenRepositories --
 func GetMavenRepositories(vdb *v1alpha1.VirtualDatabase) map[string]string {
 

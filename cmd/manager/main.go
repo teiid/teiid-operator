@@ -5,12 +5,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"runtime"
+
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
-	"os"
-	"runtime"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
@@ -211,9 +212,9 @@ func filterGKVsFromAddToScheme(gvks []schema.GroupVersionKind) []schema.GroupVer
 	matchAnyValue := "*"
 	gvkFilters := []schema.GroupVersionKind{
 		// OpenShift types
-		schema.GroupVersionKind{Group: "route.openshift.io", Kind: "Route", Version: matchAnyValue},
-		schema.GroupVersionKind{Group: "image.openshift.io", Kind: "ImageStream", Version: matchAnyValue},
-		schema.GroupVersionKind{Group: "apps.openshift.io", Kind: "DeploymentConfig", Version: matchAnyValue},
+		{Group: "route.openshift.io", Kind: "Route", Version: matchAnyValue},
+		{Group: "image.openshift.io", Kind: "ImageStream", Version: matchAnyValue},
+		{Group: "apps.openshift.io", Kind: "DeploymentConfig", Version: matchAnyValue},
 	}
 
 	ownGVKs := []schema.GroupVersionKind{}

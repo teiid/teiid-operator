@@ -20,6 +20,8 @@ limitations under the License.
 import (
 	"io/ioutil"
 	"os"
+	"runtime"
+	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	"gopkg.in/yaml.v2"
@@ -54,12 +56,19 @@ type PrometheusConfig struct {
 
 // GetConfiguration --
 func GetConfiguration() Configuration {
+
 	log := logs.GetLogger("configuration")
+	rootDirectory := ""
+
+	_, filename, _, _ := runtime.Caller(0)
+	if idx := strings.Index(filename, "/pkg/"); idx != -1 {
+		rootDirectory = filename[:idx]
+	}
 
 	var c Configuration
-	yamlFile, err := ioutil.ReadFile("/conf/config.yaml")
+	yamlFile, err := ioutil.ReadFile(rootDirectory + "/conf/config.yaml")
 	if err != nil {
-		yamlFile, err = ioutil.ReadFile("build/conf/config.yaml")
+		yamlFile, err = ioutil.ReadFile(rootDirectory + "/build/conf/config.yaml")
 		if err != nil {
 			log.Error("Failed to read configuration file at /conf/config.yaml", err)
 			return c

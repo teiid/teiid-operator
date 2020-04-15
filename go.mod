@@ -9,6 +9,7 @@ require (
 	github.com/go-openapi/spec v0.19.4
 	github.com/go-openapi/validate v0.19.5 // indirect
 	github.com/google/go-containerregistry v0.0.0-20200313165449-955bf358a3d8 // indirect
+	github.com/google/martian v2.1.0+incompatible
 	github.com/hetesiistvan/go-pkcs12 v0.0.0-20191008101753-f02f3241080a
 	github.com/jaegertracing/jaeger-operator v1.16.0
 	github.com/magiconair/properties v1.8.1
