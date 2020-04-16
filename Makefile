@@ -88,7 +88,7 @@ generate: internal-generate format
 
 .PHONY: internal-generate
 internal-generate:
-	@GOPATH=${GOPATH} ./scripts/generate.sh
+	@GOPATH=${GOPATH} ./scripts/generate.sh	
 
 .PHONY: format
 format:
@@ -98,6 +98,7 @@ format:
 .PHONY: ensure-generate-is-noop
 ensure-generate-is-noop: generate format
 	@git diff -s --exit-code pkg/apis/teiid/v1alpha1/zz_generated.*.go || (echo "Build failed: a model has been changed but the generated resources aren't up to date. Run 'make generate' and update your PR." && exit 1)
+	@git diff -s --exit-code build/conf/connection_factories.json || (echo "Connection factories is not uptodate. Run 'make generate' and update your PR." && exit 1)
 
 .PHONY: check
 check:

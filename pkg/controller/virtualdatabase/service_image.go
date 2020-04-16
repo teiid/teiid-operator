@@ -21,12 +21,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"strconv"
 	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
+	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 
 	obuildv1 "github.com/openshift/api/build/v1"
 	scheme "github.com/openshift/client-go/build/clientset/versioned/scheme"
@@ -35,7 +35,6 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/image"
-	"github.com/teiid/teiid-operator/pkg/util/zip"
 	corev1 "k8s.io/api/core/v1"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -265,30 +264,6 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 	return bc, nil
 }
 
-func readDdlFromMavenRepo(vdb *v1alpha1.VirtualDatabase, targetName string) (string, error) {
-	dep, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
-	if err != nil {
-		return "", err
-	}
-	mavenRepos := constants.GetMavenRepositories(vdb)
-	vdbFile, err := maven.DownloadDependency(dep, targetName, mavenRepos)
-	if err != nil {
-		return "", err
-	}
-	files, err := zip.Unzip(vdbFile, "/tmp/"+vdb.ObjectMeta.Name)
-	if err != nil {
-		return "", err
-	}
-	log.Info("Maven based VDB file contains files: ", files)
-	b, err := ioutil.ReadFile("/tmp/" + vdb.ObjectMeta.Name + "/META-INF/vdb.ddl")
-	if err != nil {
-		return "", err
-	}
-	ddl := string(b)
-	log.Debug("Read VDB File: " + ddl)
-	return ddl, nil
-}
-
 func buildJarBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, error) {
 	files := map[string]string{}
 
@@ -331,20 +306,19 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 
 	// check to make sure which type of vdb
 	mavenVdb := false
-	var ddl string
-	ddl = vdb.Spec.Build.Source.DDL
 	if vdb.Spec.Build.Source.Maven != "" {
 		mavenVdb = true
-		str, err := readDdlFromMavenRepo(vdb, "/tmp/teiid.vdb")
-		if err != nil {
-			log.Error("failed to read VDB from maven ", err)
-			return files, err
-		}
-		ddl = str
+	}
+
+	var ddlStr string
+	ddlStr, err := vdbutil.FetchDdl(vdb)
+	if err != nil {
+		log.Error("failed to read VDB from maven ", err)
+		return files, err
 	}
 
 	//Binary build, generate the pom file
-	pom, err := GenerateVdbPom(vdb, ddl, false, addOpenAPI)
+	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI)
 	if err != nil {
 		return files, err
 	}

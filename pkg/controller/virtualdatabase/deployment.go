@@ -132,7 +132,7 @@ func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha
 
 	if !update {
 		// check to see if any of the secrets or configmaps changed
-		configdigest, err := ComputeConfigDigest(ctx, r.client, vdb, deploymentEnvs)
+		configdigest, err := ComputeConfigDigest(ctx, r.client, vdb)
 		if err != nil {
 			return err
 		}

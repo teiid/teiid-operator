@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -70,30 +71,24 @@ func TestSpringProperties(t *testing.T) {
 			},
 		},
 	}
-
-	envs, err := convert2SpringProperties(datasources)
+	sourcesFromDdl := []vdbutil.DatasourceInfo{
+		{
+			Name: "sampledb",
+			Type: "postgresql",
+		},
+		{
+			Name: "dg",
+			Type: "infinispan-hotrod",
+		},
+	}
+	envs, err := convert2SpringProperties(datasources, sourcesFromDdl)
 	assert.NotNil(t, envs)
 	assert.Nil(t, err)
 
-	expected := []corev1.EnvVar{
-		{
-			Name:  "SPRING_TEIID_DATA_INFINISPAN_DG_URL",
-			Value: "localhost:11222",
-		},
-		{
-			Name:  "SPRING_TEIID_DATA_INFINISPAN_DG_IMPORTER_PROTOBUF_NAME",
-			Value: "accounts.proto",
-		},
-		{
-			Name:  "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL",
-			Value: "jdbc:postgresql://localhost:5432/sampledb",
-		},
-		{
-			Name:      "SPRING_DATASOURCE_SAMPLEDB_PASSWORD",
-			ValueFrom: &source,
-		},
-	}
-	assert.Equal(t, expected, envs)
+	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
+	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
+	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_DG_URL", "localhost:11222", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_DG_IMPORTER_PROTOBUF_NAME", "accounts.proto", envs)
 }
 
 func TestUpperCase(t *testing.T) {
@@ -123,7 +118,6 @@ func TestSoapProperties(t *testing.T) {
 			},
 		},
 	}
-
 	datasources := []v1alpha1.DataSourceObject{
 		{
 			Name: "soapCountry",
@@ -163,35 +157,79 @@ func TestSoapProperties(t *testing.T) {
 		},
 	}
 
-	envs, err := convert2SpringProperties(datasources)
+	sourcesFromDdl := []vdbutil.DatasourceInfo{
+		{
+			Name: "sampledb",
+			Type: "postgresql",
+		},
+		{
+			Name: "soapCountry",
+			Type: "soap",
+		},
+	}
+	envs, err := convert2SpringProperties(datasources, sourcesFromDdl)
 	assert.NotNil(t, envs)
 	assert.Nil(t, err)
 
-	expected := []corev1.EnvVar{
+	assert.Equal(t, 6, len(envs))
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_WSDL", "http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL", envs)
+	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_END_POINT_NAME", "CountryInfoServiceSoap12", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_SERVICE_NAME", "CountryInfoService", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_NAMESPACE_URI", "http://www.oorsprong.org/websamples.countryinfo", envs)
+	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
+}
+
+func TestCustom(t *testing.T) {
+	datasources := []v1alpha1.DataSourceObject{
 		{
-			Name:  "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_WSDL",
-			Value: "http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL",
-		},
-		{
-			Name:  "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_NAMESPACE_URI",
-			Value: "http://www.oorsprong.org/websamples.countryinfo",
-		},
-		{
-			Name:  "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_SERVICE_NAME",
-			Value: "CountryInfoService",
-		},
-		{
-			Name:  "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_END_POINT_NAME",
-			Value: "CountryInfoServiceSoap12",
-		},
-		{
-			Name:  "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL",
-			Value: "jdbc:postgresql://localhost:5432/sampledb",
-		},
-		{
-			Name:      "SPRING_DATASOURCE_SAMPLEDB_PASSWORD",
-			ValueFrom: &source,
+			Name: "myCustom",
+			Type: "custom",
+			Properties: []corev1.EnvVar{
+				{
+					Name:  "k1",
+					Value: "v1",
+				},
+				{
+					Name:  "k2",
+					Value: "v2",
+				},
+			},
 		},
 	}
-	assert.Equal(t, expected, envs)
+
+	sourcesFromDdl := []vdbutil.DatasourceInfo{
+		{
+			Name: "myCustom",
+			Type: "custom",
+		},
+	}
+
+	envs, err := convert2SpringProperties(datasources, sourcesFromDdl)
+	assert.NotNil(t, envs)
+	assert.Nil(t, err)
+
+	assert.Equal(t, 2, len(envs))
+	assertEnv(t, "SPRING_TEIID_DATA_CUSTOM_MY_CUSTOM_K1", "v1", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_CUSTOM_MY_CUSTOM_K2", "v2", envs)
+}
+
+func assertEnv(t *testing.T, name, expected string, envs []corev1.EnvVar) {
+	for _, env := range envs {
+		if env.Name == name {
+			assert.Equal(t, expected, env.Value)
+			return
+		}
+	}
+	assert.Fail(t, "none matched")
+}
+
+func assertEnvFromSource(t *testing.T, name string, expected *corev1.EnvVarSource, envs []corev1.EnvVar) {
+	for _, env := range envs {
+		if env.Name == name {
+			assert.Equal(t, expected, env.ValueFrom)
+			return
+		}
+	}
+	assert.Fail(t, "none matched")
 }

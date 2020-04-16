@@ -1,0 +1,436 @@
+{
+  "items" : {
+    "actian" : {
+      "name" : "actian",
+      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "actian-vector",
+      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
+      "gav" : [ "com.ingres.jdbc:iijdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "amazon-athena" : {
+      "name" : "amazon-athena",
+      "driverNames" : [ "com.simba.athena.jdbc.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "jdbc-ansi",
+      "dialect" : null,
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "amazon-s3" : {
+      "name" : "amazon-s3",
+      "driverNames" : [ "org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "amazon-s3",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-amazon-s3" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.amazon-s3"
+    },
+    "db2" : {
+      "name" : "db2",
+      "driverNames" : [ "com.ibm.db2.jcc.DB2Driver" ],
+      "datasourceNames" : [ "com.ibm.db2.jcc.DB2XADataSource" ],
+      "translatorName" : "db2",
+      "dialect" : "org.hibernate.dialect.DB2Dialect",
+      "gav" : [ "com.ibm.db2.jcc:db2jcc4" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "derby" : {
+      "name" : "derby",
+      "driverNames" : [ "org.apache.derby.jdbc.ClientDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "derby",
+      "dialect" : "org.hibernate.dialect.DerbyTenSevenDialect",
+      "gav" : [ "org.apache.derby:derbyclient" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "exasol" : {
+      "name" : "exasol",
+      "driverNames" : [ "com.exasol.jdbc.EXADriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "exasol",
+      "dialect" : null,
+      "gav" : [ "com.exasol:exasol-jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "excel" : {
+      "name" : "excel",
+      "driverNames" : [ "org.teiid.spring.data.excel.ExcelConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "excel",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-excel" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.excel"
+    },
+    "file" : {
+      "name" : "file",
+      "driverNames" : [ "org.teiid.spring.data.file.FileConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "file",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-file" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.file"
+    },
+    "ftp" : {
+      "name" : "ftp",
+      "driverNames" : [ "org.teiid.spring.data.ftp.FtpConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "ftp",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-ftp" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.ftp"
+    },
+    "google-spreadsheet" : {
+      "name" : "google-spreadsheet",
+      "driverNames" : [ "org.teiid.spring.data.google.SpreadsheetConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "google-spreadsheet",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-google-spreadsheet" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.google-spreadsheet"
+    },
+    "h2" : {
+      "name" : "h2",
+      "driverNames" : [ "org.h2.Driver" ],
+      "datasourceNames" : [ "org.h2.jdbcx.JdbcDataSource" ],
+      "translatorName" : "h2",
+      "dialect" : "org.hibernate.dialect.H2Dialect",
+      "gav" : [ "com.h2database:h2" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "hana" : {
+      "name" : "hana",
+      "driverNames" : [ "com.sap.db.jdbc.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "hana",
+      "dialect" : "org.hibernate.dialect.HANARowStoreDialect",
+      "gav" : [ "com.sap.cloud.db.jdbc:ngdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "hbase" : {
+      "name" : "hbase",
+      "driverNames" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "hbase",
+      "dialect" : null,
+      "gav" : [ "org.apache.phoenix:phoenix-queryserver-client" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "hive" : {
+      "name" : "hive",
+      "driverNames" : [ "org.apache.hive.jdbc.HiveDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "hive",
+      "dialect" : null,
+      "gav" : [ "org.apache.hive:hive-jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "hsql" : {
+      "name" : "hsql",
+      "driverNames" : [ "org.hsqldb.jdbc.JDBCDriver" ],
+      "datasourceNames" : [ "org.hsqldb.jdbc.pool.JDBCXADataSource" ],
+      "translatorName" : "hsql",
+      "dialect" : "org.hibernate.dialect.HSQLDialect",
+      "gav" : [ "org.hsqldb:hsqldb" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "impala" : {
+      "name" : "impala",
+      "driverNames" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "impala",
+      "dialect" : null,
+      "gav" : [ "com.cloudera.impala:jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "infinispan-hotrod" : {
+      "name" : "infinispan-hotrod",
+      "driverNames" : [ "org.teiid.spring.data.infinispan.InfinispanConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "infinispan-hotrod",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-infinispan-hotrod" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.infinispan-hotrod"
+    },
+    "informix" : {
+      "name" : "informix",
+      "driverNames" : [ "com.informix.jdbc.IfxDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "informix",
+      "dialect" : "org.hibernate.dialect.InformixDialect",
+      "gav" : [ "com.ibm.informix:jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "ingres" : {
+      "name" : "ingres",
+      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "ingres",
+      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
+      "gav" : [ "com.ingres.jdbc:iijdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "jdbc-ansi" : {
+      "name" : "jdbc-ansi",
+      "driverNames" : [ "java.sql.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "jdbc-ansi",
+      "dialect" : null,
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "jdbc-simple" : {
+      "name" : "jdbc-simple",
+      "driverNames" : [ "java.sql.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "jdbc-simple",
+      "dialect" : null,
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "jtds" : {
+      "name" : "jtds",
+      "driverNames" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "sqlserver",
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "gav" : [ "net.sourceforge.jtds:jtds" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "mongodb" : {
+      "name" : "mongodb",
+      "driverNames" : [ "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "mongodb",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-mongodb" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.mongodb"
+    },
+    "mssql-server" : {
+      "name" : "mssql-server",
+      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
+      "translatorName" : "sqlserver",
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "gav" : [ "com.microsoft.sqlserver:mssql-jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "mysql" : {
+      "name" : "mysql",
+      "driverNames" : [ "com.mysql.jdbc.Driver" ],
+      "datasourceNames" : [ "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" ],
+      "translatorName" : "mysql5",
+      "dialect" : "org.hibernate.dialect.MySQL5InnoDBDialect",
+      "gav" : [ "mysql:mysql-connector-java" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "netezza" : {
+      "name" : "netezza",
+      "driverNames" : [ "org.netezza.Driver " ],
+      "datasourceNames" : [ ],
+      "translatorName" : "netezza",
+      "dialect" : null,
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "odata" : {
+      "name" : "odata",
+      "driverNames" : [ "org.teiid.spring.data.odata.ODataConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "odata",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-odata" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.odata"
+    },
+    "odata4" : {
+      "name" : "odata4",
+      "driverNames" : [ "org.teiid.spring.data.odata4.OData4ConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "odata4",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-odata4" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.odata4"
+    },
+    "openapi" : {
+      "name" : "openapi",
+      "driverNames" : [ "org.teiid.spring.data.openapi.OpenApiConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "openapi",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-openapi" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.openapi"
+    },
+    "oracle" : {
+      "name" : "oracle",
+      "driverNames" : [ "oracle.jdbc.OracleDriver" ],
+      "datasourceNames" : [ "oracle.jdbc.xa.client.OracleXADataSource" ],
+      "translatorName" : "oracle",
+      "dialect" : "org.hibernate.dialect.Oracle12cDialect",
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "osisoft-pi" : {
+      "name" : "osisoft-pi",
+      "driverNames" : [ "com.osisoft.jdbc.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "osisoft-pi",
+      "dialect" : null,
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "phoenix" : {
+      "name" : "phoenix",
+      "driverNames" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "phoenix",
+      "dialect" : null,
+      "gav" : [ "org.apache.phoenix:phoenix-queryserver-client" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "postgresql" : {
+      "name" : "postgresql",
+      "driverNames" : [ "org.postgresql.Driver" ],
+      "datasourceNames" : [ "org.postgresql.xa.PGXADataSource" ],
+      "translatorName" : "postgresql",
+      "dialect" : "org.hibernate.dialect.PostgreSQL9Dialect",
+      "gav" : [ "org.postgresql:postgresql" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "prestodb" : {
+      "name" : "prestodb",
+      "driverNames" : [ "com.facebook.presto.jdbc.PrestoDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "prestodb",
+      "dialect" : null,
+      "gav" : [ "com.facebook.presto:presto-jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "redshift" : {
+      "name" : "redshift",
+      "driverNames" : [ "com.amazon.redshift.jdbc42.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "redshift",
+      "dialect" : null,
+      "gav" : [ "com.amazon.redshift:redshift-jdbc42" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "rest" : {
+      "name" : "rest",
+      "driverNames" : [ "org.teiid.spring.data.rest.RestConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "rest",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-rest" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.rest"
+    },
+    "salesforce" : {
+      "name" : "salesforce",
+      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "salesforce",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-salesforce" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.salesforce"
+    },
+    "sap-gateway" : {
+      "name" : "sap-gateway",
+      "driverNames" : [ "org.teiid.spring.data.sap.SapGatewayConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "sap-gateway",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-sap-gateway" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.sap-gateway"
+    },
+    "soap" : {
+      "name" : "soap",
+      "driverNames" : [ "org.teiid.spring.data.soap.SoapConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "ws",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-soap" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.soap"
+    },
+    "spaiq" : {
+      "name" : "spaiq",
+      "driverNames" : [ "com.sybase.jdbc4.jdbc.SybDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "sap-iq",
+      "dialect" : null,
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "sqlserver" : {
+      "name" : "sqlserver",
+      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
+      "translatorName" : "sqlserver",
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "gav" : [ "com.microsoft.sqlserver:mssql-jdbc" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "swagger" : {
+      "name" : "swagger",
+      "driverNames" : [ "org.teiid.spring.data.swagger.SwaggerConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "swagger",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-openapi" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.swagger"
+    },
+    "sybase" : {
+      "name" : "sybase",
+      "driverNames" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "sybase",
+      "dialect" : "org.hibernate.dialect.SybaseDialect",
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "teiid" : {
+      "name" : "teiid",
+      "driverNames" : [ "org.teiid.jdbc.TeiidDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "teiid",
+      "dialect" : "org.teiid.dialect.TeiidDialect",
+      "gav" : [ "org.teiid:teiid" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "teradata" : {
+      "name" : "teradata",
+      "driverNames" : [ "com.teradata.jdbc.TeraDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "teradata",
+      "dialect" : "org.hibernate.dialect.Teradata14Dialect",
+      "gav" : [ "com.teradata.jdbc:terajdbc4" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "ucanaccess" : {
+      "name" : "ucanaccess",
+      "driverNames" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "ucanaccess",
+      "dialect" : null,
+      "gav" : [ "net.sf.ucanaccess:ucanaccess" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "vertica" : {
+      "name" : "vertica",
+      "driverNames" : [ "com.vertica.jdbc.Driver" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "vertica",
+      "dialect" : null,
+      "gav" : [ "org.clojars.erp12:jdbc-vertica" ],
+      "springBootPropertyPrefix" : "spring.datasource"
+    },
+    "ws" : {
+      "name" : "ws",
+      "driverNames" : [ "org.teiid.spring.data.soap.WsConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "ws",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-soap" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.ws"
+    }
+  }
+}

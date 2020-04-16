@@ -32,6 +32,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util/image"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
+	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -224,7 +225,7 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 
 	files := map[string]string{}
 
-	pom, err := GenerateVdbPom(vdbCopy, vdbCopy.Spec.Build.Source.DDL, true, true)
+	pom, err := GenerateVdbPom(vdbCopy, vdbutil.ParseDataSourcesInfoFromDdl(vdbCopy.Spec.Build.Source.DDL), true, true)
 	if err != nil {
 		return err
 	}
@@ -283,5 +284,5 @@ func (action *s2iBuilderImageAction) ddlFile() string {
 	return `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');	
 	USE DATABASE customer;
 	CREATE FOREIGN DATA WRAPPER h2;
-	CREATE SERVER mydb TYPE 'NONE' FOREIGN DATA WRAPPER h2;`
+	CREATE SERVER mydb FOREIGN DATA WRAPPER h2;`
 }

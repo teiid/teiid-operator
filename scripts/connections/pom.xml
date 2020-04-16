@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.teiid</groupId>
+    <artifactId>connection-factory-genarator</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0.0</version>
+    <name>Connection Factory File Genarator</name>
+    <description>Connection Factory File Genarator</description>
+
+    <url>http://jboss.org/teiid</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <version.teiid.spring-boot>teiidSpringBootVersion</version.teiid.spring-boot>
+        <version.org.codehaus.mojo.exec.plugin>1.2.1</version.org.codehaus.mojo.exec.plugin>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.teiid</groupId>
+            <artifactId>spring-data-util</artifactId>
+            <version>${version.teiid.spring-boot}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${version.org.codehaus.mojo.exec.plugin}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <classpathScope>test</classpathScope>
+                    <mainClass>org.teiid.spring.data.util.Main</mainClass>
+                    <arguments>
+                        <argument>build/conf/connection_factories.json</argument>
+                    </arguments>
+                    <cleanupDaemonThreads>false</cleanupDaemonThreads>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
