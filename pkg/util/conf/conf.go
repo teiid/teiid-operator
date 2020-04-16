@@ -58,10 +58,10 @@ type PrometheusConfig struct {
 func GetConfiguration() Configuration {
 
 	log := logs.GetLogger("configuration")
-	rootDirectory := ""
 
+	rootDirectory := ""
 	_, filename, _, _ := runtime.Caller(0)
-	if idx := strings.Index(filename, "/pkg/"); idx != -1 {
+	if idx := strings.Index(filename, "/pkg/"); idx != -1 && !strings.HasPrefix(filename, "teiid-operator") {
 		rootDirectory = filename[:idx]
 	}
 

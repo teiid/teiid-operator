@@ -29,17 +29,20 @@ type DatasourceInfo struct {
 
 // Tokenize --
 func Tokenize(ddl string) []string {
-	a := regexp.MustCompile(";")
-
-	lines := a.Split(ddl, -1)
-	return lines
+	regEx := "(?is)\\w('[^']*'|\"[^\"]*\"|[^'\";])*;"
+	var compRegEx *regexp.Regexp
+	compRegEx = regexp.MustCompile(regEx)
+	matches := compRegEx.FindAllString(ddl, -1)
+	return matches
 }
 
 // ParseDataSourcesInfoFromDdl --
 func ParseDataSourcesInfoFromDdl(ddl string) []DatasourceInfo {
 
 	var sources []DatasourceInfo
-	regEx := "CREATE\\s+SERVER\\s+(\\S+){1}\\s+(TYPE\\s+\\S+\\s+)??FOREIGN\\s+DATA\\s+WRAPPER\\s+(\\S+){1}.*"
+	id := "(\\w+|(?:\"[^\"]*\")|()'[^']*'+)"
+	regEx := "CREATE\\s+SERVER\\s+" + id + "\\s+(TYPE\\s+" + id + "\\s+)??FOREIGN\\s+DATA\\s+WRAPPER\\s+" + id
+
 	var compRegEx *regexp.Regexp
 	compRegEx = regexp.MustCompile(regEx)
 
@@ -50,10 +53,17 @@ func ParseDataSourcesInfoFromDdl(ddl string) []DatasourceInfo {
 		if ok, _ := regexp.Match(regEx, []byte(line)); ok {
 			match := compRegEx.FindStringSubmatch(line)
 			sources = append(sources, DatasourceInfo{
-				Name: strings.ToLower(match[1]),
-				Type: strings.ToLower(match[3]),
+				Name: stripQuotes(match[1]),
+				Type: stripQuotes(match[6]),
 			})
 		}
 	}
 	return sources
+}
+
+func stripQuotes(s string) string {
+	if strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"") {
+		return strings.ToLower(s[1 : len(s)-1])
+	}
+	return strings.ToLower(s)
 }

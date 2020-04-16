@@ -96,7 +96,8 @@ func findConfiguredProperties(name string, configured []v1alpha1.DataSourceObjec
 }
 
 func envReady(v string) string {
-	return strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(v, ".", "_"), "-", "_"))
+	str := strings.ToUpper(strings.ReplaceAll(strings.ReplaceAll(v, ".", "_"), "-", "_"))
+	return str
 }
 
 func sanitizeName(v string) string {

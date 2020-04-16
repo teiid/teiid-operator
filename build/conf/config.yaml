@@ -13,7 +13,6 @@ drivers:
   h2: 1.4.200
   postgresql: 42.2.8
   mysql: 5.1.40
-  mongodb: 3.6.3
   narayana: 2.1.0
   athena: 2.0.2
   db2: 11.5.0.0

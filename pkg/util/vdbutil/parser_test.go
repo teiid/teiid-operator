@@ -26,24 +26,17 @@ func TestTokenizer(t *testing.T) {
 	var ddl = "foo;bar;"
 
 	lines := Tokenize(ddl)
-	assert.Equal(t, "foo", lines[0])
-	assert.Equal(t, "bar", lines[1])
+	assert.Equal(t, "foo;", lines[0])
+	assert.Equal(t, "bar;", lines[1])
 }
-
-// TODO: fix
-// func TestTokenizer2(t *testing.T) {
-// 	var ddl = "foo;\"foo;bar\";"
-
-// 	lines := Tokenize(ddl)
-// 	assert.Equal(t, "foo", lines[0])
-// 	assert.Equal(t, "foo;bar", lines[1])
-// }
 
 func TestDS(t *testing.T) {
 	var ddl = `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 	USE DATABASE customer;
 
-	CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;
+	CREATE SERVER sampledb TYPE "NONE" FOREIGN DATA WRAPPER postgresql;
+
+	CREATE SERVER mongo TYPE 'NONE' FOREIGN DATA WRAPPER mongodb;
 
 	CREATE SCHEMA accounts SERVER sampledb;
 	CREATE VIRTUAL SCHEMA portfolio;`
@@ -52,6 +45,10 @@ func TestDS(t *testing.T) {
 
 	assert.Equal(t, "sampledb", sources[0].Name)
 	assert.Equal(t, "postgresql", sources[0].Type)
+
+	assert.Equal(t, "mongo", sources[1].Name)
+	assert.Equal(t, "mongodb", sources[1].Type)
+
 }
 
 func TestDS2(t *testing.T) {
@@ -59,10 +56,11 @@ func TestDS2(t *testing.T) {
 	ddl := `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
 	USE DATABASE customer;
 
-	CREATE SERVER sampledb FOREIGN DATA WRAPPER postgresql 
+	CREATE SERVER sampledb 
+		FOREIGN DATA WRAPPER postgresql 
 		OPTIONS( foo 'bar');
 
-	CREATE SERVER mongo FOREIGN DATA WRAPPER mongodb;
+	CREATE SERVER "mongo" FOREIGN DATA WRAPPER mongodb;
 
 	CREATE SCHEMA accounts SERVER sampledb;
 	CREATE VIRTUAL SCHEMA portfolio;`
