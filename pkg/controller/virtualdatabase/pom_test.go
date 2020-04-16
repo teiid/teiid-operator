@@ -23,6 +23,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/conf"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	"gopkg.in/yaml.v2"
@@ -67,4 +69,31 @@ func hasDependency(project maven.Project, groupID string, artifactID string) boo
 		}
 	}
 	return false
+}
+
+func TestMinimalGavPomGeneration(t *testing.T) {
+	contents, _ := ioutil.ReadFile("../../../deploy/crds/vdb_from_ddl.yaml")
+	var vdb v1alpha1.VirtualDatabase
+	err := yaml.Unmarshal(contents, &vdb)
+	assert.Nil(t, err)
+
+	dsInfo := vdbutil.ParseDataSourcesInfoFromDdl(vdb.Spec.Build.Source.DDL)
+	dsInfo = append(dsInfo, vdbutil.DatasourceInfo{
+		Name: "foo",
+		Type: "foo",
+	})
+
+	constants.ConnectionFactories["foo"] = conf.ConnectionFactory{
+		Name:           "foo",
+		TranslatorName: "bar",
+	}
+
+	project, err := GenerateVdbPom(&vdb, dsInfo, false, false)
+	assert.Nil(t, err)
+	assert.True(t, hasDependency(project, "org.postgresql", "postgresql"))
+	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
+	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
+	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-odata"))
+	assert.True(t, hasDependency(project, "me.snowdrop", "narayana-spring-boot-starter"))
 }

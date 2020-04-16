@@ -8,8 +8,6 @@ require (
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/spec v0.19.4
 	github.com/go-openapi/validate v0.19.5 // indirect
-	github.com/google/go-containerregistry v0.0.0-20200313165449-955bf358a3d8 // indirect
-	github.com/google/martian v2.1.0+incompatible
 	github.com/hetesiistvan/go-pkcs12 v0.0.0-20191008101753-f02f3241080a
 	github.com/jaegertracing/jaeger-operator v1.16.0
 	github.com/magiconair/properties v1.8.1
@@ -21,15 +19,15 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
 	go.uber.org/zap v1.10.0
+	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 // indirect
 	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933 // indirect
 	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
+	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
 	gopkg.in/yaml.v2 v2.2.7
 	k8s.io/api v0.17.4
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
-	knative.dev/pkg v0.0.0-20200317162206-42d1b005c814 // indirect
-	knative.dev/serving v0.13.0 // indirect
 	sigs.k8s.io/controller-runtime v0.4.0
 )
 

@@ -32,7 +32,6 @@ type ConnectionFactory struct {
 	TranslatorName           string   `json:"translatorName,omitempty"`
 	Dialect                  string   `json:"dialect,omitempty"`
 	Gav                      []string `json:"gav,omitempty"`
-	SourceType               string   `json:"sourceType,omitempty"`
 	SpringBootPropertyPrefix string   `json:"springBootPropertyPrefix,omitempty"`
 }
 
