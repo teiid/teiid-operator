@@ -7,7 +7,8 @@
       "translatorName" : "actian-vector",
       "dialect" : "org.hibernate.dialect.Ingres10Dialect",
       "gav" : [ "com.ingres.jdbc:iijdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "amazon-athena" : {
       "name" : "amazon-athena",
@@ -16,7 +17,8 @@
       "translatorName" : "jdbc-ansi",
       "dialect" : null,
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "amazon-s3" : {
       "name" : "amazon-s3",
@@ -25,7 +27,8 @@
       "translatorName" : "amazon-s3",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-amazon-s3" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.amazon-s3"
+      "springBootPropertyPrefix" : "spring.teiid.data.amazon-s3",
+      "jdbc" : false
     },
     "db2" : {
       "name" : "db2",
@@ -33,8 +36,9 @@
       "datasourceNames" : [ "com.ibm.db2.jcc.DB2XADataSource" ],
       "translatorName" : "db2",
       "dialect" : "org.hibernate.dialect.DB2Dialect",
-      "gav" : [ "com.ibm.db2.jcc:db2jcc4" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "derby" : {
       "name" : "derby",
@@ -43,7 +47,8 @@
       "translatorName" : "derby",
       "dialect" : "org.hibernate.dialect.DerbyTenSevenDialect",
       "gav" : [ "org.apache.derby:derbyclient" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "exasol" : {
       "name" : "exasol",
@@ -52,7 +57,8 @@
       "translatorName" : "exasol",
       "dialect" : null,
       "gav" : [ "com.exasol:exasol-jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "excel" : {
       "name" : "excel",
@@ -61,7 +67,8 @@
       "translatorName" : "excel",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-excel" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.excel"
+      "springBootPropertyPrefix" : "spring.teiid.data.excel",
+      "jdbc" : false
     },
     "file" : {
       "name" : "file",
@@ -70,7 +77,8 @@
       "translatorName" : "file",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-file" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.file"
+      "springBootPropertyPrefix" : "spring.teiid.data.file",
+      "jdbc" : false
     },
     "ftp" : {
       "name" : "ftp",
@@ -79,7 +87,8 @@
       "translatorName" : "ftp",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-ftp" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.ftp"
+      "springBootPropertyPrefix" : "spring.teiid.data.ftp",
+      "jdbc" : false
     },
     "google-spreadsheet" : {
       "name" : "google-spreadsheet",
@@ -88,7 +97,8 @@
       "translatorName" : "google-spreadsheet",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-google-spreadsheet" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.google-spreadsheet"
+      "springBootPropertyPrefix" : "spring.teiid.data.google-spreadsheet",
+      "jdbc" : false
     },
     "h2" : {
       "name" : "h2",
@@ -97,7 +107,8 @@
       "translatorName" : "h2",
       "dialect" : "org.hibernate.dialect.H2Dialect",
       "gav" : [ "com.h2database:h2" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "hana" : {
       "name" : "hana",
@@ -106,7 +117,8 @@
       "translatorName" : "hana",
       "dialect" : "org.hibernate.dialect.HANARowStoreDialect",
       "gav" : [ "com.sap.cloud.db.jdbc:ngdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "hbase" : {
       "name" : "hbase",
@@ -115,7 +127,8 @@
       "translatorName" : "hbase",
       "dialect" : null,
       "gav" : [ "org.apache.phoenix:phoenix-queryserver-client" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "hive" : {
       "name" : "hive",
@@ -124,7 +137,8 @@
       "translatorName" : "hive",
       "dialect" : null,
       "gav" : [ "org.apache.hive:hive-jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "hsql" : {
       "name" : "hsql",
@@ -133,7 +147,8 @@
       "translatorName" : "hsql",
       "dialect" : "org.hibernate.dialect.HSQLDialect",
       "gav" : [ "org.hsqldb:hsqldb" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "impala" : {
       "name" : "impala",
@@ -142,7 +157,8 @@
       "translatorName" : "impala",
       "dialect" : null,
       "gav" : [ "com.cloudera.impala:jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "infinispan-hotrod" : {
       "name" : "infinispan-hotrod",
@@ -151,7 +167,8 @@
       "translatorName" : "infinispan-hotrod",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-infinispan-hotrod" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.infinispan-hotrod"
+      "springBootPropertyPrefix" : "spring.teiid.data.infinispan-hotrod",
+      "jdbc" : false
     },
     "informix" : {
       "name" : "informix",
@@ -160,7 +177,8 @@
       "translatorName" : "informix",
       "dialect" : "org.hibernate.dialect.InformixDialect",
       "gav" : [ "com.ibm.informix:jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "ingres" : {
       "name" : "ingres",
@@ -169,7 +187,8 @@
       "translatorName" : "ingres",
       "dialect" : "org.hibernate.dialect.Ingres10Dialect",
       "gav" : [ "com.ingres.jdbc:iijdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "jdbc-ansi" : {
       "name" : "jdbc-ansi",
@@ -178,7 +197,8 @@
       "translatorName" : "jdbc-ansi",
       "dialect" : null,
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "jdbc-simple" : {
       "name" : "jdbc-simple",
@@ -187,7 +207,8 @@
       "translatorName" : "jdbc-simple",
       "dialect" : null,
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "jtds" : {
       "name" : "jtds",
@@ -196,7 +217,8 @@
       "translatorName" : "sqlserver",
       "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
       "gav" : [ "net.sourceforge.jtds:jtds" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "mongodb" : {
       "name" : "mongodb",
@@ -205,7 +227,8 @@
       "translatorName" : "mongodb",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-mongodb" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.mongodb"
+      "springBootPropertyPrefix" : "spring.teiid.data.mongodb",
+      "jdbc" : false
     },
     "mssql-server" : {
       "name" : "mssql-server",
@@ -214,7 +237,8 @@
       "translatorName" : "sqlserver",
       "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
       "gav" : [ "com.microsoft.sqlserver:mssql-jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "mysql" : {
       "name" : "mysql",
@@ -223,7 +247,8 @@
       "translatorName" : "mysql5",
       "dialect" : "org.hibernate.dialect.MySQL5InnoDBDialect",
       "gav" : [ "mysql:mysql-connector-java" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "netezza" : {
       "name" : "netezza",
@@ -232,7 +257,8 @@
       "translatorName" : "netezza",
       "dialect" : null,
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "odata" : {
       "name" : "odata",
@@ -241,7 +267,8 @@
       "translatorName" : "odata",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-odata" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.odata"
+      "springBootPropertyPrefix" : "spring.teiid.data.odata",
+      "jdbc" : false
     },
     "odata4" : {
       "name" : "odata4",
@@ -250,7 +277,8 @@
       "translatorName" : "odata4",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-odata4" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.odata4"
+      "springBootPropertyPrefix" : "spring.teiid.data.odata4",
+      "jdbc" : false
     },
     "openapi" : {
       "name" : "openapi",
@@ -259,7 +287,8 @@
       "translatorName" : "openapi",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-openapi" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.openapi"
+      "springBootPropertyPrefix" : "spring.teiid.data.openapi",
+      "jdbc" : false
     },
     "oracle" : {
       "name" : "oracle",
@@ -268,7 +297,8 @@
       "translatorName" : "oracle",
       "dialect" : "org.hibernate.dialect.Oracle12cDialect",
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "osisoft-pi" : {
       "name" : "osisoft-pi",
@@ -277,7 +307,8 @@
       "translatorName" : "osisoft-pi",
       "dialect" : null,
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "phoenix" : {
       "name" : "phoenix",
@@ -286,7 +317,8 @@
       "translatorName" : "phoenix",
       "dialect" : null,
       "gav" : [ "org.apache.phoenix:phoenix-queryserver-client" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "postgresql" : {
       "name" : "postgresql",
@@ -295,7 +327,8 @@
       "translatorName" : "postgresql",
       "dialect" : "org.hibernate.dialect.PostgreSQL9Dialect",
       "gav" : [ "org.postgresql:postgresql" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "prestodb" : {
       "name" : "prestodb",
@@ -304,7 +337,8 @@
       "translatorName" : "prestodb",
       "dialect" : null,
       "gav" : [ "com.facebook.presto:presto-jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "redshift" : {
       "name" : "redshift",
@@ -313,7 +347,8 @@
       "translatorName" : "redshift",
       "dialect" : null,
       "gav" : [ "com.amazon.redshift:redshift-jdbc42" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "rest" : {
       "name" : "rest",
@@ -322,7 +357,8 @@
       "translatorName" : "rest",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-rest" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.rest"
+      "springBootPropertyPrefix" : "spring.teiid.data.rest",
+      "jdbc" : false
     },
     "salesforce" : {
       "name" : "salesforce",
@@ -331,7 +367,8 @@
       "translatorName" : "salesforce",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-salesforce" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.salesforce"
+      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
+      "jdbc" : false
     },
     "sap-gateway" : {
       "name" : "sap-gateway",
@@ -340,7 +377,8 @@
       "translatorName" : "sap-gateway",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-sap-gateway" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.sap-gateway"
+      "springBootPropertyPrefix" : "spring.teiid.data.sap-gateway",
+      "jdbc" : false
     },
     "soap" : {
       "name" : "soap",
@@ -349,7 +387,8 @@
       "translatorName" : "ws",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-soap" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.soap"
+      "springBootPropertyPrefix" : "spring.teiid.data.soap",
+      "jdbc" : false
     },
     "spaiq" : {
       "name" : "spaiq",
@@ -358,7 +397,8 @@
       "translatorName" : "sap-iq",
       "dialect" : null,
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "sqlserver" : {
       "name" : "sqlserver",
@@ -367,7 +407,8 @@
       "translatorName" : "sqlserver",
       "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
       "gav" : [ "com.microsoft.sqlserver:mssql-jdbc" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "swagger" : {
       "name" : "swagger",
@@ -376,7 +417,8 @@
       "translatorName" : "swagger",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-openapi" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.swagger"
+      "springBootPropertyPrefix" : "spring.teiid.data.swagger",
+      "jdbc" : false
     },
     "sybase" : {
       "name" : "sybase",
@@ -385,7 +427,8 @@
       "translatorName" : "sybase",
       "dialect" : "org.hibernate.dialect.SybaseDialect",
       "gav" : null,
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "teiid" : {
       "name" : "teiid",
@@ -393,8 +436,9 @@
       "datasourceNames" : [ ],
       "translatorName" : "teiid",
       "dialect" : "org.teiid.dialect.TeiidDialect",
-      "gav" : [ "org.teiid:teiid" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "gav" : null,
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "teradata" : {
       "name" : "teradata",
@@ -403,7 +447,8 @@
       "translatorName" : "teradata",
       "dialect" : "org.hibernate.dialect.Teradata14Dialect",
       "gav" : [ "com.teradata.jdbc:terajdbc4" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "ucanaccess" : {
       "name" : "ucanaccess",
@@ -412,7 +457,8 @@
       "translatorName" : "ucanaccess",
       "dialect" : null,
       "gav" : [ "net.sf.ucanaccess:ucanaccess" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "vertica" : {
       "name" : "vertica",
@@ -421,7 +467,8 @@
       "translatorName" : "vertica",
       "dialect" : null,
       "gav" : [ "org.clojars.erp12:jdbc-vertica" ],
-      "springBootPropertyPrefix" : "spring.datasource"
+      "springBootPropertyPrefix" : "spring.datasource",
+      "jdbc" : true
     },
     "ws" : {
       "name" : "ws",
@@ -430,7 +477,8 @@
       "translatorName" : "ws",
       "dialect" : null,
       "gav" : [ "org.teiid:spring-data-soap" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.ws"
+      "springBootPropertyPrefix" : "spring.teiid.data.ws",
+      "jdbc" : false
     }
   }
 }

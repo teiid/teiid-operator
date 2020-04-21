@@ -25,6 +25,7 @@ import (
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/conf"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
@@ -32,14 +33,16 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func addDependency(project *maven.Project, sourceType string, dependencies []string) error {
-	for _, gav := range dependencies {
+func addDependency(project *maven.Project, sourceType string, cf conf.ConnectionFactory) error {
+	for _, gav := range cf.Gav {
 		dependency, err := maven.ParseGAV(gav)
 		if err != nil {
 			return err
 		}
 		if dependency.Version == "" && constants.Config.Drivers[sourceType] != "" {
 			dependency.Version = constants.Config.Drivers[sourceType]
+		} else if dependency.Version == "" && constants.Config.Drivers[sourceType] == "" && cf.JdbcSource {
+			continue
 		} else if dependency.Version == "" && strings.HasPrefix(dependency.GroupID, "org.teiid") {
 			dependency.Version = constants.Config.TeiidSpringBootVersion
 		} else {
@@ -73,14 +76,14 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 
 	if includeAllDependencies {
 		for k, v := range constants.ConnectionFactories {
-			if err := addDependency(&project, k, v.Gav); err != nil {
+			if err := addDependency(&project, k, v); err != nil {
 				return project, err
 			}
 		}
 	} else {
 		for _, s := range sources {
 			if v, ok := constants.ConnectionFactories[s.Type]; ok {
-				if err := addDependency(&project, s.Type, v.Gav); err != nil {
+				if err := addDependency(&project, s.Type, v); err != nil {
 					return project, err
 				}
 			} else {
