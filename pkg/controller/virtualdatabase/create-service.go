@@ -99,8 +99,8 @@ func (action *createServiceAction) createService(vdb *v1alpha1.VirtualDatabase,
 		servicePorts = append(servicePorts, corev1.ServicePort{
 			Name:       port.Name,
 			Protocol:   port.Protocol,
-			Port:       port.ContainerPort,
-			TargetPort: getTargetPort(port),
+			Port:       getExposedPort(port),
+			TargetPort: intstr.FromInt(int(port.ContainerPort)),
 		},
 		)
 	}
