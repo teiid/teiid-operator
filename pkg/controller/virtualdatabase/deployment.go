@@ -164,14 +164,14 @@ func findSecret(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*co
 	return &obj, err
 }
 
-func getTargetPort(port corev1.ContainerPort) intstr.IntOrString {
-	p := int(port.ContainerPort)
+func getExposedPort(port corev1.ContainerPort) int32 {
+	p := int32(port.ContainerPort)
 	if p == 35443 {
 		p = 5433
 	} else if p == 35432 {
 		p = 5432
 	}
-	return intstr.FromInt(p)
+	return p
 }
 
 func (action *deploymentAction) isDeploymentInReadyState(dc appsv1.Deployment) bool {
