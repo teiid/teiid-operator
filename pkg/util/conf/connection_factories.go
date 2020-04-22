@@ -33,6 +33,7 @@ type ConnectionFactory struct {
 	Dialect                  string   `json:"dialect,omitempty"`
 	Gav                      []string `json:"gav,omitempty"`
 	SpringBootPropertyPrefix string   `json:"springBootPropertyPrefix,omitempty"`
+	JdbcSource               bool     `json:"jdbc,omitempty"`
 }
 
 // ConnectionFactoryList --

@@ -31,13 +31,14 @@ func TestConnectionFactories(t *testing.T) {
 	factories := loadConnectionFactories(contents)
 
 	sample := ConnectionFactory{
-		Name:                     "db2",
-		DriverNames:              []string{"com.ibm.db2.jcc.DB2Driver"},
-		TranslatorName:           "db2",
-		Dialect:                  "org.hibernate.dialect.DB2Dialect",
-		Gav:                      []string{"com.ibm.db2.jcc:db2jcc4"},
+		Name:                     "h2",
+		DriverNames:              []string{"org.h2.Driver"},
+		TranslatorName:           "h2",
+		Dialect:                  "org.hibernate.dialect.H2Dialect",
+		Gav:                      []string{"com.h2database:h2"},
 		SpringBootPropertyPrefix: "spring.datasource",
+		JdbcSource:               true,
 	}
 	assert.NotNil(t, factories)
-	assert.Equal(t, sample, factories["db2"])
+	assert.Equal(t, sample, factories["h2"])
 }

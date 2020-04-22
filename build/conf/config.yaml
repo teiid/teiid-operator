@@ -15,7 +15,6 @@ drivers:
   mysql: 5.1.40
   narayana: 2.1.0
   athena: 2.0.2
-  db2: 11.5.0.0
   hana: 2.4.70
   hbase: 4.14.3-HBase-1.4
   hive: 3.1.2
