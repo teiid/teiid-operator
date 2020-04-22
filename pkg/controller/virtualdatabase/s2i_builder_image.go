@@ -225,7 +225,7 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 
 	files := map[string]string{}
 
-	pom, err := GenerateVdbPom(vdbCopy, vdbutil.ParseDataSourcesInfoFromDdl(vdbCopy.Spec.Build.Source.DDL), true, true)
+	pom, err := GenerateVdbPom(vdbCopy, vdbutil.ParseDataSourcesInfoFromDdl(vdbCopy.Spec.Build.Source.DDL), true, true, true)
 	if err != nil {
 		return err
 	}
@@ -238,7 +238,7 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 	}
 	addCopyPlugIn(jarDependency, "jar", "app.jar", "/tmp", &pom)
 
-	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl")
+	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", false)
 	pomContent, err := maven.EncodeXML(pom)
 	if err != nil {
 		return err

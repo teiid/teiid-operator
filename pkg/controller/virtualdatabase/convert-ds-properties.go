@@ -41,7 +41,11 @@ func DeploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDa
 	if err != nil {
 		return nil, err
 	}
-	return envvar.Combine(r.vdbContext.Env, dataSourceConfig), nil
+	defaultEnvs := getDefaultEnvs(vdb.Spec.Env)
+	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
+		defaultEnvs = envvar.Combine(defaultEnvs, getDefaultJaegerEnvs(vdb.ObjectMeta.Name))
+	}
+	return envvar.Combine(defaultEnvs, dataSourceConfig), nil
 }
 
 func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sourcesFromDdl []vdbutil.DatasourceInfo) ([]corev1.EnvVar, error) {

@@ -20,6 +20,8 @@ spec:
             - teiid-operator
           imagePullPolicy: Always
           env:
+            - name: DEBUG
+              value: "true"
             - name: WATCH_NAMESPACE
               valueFrom:
                 fieldRef:

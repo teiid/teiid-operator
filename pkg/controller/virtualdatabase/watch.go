@@ -19,6 +19,7 @@ package virtualdatabase
 
 import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	ispn "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
 	oappsv1 "github.com/openshift/api/apps/v1"
 	obuildv1 "github.com/openshift/api/build/v1"
 	oimagev1 "github.com/openshift/api/image/v1"
@@ -81,6 +82,12 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		return &ReconcileVirtualDatabase{}
 	}
 
+	ispnClient, err := ispn.NewForConfig(mgr.GetConfig())
+	if err != nil {
+		log.Errorf("Error getting Infinispan client: %v", err)
+		return &ReconcileVirtualDatabase{}
+	}
+
 	return &ReconcileVirtualDatabase{
 		client:           mgr.GetClient(),
 		scheme:           mgr.GetScheme(),
@@ -90,7 +97,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		prometheusClient: monitorClient,
 		jaegerClient:     jaegerClient,
 		kubeClient:       clientset,
-		vdbContext:       VdbContext{},
+		ispnClient:       ispnClient,
 	}
 }
 

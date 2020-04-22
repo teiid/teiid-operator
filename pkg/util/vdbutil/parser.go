@@ -61,6 +61,25 @@ func ParseDataSourcesInfoFromDdl(ddl string) []DatasourceInfo {
 	return sources
 }
 
+// HasMaterializationTags --
+func HasMaterializationTags(ddl string) bool {
+	materialization := "MATERIALIZED\\s+'TRUE'"
+	materializationTable := "MATERIALIZED_TABLE\\s+"
+
+	lines := Tokenize(ddl)
+	for _, line := range lines {
+		line = strings.ToUpper(line)
+
+		if ok, _ := regexp.Match(materialization, []byte(line)); ok {
+
+			if ok, _ := regexp.Match(materializationTable, []byte(line)); !ok {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func stripQuotes(s string) string {
 	if strings.HasPrefix(s, "\"") && strings.HasSuffix(s, "\"") {
 		return strings.ToLower(s[1 : len(s)-1])

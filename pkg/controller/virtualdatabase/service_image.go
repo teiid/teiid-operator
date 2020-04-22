@@ -317,17 +317,21 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		return files, err
 	}
 
+	// enquire if Infinispan based cache store is needed
+	vdbNeedsCacheStore := CacheStoreExists(ctx, vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r) && vdbutil.HasMaterializationTags(ddlStr)
+
 	//Binary build, generate the pom file
-	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI)
+	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI, vdbNeedsCacheStore)
 	if err != nil {
 		return files, err
 	}
+	vdbFile := "teiid.vdb-file=teiid.ddl"
 
 	if mavenVdb {
 		// vdb-code-gen plugin is finding the vdb.ddl file before the dependency
 		// or the .vdb file from the base image, this is way hard code to use the
 		// correct vdb file.
-		addVdbCodeGenPlugIn(&pom, "/tmp/teiid.vdb")
+		addVdbCodeGenPlugIn(&pom, "/tmp/teiid.vdb", vdbNeedsCacheStore)
 		// maven based vdb is given
 		vdbDependency, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
 		if err != nil {
@@ -338,9 +342,15 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		pom.AddDependencies(vdbDependency)
 		// configure pom.xml to copy the teiid.vdb into classpath
 		addCopyPlugIn(vdbDependency, "vdb", "teiid.vdb", "${project.build.outputDirectory}", &pom)
+		vdbFile = "teiid.vdb-file=teiid.vdb"
 	} else {
-		addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl")
+		addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", vdbNeedsCacheStore)
 		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
+	}
+
+	// if the materialization is in play then we have a new vdb file
+	if vdbNeedsCacheStore {
+		vdbFile = "teiid.vdb-file=materialized.ddl"
 	}
 
 	pomContent, err := maven.EncodeXML(pom)
@@ -362,7 +372,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 	files["/settings.xml"] = settingsContent
 	files["/pom.xml"] = pomContent
 	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
-	files["/src/main/resources/application.properties"] = applicationProperties(mavenVdb, vdb.ObjectMeta.Name)
+	files["/src/main/resources/application.properties"] = applicationProperties(vdbFile, vdb.ObjectMeta.Name)
 
 	return files, nil
 }
@@ -416,7 +426,7 @@ func (action *serviceImageAction) triggerBuild(bc obuildv1.BuildConfig, files ma
 	return nil
 }
 
-func applicationProperties(addVDB bool, vdbName string) string {
+func applicationProperties(vdbProperty string, vdbName string) string {
 	str := strings.Join([]string{
 		"logging.level.io.jaegertracing.internal.reporters=WARN",
 		"logging.level.i.j.internal.reporters.LoggingReporter=WARN",
@@ -438,10 +448,7 @@ func applicationProperties(addVDB bool, vdbName string) string {
 		"spring.application.name=" + vdbName,
 		"management.health.mongo.enabled=false",
 		"management.health.db.enabled=false",
+		vdbProperty,
 	}, "\n")
-
-	if addVDB {
-		strings.Join([]string{str, "teiid.vdb-file=teiid.vdb"}, "\n")
-	}
 	return str
 }

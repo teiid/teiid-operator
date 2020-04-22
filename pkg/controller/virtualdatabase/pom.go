@@ -54,7 +54,8 @@ func addDependency(project *maven.Project, sourceType string, cf conf.Connection
 }
 
 // GenerateVdbPom -- Generate the POM file based on the VDb provided
-func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceInfo, includeAllDependencies bool, includeOpenAPIAdependency bool) (maven.Project, error) {
+func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceInfo,
+	includeAllDependencies bool, includeOpenAPIAdependency bool, includeIspnDependency bool) (maven.Project, error) {
 	// do code generation.
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
@@ -96,6 +97,14 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 		project.AddDependencies(maven.Dependency{
 			GroupID:    "org.teiid",
 			ArtifactID: "spring-keycloak",
+			Version:    constants.Config.TeiidSpringBootVersion,
+		})
+	}
+
+	if includeIspnDependency {
+		project.AddDependencies(maven.Dependency{
+			GroupID:    "org.teiid",
+			ArtifactID: "spring-data-infinispan-hotrod",
 			Version:    constants.Config.TeiidSpringBootVersion,
 		})
 	}
@@ -180,7 +189,7 @@ func addCopyPlugIn(vdbDependency maven.Dependency, artifactType string, targetNa
 	project.AddBuildPlugin(plugin)
 }
 
-func addVdbCodeGenPlugIn(project *maven.Project, vdbName string) {
+func addVdbCodeGenPlugIn(project *maven.Project, vdbFilePath string, materializationEnable bool) {
 	plugin := maven.Plugin{
 		GroupID:    "org.teiid",
 		ArtifactID: "vdb-codegen-plugin",
@@ -193,7 +202,9 @@ func addVdbCodeGenPlugIn(project *maven.Project, vdbName string) {
 				ID:    "codegen",
 				Phase: "generate-sources",
 				Configuration: maven.Configuration{
-					VdbFile: vdbName,
+					VdbFile:               vdbFilePath,
+					MaterializationType:   "infinispan-hotrod",
+					MaterializationEnable: materializationEnable,
 				},
 			},
 		},

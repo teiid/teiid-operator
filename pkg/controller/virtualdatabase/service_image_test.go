@@ -25,7 +25,7 @@ import (
 )
 
 func TestApplicationsProperties(t *testing.T) {
-	assert.True(t, strings.Contains(applicationProperties(false, "foo"), "management.health.mongo.enabled=false"))
-	assert.True(t, strings.Contains(applicationProperties(false, "foo"), "management.health.db.enabled=false"))
-	assert.True(t, strings.Contains(applicationProperties(false, "foo"), "spring.application.name=foo"))
+	assert.True(t, strings.Contains(applicationProperties("foo", "foo"), "management.health.mongo.enabled=false"))
+	assert.True(t, strings.Contains(applicationProperties("foo", "foo"), "management.health.db.enabled=false"))
+	assert.True(t, strings.Contains(applicationProperties("foo", "foo"), "spring.application.name=foo"))
 }

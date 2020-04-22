@@ -23,12 +23,12 @@ import (
 	"time"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
+	ispn "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -41,11 +41,6 @@ import (
 var log = logs.GetLogger("virtualdatabase")
 var _ reconcile.Reconciler = &ReconcileVirtualDatabase{}
 
-// VdbContext --
-type VdbContext struct {
-	Env []corev1.EnvVar
-}
-
 // ReconcileVirtualDatabase reconciles a VirtualDatabase object
 type ReconcileVirtualDatabase struct {
 	// This client, initialized using mgr.Client() above, is a split client
@@ -57,8 +52,8 @@ type ReconcileVirtualDatabase struct {
 	buildClient      *buildv1client.BuildV1Client
 	prometheusClient monitoringv1.MonitoringV1Interface
 	jaegerClient     *otclient.JaegertracingV1Client
+	ispnClient       *ispn.InfinispanV1Client
 	kubeClient       kubernetes.Interface
-	vdbContext       VdbContext
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read

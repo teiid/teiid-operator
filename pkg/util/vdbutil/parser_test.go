@@ -74,3 +74,56 @@ func TestDS2(t *testing.T) {
 	assert.Equal(t, "mongodb", sources[1].Type)
 
 }
+
+func TestMaterialized(t *testing.T) {
+
+	ddl := `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
+	USE DATABASE customer;
+
+	CREATE VIRTUAL SCHEMA portfolio;
+	CREATE VIEW vix (
+		"date" date primary key,
+		"open" double, 
+		"high" double,
+		"low" double,
+		"close" double,
+		MA10 double
+	) OPTIONS (
+		MATERIALIZED 'TRUE',
+		"teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true',
+		"teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber',
+		"teiid_rel:MATVIEW_STATUS_TABLE" 'vix_mat.status'
+	) AS 
+		select t.*, AVG("close") OVER (ORDER BY "date" ASC ROWS 9 PRECEDING) AS MA10 from 
+		  (call vix_source.invokeHttp(action=>'GET', endpoint=>'https://datahub.io/core/finance-vix/r/vix-daily.csv')) w, 
+		  texttable(to_chars(w.result, 'ascii') COLUMNS "date" date, "open" HEADER 'Vix Open' double, "high" HEADER 'Vix High' double, "low" HEADER 'Vix Low' double, "close" HEADER 'Vix Close' double HEADER) t;	
+	`
+	assert.True(t, HasMaterializationTags(ddl))
+}
+
+func TestNotMaterialized(t *testing.T) {
+
+	ddl := `CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
+	USE DATABASE customer;
+
+	CREATE VIRTUAL SCHEMA portfolio;
+	CREATE VIEW vix (
+		"date" date primary key,
+		"open" double, 
+		"high" double,
+		"low" double,
+		"close" double,
+		MA10 double
+	) OPTIONS (
+		MATERIALIZED 'TRUE',
+		MATERIALIZED_TABLE 'vix_mat.vixcache',
+		"teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true',
+		"teiid_rel:MATVIEW_LOADNUMBER_COLUMN" 'LoadNumber',
+		"teiid_rel:MATVIEW_STATUS_TABLE" 'vix_mat.status'
+	) AS 
+		select t.*, AVG("close") OVER (ORDER BY "date" ASC ROWS 9 PRECEDING) AS MA10 from 
+		  (call vix_source.invokeHttp(action=>'GET', endpoint=>'https://datahub.io/core/finance-vix/r/vix-daily.csv')) w, 
+		  texttable(to_chars(w.result, 'ascii') COLUMNS "date" date, "open" HEADER 'Vix Open' double, "high" HEADER 'Vix High' double, "low" HEADER 'Vix Low' double, "close" HEADER 'Vix Close' double HEADER) t;	
+	`
+	assert.False(t, HasMaterializationTags(ddl))
+}
