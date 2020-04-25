@@ -43,7 +43,7 @@ func TestSpringProperties(t *testing.T) {
 
 	datasources := []v1alpha1.DataSourceObject{
 		{
-			Name: "dg",
+			Name: "cacheStore",
 			Type: "infinispan-hotrod",
 			Properties: []corev1.EnvVar{
 				{
@@ -77,7 +77,7 @@ func TestSpringProperties(t *testing.T) {
 			Type: "postgresql",
 		},
 		{
-			Name: "dg",
+			Name: "cacheStore",
 			Type: "infinispan-hotrod",
 		},
 	}
@@ -87,8 +87,8 @@ func TestSpringProperties(t *testing.T) {
 
 	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
 	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
-	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_DG_URL", "localhost:11222", envs)
-	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_DG_IMPORTER_PROTOBUF_NAME", "accounts.proto", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_INFINISPANHOTROD_CACHESTORE_URL", "localhost:11222", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_INFINISPANHOTROD_CACHESTORE_IMPORTER_PROTOBUF_NAME", "accounts.proto", envs)
 }
 
 func TestUpperCase(t *testing.T) {
@@ -172,11 +172,11 @@ func TestSoapProperties(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, 6, len(envs))
-	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_WSDL", "http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_WSDL", "http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL", envs)
 	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
-	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_END_POINT_NAME", "CountryInfoServiceSoap12", envs)
-	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_SERVICE_NAME", "CountryInfoService", envs)
-	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAP_COUNTRY_NAMESPACE_URI", "http://www.oorsprong.org/websamples.countryinfo", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_END_POINT_NAME", "CountryInfoServiceSoap12", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_SERVICE_NAME", "CountryInfoService", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_NAMESPACE_URI", "http://www.oorsprong.org/websamples.countryinfo", envs)
 	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
 }
 
@@ -210,8 +210,8 @@ func TestCustom(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, len(envs))
-	assertEnv(t, "SPRING_TEIID_DATA_CUSTOM_MY_CUSTOM_K1", "v1", envs)
-	assertEnv(t, "SPRING_TEIID_DATA_CUSTOM_MY_CUSTOM_K2", "v2", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_CUSTOM_MYCUSTOM_K1", "v1", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_CUSTOM_MYCUSTOM_K2", "v2", envs)
 }
 
 func assertEnv(t *testing.T, name, expected string, envs []corev1.EnvVar) {
@@ -232,4 +232,8 @@ func assertEnvFromSource(t *testing.T, name string, expected *corev1.EnvVarSourc
 		}
 	}
 	assert.Fail(t, "none matched")
+}
+
+func TestRemoveDash(t *testing.T) {
+	assert.Equal(t, "foobar", removeDash("foo-bar"))
 }

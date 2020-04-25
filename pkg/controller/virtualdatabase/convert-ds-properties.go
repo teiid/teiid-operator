@@ -23,6 +23,7 @@ import (
 	"unicode"
 
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/cachestore"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	corev1 "k8s.io/api/core/v1"
@@ -45,6 +46,9 @@ func DeploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDa
 	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
 		defaultEnvs = envvar.Combine(defaultEnvs, getDefaultJaegerEnvs(vdb.ObjectMeta.Name))
 	}
+	if vdb.Status.CacheStore != "" {
+		defaultEnvs = envvar.Combine(defaultEnvs, cachestore.CredentialsAsEnv(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client))
+	}
 	return envvar.Combine(defaultEnvs, dataSourceConfig), nil
 }
 
@@ -54,7 +58,7 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 	for _, source := range sourcesFromDdl {
 		prefix := "SPRING_DATASOURCE"
 
-		datasourceName := sanitizeName(source.Name)
+		datasourceName := sanitizeName(removeDash(strings.ToLower(source.Name)))
 		configuredSource, err := findConfiguredProperties(source.Name, sourcesConfigured)
 		if err != nil {
 			log.Info(err)
@@ -67,10 +71,10 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 		}
 
 		if c, ok := constants.ConnectionFactories[strings.ToLower(source.Type)]; ok {
-			prefix = c.SpringBootPropertyPrefix
+			prefix = removeDash(strings.ToLower(c.SpringBootPropertyPrefix))
 		} else {
 			// Custom translators must map to this property prefix
-			prefix = "spring.teiid.data." + strings.ToLower(source.Type)
+			prefix = "spring.teiid.data." + removeDash(strings.ToLower(source.Type))
 		}
 
 		// covert properties
@@ -137,4 +141,8 @@ func tokenizeAtUpperCase(str string) []string {
 		words = append(words, s[:l])
 	}
 	return words
+}
+
+func removeDash(str string) string {
+	return strings.ReplaceAll(str, "-", "")
 }

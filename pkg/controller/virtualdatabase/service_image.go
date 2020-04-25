@@ -24,6 +24,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/teiid/teiid-operator/pkg/util/cachestore"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
@@ -318,7 +319,11 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 	}
 
 	// enquire if Infinispan based cache store is needed
-	vdbNeedsCacheStore := CacheStoreExists(ctx, vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r) && vdbutil.HasMaterializationTags(ddlStr)
+	vdbNeedsCacheStore := cachestore.Exists(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client, r.ispnClient) && vdbutil.HasMaterializationTags(ddlStr)
+	if vdbNeedsCacheStore {
+		credentials, _ := cachestore.Credentials(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client)
+		vdb.Status.CacheStore = credentials.NameSpace + "/" + credentials.Name
+	}
 
 	//Binary build, generate the pom file
 	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI, vdbNeedsCacheStore)
