@@ -1,29 +1,25 @@
 module github.com/teiid/teiid-operator
 
 require (
+	github.com/RHsyseng/operator-utils v0.0.0-20200506183821-e3b4a2ba9c30
 	//github.com/Azure/go-autorest/autorest v0.9.3 // indirect
-	github.com/RHsyseng/operator-utils v0.0.0-20191024171829-7e918ca09e5e
-	github.com/coreos/prometheus-operator v0.34.0
+	github.com/coreos/prometheus-operator v0.35.1
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/logr v0.1.0
-	github.com/go-openapi/spec v0.19.4
-	github.com/go-openapi/validate v0.19.5 // indirect
+	github.com/go-openapi/spec v0.19.6
+	github.com/gobuffalo/packr/v2 v2.7.1
 	github.com/hetesiistvan/go-pkcs12 v0.0.0-20191008101753-f02f3241080a
 	github.com/jaegertracing/jaeger-operator v1.16.0
 	github.com/magiconair/properties v1.8.1
 	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
-	github.com/openshift/client-go v0.0.0-20190923180330-3b6373338c9b
+	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/operator-framework/operator-sdk v0.15.1
-	github.com/pkg/errors v0.8.1
+	github.com/pkg/errors v0.9.1
 	github.com/scylladb/go-set v1.0.2
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
-	go.uber.org/zap v1.10.0
-	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413 // indirect
-	golang.org/x/net v0.0.0-20191126235420-ef20fe5d7933 // indirect
-	golang.org/x/sys v0.0.0-20191128015809-6d18c012aee9 // indirect
-	golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898 // indirect
-	gopkg.in/yaml.v2 v2.2.7
+	go.uber.org/zap v1.13.0
+	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.4
 	k8s.io/apimachinery v0.17.4
 	k8s.io/client-go v12.0.0+incompatible
@@ -58,6 +54,8 @@ replace (
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by Helm
 
-replace github.com/openshift/api => github.com/openshift/api v0.0.0-20190924102528-32369d4db2ad // Required until https://github.com/operator-framework/operator-lifecycle-manager/pull/1241 is resolved
+replace github.com/openshift/api => github.com/openshift/api v0.0.0-20200205145930-e9d93e317dd1 // Required until https://github.com/operator-framework/operator-lifecycle-manager/pull/1241 is resolved
 
 go 1.13
+
+replace github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20191125132246-f6563a70e19a

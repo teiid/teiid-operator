@@ -3,6 +3,8 @@ build/_output
 build/_test
 .project
 .settings
+*-packr.go
+pkg/controller/virtualdatabase/packrd
 # Created by https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
 ### Emacs ###
 # -*- mode: gitignore; -*-

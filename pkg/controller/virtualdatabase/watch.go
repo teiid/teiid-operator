@@ -81,6 +81,12 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		return &ReconcileVirtualDatabase{}
 	}
 
+	if err := ConsoleYAMLSampleExists(); err == nil {
+		createConsoleYAMLSamples(mgr.GetClient())
+	} else {
+		log.Info("Yaml Samples", "Console YAML sample is not added:", err)
+	}
+
 	return &ReconcileVirtualDatabase{
 		client:           mgr.GetClient(),
 		scheme:           mgr.GetScheme(),

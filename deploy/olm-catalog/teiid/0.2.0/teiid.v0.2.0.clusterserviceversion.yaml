@@ -497,6 +497,17 @@ spec:
               verbs:
                 - update
           serviceAccountName: teiid-operator
+      clusterPermissions:
+        - rules:
+            - apiGroups:
+                - console.openshift.io
+              resources:
+                - consoleyamlsamples
+              verbs:
+                - create
+                - delete
+                - get
+          serviceAccountName: teiid-operator
     strategy: deployment
   installModes:
     - supported: true
