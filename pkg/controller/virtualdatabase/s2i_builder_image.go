@@ -78,7 +78,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 			return err
 		}
 		// set ownerreference for service BC only
-		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, opDeployment, r.imageClient, r.scheme); err != nil {
+		if _, err := image.EnsureImageStream(buildConfig.Name, vdb.ObjectMeta.Namespace, true, opDeployment, r.imageClient, r.client.GetScheme()); err != nil {
 			return err
 		}
 
@@ -99,7 +99,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 			log.Info("Creating a new BuildConfig ", buildConfig.Name, " in namespace ", buildConfig.Namespace)
 
 			// make the Operator as the owner
-			err := controllerutil.SetControllerReference(opDeployment, &buildConfig, r.scheme)
+			err := controllerutil.SetControllerReference(opDeployment, &buildConfig, r.client.GetScheme())
 			if err != nil {
 				log.Error(err)
 			}
@@ -180,7 +180,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	// check if the base image is found otherwise use from dockerhub, add to local images
 	if !image.CheckImageStream(imageName, isNamespace, r.imageClient) {
 		dockerImage := fmt.Sprintf("%s/%s/%s", bi.Registry, bi.ImagePrefix, bi.ImageName)
-		err := image.CreateImageStream(bi.ImageName, vdb.ObjectMeta.Namespace, dockerImage, bi.Tag, r.imageClient, r.scheme)
+		err := image.CreateImageStream(bi.ImageName, vdb.ObjectMeta.Namespace, dockerImage, bi.Tag, r.imageClient, r.client.GetScheme())
 		if err != nil {
 			return bc, err
 		}

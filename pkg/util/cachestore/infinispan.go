@@ -1,3 +1,5 @@
+package cachestore
+
 /*
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,16 +16,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package cachestore
 
 import (
 	"context"
-	"strconv"
 
-	ispn "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
+	infinispan "github.com/infinispan/infinispan-operator/pkg/apis/infinispan/v1"
+	ispnClient "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,18 +35,24 @@ import (
 
 var log = logs.GetLogger("cachestore")
 
+const (
+	// InfinispanOperatorName is the Infinispan Operator default name
+	InfinispanOperatorName = "infinispan-operator"
+	infinispanServerGroup  = "infinispan.org"
+	defaultInfinispanPort  = 11222
+)
+
 // InfinispanDetails --
 type InfinispanDetails struct {
-	Name              string `yaml:"name,omitempty"`
-	NameSpace         string `yaml:"namespace,omitempty"`
-	CreateIfNotExists bool   `yaml:"create,omitempty"`
-	User              string `yaml:"user,omitempty"`
-	Password          string `yaml:"password,omitempty"`
-	URL               string `yaml:"url,omitempty"`
+	Name      string `yaml:"name,omitempty"`
+	NameSpace string `yaml:"namespace,omitempty"`
+	User      string `yaml:"username,omitempty"`
+	Password  string `yaml:"password,omitempty"`
+	URL       string `yaml:"url,omitempty"`
 }
 
 // Exists -- check to so if the Infinispan CacheStore exists
-func Exists(vdbName string, vdbNamespace string, client k8sclient.Reader, ispnClient *ispn.InfinispanV1Client) bool {
+func Exists(vdbName string, vdbNamespace string, client k8sclient.Reader, ispnClient *ispnClient.InfinispanV1Client) bool {
 	ctx := context.TODO()
 	ispnSecret, err := kubernetes.GetSecret(ctx, client, vdbName+"-cache-store", vdbNamespace)
 	if err != nil {
@@ -101,17 +110,6 @@ func readInfinispanDetails(secret v1.Secret) InfinispanDetails {
 		details.URL = string(secret.Data["url"])
 	} else {
 		details.URL = secret.StringData["url"]
-	}
-
-	var err error
-	if secret.Data["create"] != nil {
-		details.CreateIfNotExists, err = strconv.ParseBool(string(secret.Data["create"]))
-	} else {
-		details.CreateIfNotExists, err = strconv.ParseBool(secret.StringData["create"])
-	}
-
-	if err != nil {
-		details.CreateIfNotExists = false
 	}
 
 	return details
@@ -177,11 +175,61 @@ func CredentialsAsEnv(vdbName string, vdbNamespace string, client k8sclient.Read
 }
 
 // HasInfinispan --
-func hasInfinispan(context context.Context, client *ispn.InfinispanV1Client, name string, namespace string) bool {
+func hasInfinispan(context context.Context, client *ispnClient.InfinispanV1Client, name string, namespace string) bool {
 	_, err := client.Infinispans(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return false
 	}
 	log.Info("Found Infinispan store ", name, " in namespace ", namespace)
 	return true
+}
+
+// IsInfinispanCRDAvailable checks whether Infinispan CRD is available or not
+func IsInfinispanCRDAvailable(cli teiidclient.Client) bool {
+	return kubernetes.HasServerGroup(cli, infinispanServerGroup)
+}
+
+// IsInfinispanOperatorAvailable verify if Infinispan Operator is running in the given namespace and the CRD is available
+func IsInfinispanOperatorAvailable(cli teiidclient.Client, namespace string) (bool, error) {
+	log.Debugf("Checking if Infinispan Operator is available in the namespace %s", namespace)
+	// first check for CRD
+	if IsInfinispanCRDAvailable(cli) {
+		log.Debugf("Infinispan CRDs available. Checking if Infinispan Operator is deployed in the namespace %s", namespace)
+		// then check if there's an Infinispan Operator deployed
+		deployment := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Namespace: namespace, Name: InfinispanOperatorName}}
+		exists := false
+		var err error
+		if exists, err = kubernetes.Resource(cli).Fetch(deployment); err != nil {
+			return false, nil
+		}
+		if exists {
+			log.Debugf("Infinispan Operator is available in the namespace %s", namespace)
+			return true, nil
+		}
+	} else {
+		log.Debug("Couldn't find Infinispan CRDs")
+	}
+	log.Debugf("Looks like Infinispan Operator is not available in the namespace %s", namespace)
+	return false, nil
+}
+
+// NewInfinispanResource --
+func NewInfinispanResource(namespace string, name string, secretName string, relicas int32) infinispan.Infinispan {
+	infinispanRes := infinispan.Infinispan{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: namespace,
+			Name:      name,
+		},
+		Spec: infinispan.InfinispanSpec{
+			Replicas: relicas,
+			// ignoring generating secrets for now: https://github.com/infinispan/infinispan-operator/issues/211
+			Security: infinispan.InfinispanSecurity{
+				EndpointSecretName: secretName,
+			},
+			Service: infinispan.InfinispanServiceSpec{
+				Type: infinispan.ServiceTypeDataGrid,
+			},
+		},
+	}
+	return infinispanRes
 }

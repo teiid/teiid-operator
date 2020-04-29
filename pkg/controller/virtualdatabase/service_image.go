@@ -80,7 +80,7 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 	}
 
 	// Define new BuildConfig objects
-	if _, err := image.EnsureImageStream(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, true, vdb, r.imageClient, r.scheme); err != nil {
+	if _, err := image.EnsureImageStream(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, true, vdb, r.imageClient, r.client.GetScheme()); err != nil {
 		return err
 	}
 
@@ -93,7 +93,7 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 		if err != nil {
 			return err
 		}
-		err = controllerutil.SetControllerReference(vdb, &buildConfig, r.scheme)
+		err = controllerutil.SetControllerReference(vdb, &buildConfig, r.client.GetScheme())
 		if err != nil {
 			log.Error(err)
 		}
@@ -319,10 +319,20 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 	}
 
 	// enquire if Infinispan based cache store is needed
-	vdbNeedsCacheStore := cachestore.Exists(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client, r.ispnClient) && vdbutil.HasMaterializationTags(ddlStr)
-	if vdbNeedsCacheStore {
-		credentials, _ := cachestore.Credentials(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client)
-		vdb.Status.CacheStore = credentials.NameSpace + "/" + credentials.Name
+	var vdbNeedsCacheStore bool = false
+	if vdbutil.HasMaterializationTags(ddlStr) {
+		if !cachestore.Exists(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client, r.client.IspnClient()) {
+			created, err := createNewCacheStore(vdb, r)
+			if err != nil {
+				return files, err
+			}
+			vdbNeedsCacheStore = created
+		}
+
+		if vdbNeedsCacheStore {
+			credentials, _ := cachestore.Credentials(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client)
+			vdb.Status.CacheStore = credentials.NameSpace + "/" + credentials.Name
+		}
 	}
 
 	//Binary build, generate the pom file

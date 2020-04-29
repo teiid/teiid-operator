@@ -22,6 +22,8 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.4.0
 	go.uber.org/zap v1.14.1
+	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6 // indirect
+	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.4
 	k8s.io/apimachinery v0.17.4

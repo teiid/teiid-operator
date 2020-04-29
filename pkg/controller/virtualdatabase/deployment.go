@@ -70,7 +70,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 				return err2
 			}
 
-			_, err = r.kubeClient.AppsV1().Deployments(vdb.ObjectMeta.Namespace).Create(&dc)
+			_, err = r.client.AppsV1().Deployments(vdb.ObjectMeta.Namespace).Create(&dc)
 			//err = kubernetes.EnsureObject(&dc, err, r.client)
 			if err != nil {
 				return err
@@ -79,7 +79,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 			// if a new image is created then update the deployment with it
 			if existing.Spec.Template.Spec.Containers[0].Image != bc.Spec.Output.To.Name {
 				existing.Spec.Template.Spec.Containers[0].Image = bc.Spec.Output.To.Name
-				_, err = r.kubeClient.AppsV1().Deployments(vdb.ObjectMeta.Namespace).Update(existing)
+				_, err = r.client.AppsV1().Deployments(vdb.ObjectMeta.Namespace).Update(existing)
 				//err = r.client.Update(context.TODO(), existing)
 				if err != nil {
 					log.Warn("Failed to update object. ", err)
@@ -333,7 +333,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	dc.SetGroupVersionKind(appsv1.SchemeGroupVersion.WithKind("Deployment"))
-	err = controllerutil.SetControllerReference(vdb, &dc, r.scheme)
+	err = controllerutil.SetControllerReference(vdb, &dc, r.client.GetScheme())
 	if err != nil {
 		log.Error(err)
 		return appsv1.Deployment{}, err

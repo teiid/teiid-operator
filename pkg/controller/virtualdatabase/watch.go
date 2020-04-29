@@ -19,7 +19,6 @@ package virtualdatabase
 
 import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/client/versioned/typed/monitoring/v1"
-	ispn "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
 	oappsv1 "github.com/openshift/api/apps/v1"
 	obuildv1 "github.com/openshift/api/build/v1"
 	oimagev1 "github.com/openshift/api/image/v1"
@@ -27,11 +26,11 @@ import (
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -76,28 +75,18 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		return &ReconcileVirtualDatabase{}
 	}
 
-	clientset, err := kubernetes.NewForConfig(mgr.GetConfig())
+	teiidClient, err := teiidclient.FromManager(mgr)
 	if err != nil {
-		log.Errorf("Error getting kube client: %v", err)
-		return &ReconcileVirtualDatabase{}
-	}
-
-	ispnClient, err := ispn.NewForConfig(mgr.GetConfig())
-	if err != nil {
-		log.Errorf("Error getting Infinispan client: %v", err)
+		log.Errorf("Error getting Teiid client: %v", err)
 		return &ReconcileVirtualDatabase{}
 	}
 
 	return &ReconcileVirtualDatabase{
-		client:           mgr.GetClient(),
-		scheme:           mgr.GetScheme(),
-		cache:            mgr.GetCache(),
+		client:           teiidClient,
 		imageClient:      imageClient,
 		buildClient:      buildClient,
 		prometheusClient: monitorClient,
 		jaegerClient:     jaegerClient,
-		kubeClient:       clientset,
-		ispnClient:       ispnClient,
 	}
 }
 
@@ -117,7 +106,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		&oimagev1.ImageStream{},
 		&appsv1.Deployment{},
 	}
-	objectHandler := &handler.EnqueueRequestForObject{}
+	objectHandler := &handler.EnqueueRequestForOwner{
+		IsController: true,
+		OwnerType:    &v1alpha1.VirtualDatabase{},
+	}
 	for _, watchObject := range watchObjects {
 		err = c.Watch(&source.Kind{Type: watchObject}, objectHandler)
 		if err != nil {

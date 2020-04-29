@@ -20,8 +20,10 @@ package kubernetes
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	yaml2 "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
@@ -29,7 +31,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
+	"k8s.io/client-go/kubernetes"
 	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 var log = logs.GetLogger("kubernetes-util")
@@ -306,4 +310,57 @@ func RevisionOfConfigMapOrSecret(ctx context.Context, client k8sclient.Reader, n
 		}
 	}
 	return env.Value, nil
+}
+
+// IsOpenshift detects if the application is running on OpenShift or not
+func IsOpenshift(client kubernetes.Interface) bool {
+	return HasServerGroup(client, "openshift.io")
+}
+
+// HasServerGroup detects if the given api group is supported by the server
+func HasServerGroup(client kubernetes.Interface, groupName string) bool {
+	if client.Discovery() != nil {
+		groups, err := client.Discovery().ServerGroups()
+		if err != nil {
+			log.Warnf("Impossible to get server groups using discovery API: %s", err)
+			return false
+		}
+		for _, group := range groups.Groups {
+			if strings.Contains(group.Name, groupName) {
+				return true
+			}
+		}
+		return false
+	}
+	log.Warnf("Tried to discover the platform, but no discovery API is available")
+	return false
+}
+
+// CreateSecret --
+func CreateSecret(client teiidclient.Client, name, namespace string, owner metav1.Object, data map[string][]byte) error {
+	// build the secret with keystore and truststore
+	secret := corev1.Secret{
+		Type: corev1.SecretTypeOpaque,
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Data: data,
+	}
+
+	// set owner reference
+	if owner != nil {
+		err := controllerutil.SetControllerReference(owner, &secret, client.GetScheme())
+		if err != nil {
+			return err
+		}
+	}
+
+	// create the secret
+	_, err := client.CoreV1().Secrets(namespace).Create(&secret)
+	if err != nil {
+		log.Error("Failed to create the Keystore Secret")
+		return err
+	}
+	return nil
 }
