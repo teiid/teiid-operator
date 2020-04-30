@@ -20,6 +20,7 @@ limitations under the License.
 import (
 	"io/ioutil"
 	"os"
+	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	"gopkg.in/yaml.v2"
