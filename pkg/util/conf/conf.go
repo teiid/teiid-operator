@@ -76,5 +76,21 @@ func GetConfiguration() Configuration {
 		c.Prometheus.MatchLabels[os.Getenv("PROMETHEUS_MONITOR_LABEL_KEY")] = os.Getenv("PROMETHEUS_MONITOR_LABEL_VALUE")
 	}
 
+	if os.Getenv("BUILD_IMAGE") != "" {
+		//registry.access.redhat.com/ubi8/openjdk-11:1.3
+		c.BuildImage = parseImage(os.Getenv("BUILD_IMAGE"))
+	}
 	return c
+}
+
+func parseImage(str string) BuildImage {
+	bi := BuildImage{}
+	split := strings.Split(str, "/")
+	idx := strings.Index(split[2], ":")
+
+	bi.Registry = split[0]
+	bi.ImagePrefix = split[1]
+	bi.ImageName = split[2][:idx]
+	bi.Tag = split[2][idx+1:]
+	return bi
 }
