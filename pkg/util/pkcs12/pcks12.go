@@ -31,8 +31,15 @@ import (
 // CreatePkcs12Keystore creates a PKCS12 keystore from a certificate and the private key byte slices
 func CreatePkcs12Keystore(cert []byte, key []byte, password string) ([]byte, error) {
 
-	domainCert, _ := parseCrt(cert)
-	privateKey, _ := parseKey(key)
+	domainCert, err := parseCrt(cert)
+	if err != nil {
+		return nil, err
+	}
+	var privateKey interface{}
+	privateKey, err = parseKey(key)
+	if err != nil {
+		return nil, err
+	}
 
 	pfxData, err := gopkcs12.Encode(rand.Reader, privateKey, domainCert, nil, password)
 
@@ -46,8 +53,27 @@ func parseCrt(cert []byte) (*x509.Certificate, error) {
 }
 
 func parseKey(key []byte) (*rsa.PrivateKey, error) {
+	if privateKey, err := parsePKCS1Key(key); err == nil {
+		return privateKey, nil
+	}
+
+	if privateKey, err := parsePKCS8Key(key); err == nil {
+		if pk, ok := privateKey.(*rsa.PrivateKey); ok {
+			return pk, nil
+		}
+	}
+
+	return nil, errors.New("Failed to Parse the Key supplied")
+}
+
+func parsePKCS1Key(key []byte) (*rsa.PrivateKey, error) {
 	p, _ := pem.Decode(key)
 	return x509.ParsePKCS1PrivateKey(p.Bytes)
+}
+
+func parsePKCS8Key(key []byte) (interface{}, error) {
+	p, _ := pem.Decode(key)
+	return x509.ParsePKCS8PrivateKey(p.Bytes)
 }
 
 // CreatePkcs12Truststore --
