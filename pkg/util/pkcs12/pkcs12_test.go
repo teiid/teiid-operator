@@ -77,3 +77,21 @@ func TestCreatePkcs12Truststore(t *testing.T) {
 		assert.NotNil(t, v.Subject.CommonName)
 	}
 }
+
+func TestParse(t *testing.T) {
+	defaultCert, err := ioutil.ReadFile("tls.cert")
+	assert.Nil(t, err)
+
+	pfxData, err := parseCrt(defaultCert)
+	assert.Nil(t, err)
+
+	assert.NotNil(t, pfxData)
+
+	defaultCert, err = ioutil.ReadFile("tls.key")
+	assert.Nil(t, err)
+
+	pfxKey, err := parseKey(defaultCert)
+	assert.Nil(t, err)
+
+	assert.NotNil(t, pfxKey)
+}
