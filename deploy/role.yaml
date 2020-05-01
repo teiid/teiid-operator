@@ -185,6 +185,11 @@ rules:
       - jaegers
     verbs: [get, list, watch]
   - apiGroups:
+      - infinispan.org
+    resources:
+      - infinispans
+    verbs: [get, list, create, update, delete, deletecollection, watch]
+  - apiGroups:
       - apps
     resourceNames:
       - teiid-operator

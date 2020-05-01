@@ -26,39 +26,28 @@ import (
 	buildv1client "github.com/openshift/client-go/build/clientset/versioned/typed/build/v1"
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	teiidclient "github.com/teiid/teiid-operator/pkg/client"
+	"github.com/teiid/teiid-operator/pkg/util/events"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes"
-	cachev1 "sigs.k8s.io/controller-runtime/pkg/cache"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
 var log = logs.GetLogger("virtualdatabase")
 var _ reconcile.Reconciler = &ReconcileVirtualDatabase{}
-
-// VdbContext --
-type VdbContext struct {
-	Env []corev1.EnvVar
-}
+var eventSubscribers = &events.EventSubscribers{}
 
 // ReconcileVirtualDatabase reconciles a VirtualDatabase object
 type ReconcileVirtualDatabase struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client           client.Client
-	scheme           *runtime.Scheme
-	cache            cachev1.Cache
+	client           teiidclient.Client
 	imageClient      *imagev1.ImageV1Client
 	buildClient      *buildv1client.BuildV1Client
 	prometheusClient monitoringv1.MonitoringV1Interface
 	jaegerClient     *otclient.JaegertracingV1Client
-	kubeClient       kubernetes.Interface
-	vdbContext       VdbContext
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read
@@ -69,11 +58,15 @@ type ReconcileVirtualDatabase struct {
 func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconcile.Result, error) {
 	ctx := context.TODO()
 
+	// event listeners
+	eventSubscribers.Register(CacheStoreListener{})
+
 	// Fetch the VirtualDatabase instance
 	instance := &v1alpha1.VirtualDatabase{}
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
+			eventSubscribers.Trigger(events.VdbDeleted, request.NamespacedName, r)
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.

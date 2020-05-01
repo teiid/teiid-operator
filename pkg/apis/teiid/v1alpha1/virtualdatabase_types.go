@@ -75,6 +75,11 @@ type VirtualDatabaseStatus struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Version Of the VDB deployed"
 	Version string `json:"version,omitempty"`
+
+	// Deployed vdb version.
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="CacheStore In use"
+	CacheStore string `json:"cachestore,omitempty"`
 }
 
 // OpenShiftObject ...

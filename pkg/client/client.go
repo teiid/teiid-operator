@@ -15,7 +15,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package teiidclient
+package client
 
 import (
 	"io/ioutil"
@@ -23,6 +23,7 @@ import (
 	"os/user"
 	"path/filepath"
 
+	ispn "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"github.com/pkg/errors"
 	"github.com/teiid/teiid-operator/pkg/apis"
@@ -43,6 +44,7 @@ type Client interface {
 	controller.Client
 	kubernetes.Interface
 	GetScheme() *runtime.Scheme
+	IspnClient() *ispn.InfinispanV1Client
 }
 
 // Injectable identifies objects that can receive a Client
@@ -58,11 +60,16 @@ type Provider struct {
 type defaultClient struct {
 	controller.Client
 	kubernetes.Interface
-	scheme *runtime.Scheme
+	scheme     *runtime.Scheme
+	ispnClient *ispn.InfinispanV1Client
 }
 
 func (c *defaultClient) GetScheme() *runtime.Scheme {
 	return c.scheme
+}
+
+func (c *defaultClient) IspnClient() *ispn.InfinispanV1Client {
+	return c.ispnClient
 }
 
 // NewOutOfClusterClient creates a new k8s client that can be used from outside the cluster
@@ -94,11 +101,16 @@ func NewOutOfClusterClient(kubeconfig string) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
+	ispnClientSet, err := ispn.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	return &defaultClient{
-		Client:    dynClient,
-		Interface: clientset,
-		scheme:    clientOptions.Scheme,
+		Client:     dynClient,
+		Interface:  clientset,
+		scheme:     clientOptions.Scheme,
+		ispnClient: ispnClientSet,
 	}, nil
 }
 
@@ -109,10 +121,15 @@ func FromManager(manager manager.Manager) (Client, error) {
 	if clientset, err = kubernetes.NewForConfig(manager.GetConfig()); err != nil {
 		return nil, err
 	}
+	ispnClientSet, err := ispn.NewForConfig(manager.GetConfig())
+	if err != nil {
+		return nil, err
+	}
 	return &defaultClient{
-		Client:    manager.GetClient(),
-		Interface: clientset,
-		scheme:    manager.GetScheme(),
+		Client:     manager.GetClient(),
+		Interface:  clientset,
+		scheme:     manager.GetScheme(),
+		ispnClient: ispnClientSet,
 	}, nil
 }
 

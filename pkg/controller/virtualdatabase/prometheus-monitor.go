@@ -119,7 +119,7 @@ func (action *prometheusMonitorAction) createServiceMonitor(ctx context.Context,
 	}
 
 	// set the object reference to vdb
-	if err := controllerutil.SetControllerReference(vdb, &monitor, r.scheme); err != nil {
+	if err := controllerutil.SetControllerReference(vdb, &monitor, r.client.GetScheme()); err != nil {
 		log.Error(err)
 	}
 

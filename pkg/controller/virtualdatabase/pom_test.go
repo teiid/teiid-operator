@@ -52,7 +52,7 @@ func TestPomGeneration(t *testing.T) {
 
 	dsInfo := vdbutil.ParseDataSourcesInfoFromDdl(vdb.Spec.Build.Source.DDL)
 
-	project, err := GenerateVdbPom(&vdb, dsInfo, false, false)
+	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
 	assert.True(t, hasDependency(project, "org.postgresql", "postgresql"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
@@ -88,7 +88,7 @@ func TestMinimalGavPomGeneration(t *testing.T) {
 		TranslatorName: "bar",
 	}
 
-	project, err := GenerateVdbPom(&vdb, dsInfo, false, false)
+	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
 	assert.True(t, hasDependency(project, "org.postgresql", "postgresql"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))

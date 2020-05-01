@@ -154,7 +154,7 @@ func (action *createServiceAction) createService(vdb *v1alpha1.VirtualDatabase,
 		},
 	}
 	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
-	err := controllerutil.SetControllerReference(vdb, &service, r.scheme)
+	err := controllerutil.SetControllerReference(vdb, &service, r.client.GetScheme())
 	if err != nil {
 		log.Error(err)
 	}
@@ -187,7 +187,7 @@ func (action *createServiceAction) createRoute(service corev1.Service, vdb *v1al
 		},
 	}
 	route.SetGroupVersionKind(oroutev1.SchemeGroupVersion.WithKind("Route"))
-	err := controllerutil.SetControllerReference(vdb, &route, r.scheme)
+	err := controllerutil.SetControllerReference(vdb, &route, r.client.GetScheme())
 	if err != nil {
 		log.Error("Error setting controller reference. ", err)
 	}

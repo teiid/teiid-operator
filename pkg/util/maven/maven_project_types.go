@@ -103,9 +103,11 @@ type Execution struct {
 
 // Configuration --
 type Configuration struct {
-	ArtifactItems   []ArtifactItem `xml:"artifactItems>artifactItem,omitempty"`
-	OutputDirectory string         `xml:"outputDirectory,omitempty"`
-	VdbFile         string         `xml:"vdbFile,omitempty"`
+	ArtifactItems         []ArtifactItem `xml:"artifactItems>artifactItem,omitempty"`
+	OutputDirectory       string         `xml:"outputDirectory,omitempty"`
+	VdbFile               string         `xml:"vdbFile,omitempty"`
+	MaterializationEnable bool           `xml:"materializationEnable,omitempty"`
+	MaterializationType   string         `xml:"materializationType,omitempty"`
 }
 
 // ArtifactItem --

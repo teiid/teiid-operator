@@ -24,11 +24,8 @@ import (
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	"github.com/teiid/teiid-operator/pkg/util/pkcs12"
-	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
 // NewCreateCertificateAction creates a new initialize action
@@ -86,31 +83,13 @@ func (action *createCertificateAction) Handle(ctx context.Context, vdb *v1alpha1
 	}
 
 	// build the secret with keystore and truststore
-	secret := corev1.Secret{
-		Type: corev1.SecretTypeOpaque,
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      getKeystoreSecretName(vdb),
-			Namespace: vdb.ObjectMeta.Namespace,
-			Labels: map[string]string{
-				"app": vdb.ObjectMeta.Name,
-			},
-		},
-		Data: map[string][]byte{
-			constants.KeystoreName:   keystorePkcs12,
-			constants.TruststoreName: truststorePkcs12,
-		},
+	data := map[string][]byte{
+		constants.KeystoreName:   keystorePkcs12,
+		constants.TruststoreName: truststorePkcs12,
 	}
-
-	// set owner reference
-	err = controllerutil.SetControllerReference(vdb, &secret, r.scheme)
+	err = kubernetes.CreateSecret(r.client, getKeystoreSecretName(vdb), vdb.ObjectMeta.Namespace, vdb, data)
 	if err != nil {
-		return err
-	}
-
-	// create the secret
-	_, err = r.kubeClient.CoreV1().Secrets(vdb.ObjectMeta.Namespace).Create(&secret)
-	if err != nil {
-		log.Error("Failed to create the Keystore Secret")
+		log.Error("Failed to create the Keystore Secret", err)
 		return err
 	}
 
