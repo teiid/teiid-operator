@@ -238,7 +238,7 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 	}
 	addCopyPlugIn(jarDependency, "jar", "app.jar", "/tmp", &pom)
 
-	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", false)
+	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", false, "0")
 	pomContent, err := maven.EncodeXML(pom)
 	if err != nil {
 		return err

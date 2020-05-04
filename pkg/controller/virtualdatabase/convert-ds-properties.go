@@ -23,34 +23,12 @@ import (
 	"unicode"
 
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
-	"github.com/teiid/teiid-operator/pkg/util/cachestore"
 	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 )
-
-// DeploymentEnvironments --
-func DeploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) ([]corev1.EnvVar, error) {
-	ddlString, err := vdbutil.FetchDdl(vdb)
-	if err != nil {
-		return nil, err
-	}
-	dataSourceInfos := vdbutil.ParseDataSourcesInfoFromDdl(ddlString)
-	dataSourceConfig, err := convert2SpringProperties(vdb.Spec.DataSources, dataSourceInfos)
-	if err != nil {
-		return nil, err
-	}
-	defaultEnvs := getDefaultEnvs(vdb.Spec.Env)
-	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
-		defaultEnvs = envvar.Combine(defaultEnvs, getDefaultJaegerEnvs(vdb.ObjectMeta.Name))
-	}
-	if vdb.Status.CacheStore != "" {
-		defaultEnvs = envvar.Combine(defaultEnvs, cachestore.CredentialsAsEnv(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client))
-	}
-	return envvar.Combine(defaultEnvs, dataSourceConfig), nil
-}
 
 func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sourcesFromDdl []vdbutil.DatasourceInfo) ([]corev1.EnvVar, error) {
 	envs := make([]corev1.EnvVar, 0)

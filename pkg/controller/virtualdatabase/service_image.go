@@ -24,7 +24,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/teiid/teiid-operator/pkg/util/cachestore"
 	"github.com/teiid/teiid-operator/pkg/util/maven"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
 	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
@@ -318,22 +317,10 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		return files, err
 	}
 
-	// enquire if Infinispan based cache store is needed
-	var vdbNeedsCacheStore bool = false
-	if vdbutil.HasMaterializationTags(ddlStr) {
-		if !cachestore.Exists(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client, r.client.IspnClient()) {
-			created, err := createNewCacheStore(vdb, r)
-			if err != nil {
-				return files, err
-			}
-			vdbNeedsCacheStore = created
-		}
-
-		if vdbNeedsCacheStore {
-			credentials, _ := cachestore.Credentials(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client)
-			vdb.Status.CacheStore = credentials.NameSpace + "/" + credentials.Name
-		}
-	}
+	// Check to see if the VDB has materialization annoations, if yes then generate
+	// materialization schema
+	views := vdbutil.MaterializiedViewsInDdl(ddlStr)
+	vdbNeedsCacheStore := len(views) > 0
 
 	//Binary build, generate the pom file
 	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI, vdbNeedsCacheStore)
@@ -346,7 +333,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		// vdb-code-gen plugin is finding the vdb.ddl file before the dependency
 		// or the .vdb file from the base image, this is way hard code to use the
 		// correct vdb file.
-		addVdbCodeGenPlugIn(&pom, "/tmp/teiid.vdb", vdbNeedsCacheStore)
+		addVdbCodeGenPlugIn(&pom, "/tmp/teiid.vdb", vdbNeedsCacheStore, vdb.Status.Version)
 		// maven based vdb is given
 		vdbDependency, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
 		if err != nil {
@@ -359,7 +346,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		addCopyPlugIn(vdbDependency, "vdb", "teiid.vdb", "${project.build.outputDirectory}", &pom)
 		vdbFile = "teiid.vdb-file=teiid.vdb"
 	} else {
-		addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", vdbNeedsCacheStore)
+		addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", vdbNeedsCacheStore, vdb.Status.Version)
 		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
 	}
 

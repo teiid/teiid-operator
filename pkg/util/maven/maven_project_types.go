@@ -107,6 +107,7 @@ type Configuration struct {
 	OutputDirectory       string         `xml:"outputDirectory,omitempty"`
 	VdbFile               string         `xml:"vdbFile,omitempty"`
 	MaterializationEnable bool           `xml:"materializationEnable,omitempty"`
+	VdbVersion            string         `xml:"vdbVersion,omitempty"`
 	MaterializationType   string         `xml:"materializationType,omitempty"`
 }
 

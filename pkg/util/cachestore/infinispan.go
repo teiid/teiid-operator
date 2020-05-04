@@ -19,6 +19,7 @@ limitations under the License.
 
 import (
 	"context"
+	"errors"
 
 	infinispan "github.com/infinispan/infinispan-operator/pkg/apis/infinispan/v1"
 	ispnClient "github.com/infinispan/infinispan-operator/pkg/generated/clientset/versioned/typed/infinispan/v1"
@@ -44,39 +45,47 @@ const (
 
 // InfinispanDetails --
 type InfinispanDetails struct {
-	Name      string `yaml:"name,omitempty"`
-	NameSpace string `yaml:"namespace,omitempty"`
-	User      string `yaml:"username,omitempty"`
-	Password  string `yaml:"password,omitempty"`
-	URL       string `yaml:"url,omitempty"`
+	Name             string `yaml:"name,omitempty"`
+	NameSpace        string `yaml:"namespace,omitempty"`
+	User             string `yaml:"username,omitempty"`
+	Password         string `yaml:"password,omitempty"`
+	URL              string `yaml:"url,omitempty"`
+	CreateIfNotFound bool   `yaml:"create,omitempty"`
+	Replicas         int32  `yaml:"replicas,omitempty"`
+}
+
+// ConfigurationExists -- Check to see if the configuration is supplied for a cache store
+func configurationExists(vdbName string, vdbNamespace string, client k8sclient.Reader) (*corev1.Secret, bool) {
+	ctx := context.TODO()
+	secret, err := kubernetes.GetSecret(ctx, client, vdbName+"-cache-store", vdbNamespace)
+	if err != nil {
+		secret, err = kubernetes.GetSecret(ctx, client, "teiid-cache-store", vdbNamespace)
+		if err != nil {
+			return nil, false
+		}
+	}
+	return secret, true
 }
 
 // Exists -- check to so if the Infinispan CacheStore exists
 func Exists(vdbName string, vdbNamespace string, client k8sclient.Reader, ispnClient *ispnClient.InfinispanV1Client) bool {
 	ctx := context.TODO()
-	ispnSecret, err := kubernetes.GetSecret(ctx, client, vdbName+"-cache-store", vdbNamespace)
-	if err != nil {
-		ispnSecret, err = kubernetes.GetSecret(ctx, client, "teiid-cache-store", vdbNamespace)
-		if err != nil {
-			return false
-		}
+	ispnSecret, exists := configurationExists(vdbName, vdbNamespace, client)
+	if !exists {
+		return false
 	}
 	details := readInfinispanDetails(*ispnSecret)
 	return hasInfinispan(ctx, ispnClient, details.Name, details.NameSpace)
 }
 
 // Credentials --
-func Credentials(vdbName string, vdbNamespace string, client k8sclient.Reader) (InfinispanDetails, error) {
-	ctx := context.TODO()
-	ispnSecret, err := kubernetes.GetSecret(ctx, client, vdbName+"-cache-store", vdbNamespace)
-	if err != nil {
-		ispnSecret, err = kubernetes.GetSecret(ctx, client, "teiid-cache-store", vdbNamespace)
-		if err != nil {
-			return InfinispanDetails{}, err
-		}
+func Credentials(vdbName string, vdbNamespace string, client k8sclient.Reader) (*InfinispanDetails, error) {
+	ispnSecret, exists := configurationExists(vdbName, vdbNamespace, client)
+	if !exists {
+		return nil, errors.New("Failed to find configuration for the Cache Store")
 	}
 	details := readInfinispanDetails(*ispnSecret)
-	return details, nil
+	return &details, nil
 }
 
 func readInfinispanDetails(secret v1.Secret) InfinispanDetails {

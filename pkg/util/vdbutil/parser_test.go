@@ -96,9 +96,18 @@ func TestMaterialized(t *testing.T) {
 	) AS 
 		select t.*, AVG("close") OVER (ORDER BY "date" ASC ROWS 9 PRECEDING) AS MA10 from 
 		  (call vix_source.invokeHttp(action=>'GET', endpoint=>'https://datahub.io/core/finance-vix/r/vix-daily.csv')) w, 
-		  texttable(to_chars(w.result, 'ascii') COLUMNS "date" date, "open" HEADER 'Vix Open' double, "high" HEADER 'Vix High' double, "low" HEADER 'Vix Low' double, "close" HEADER 'Vix Close' double HEADER) t;	
+		texttable(to_chars(w.result, 'ascii') COLUMNS "date" date, "open" HEADER 'Vix Open' double, "high" HEADER 'Vix High' double, "low" HEADER 'Vix Low' double, "close" HEADER 'Vix Close' double HEADER) t;	
+
+	CREATE VIEW vix2 (
+		"date" date primary key,
+	) OPTIONS (
+		MATERIALIZED TRUE,
+		"teiid_rel:ALLOW_MATVIEW_MANAGEMENT" 'true'
+	) AS 
+		select t.*, AVG("close") OVER (ORDER BY "date" ASC ROWS 9 PRECEDING) AS MA10 from foo;		  
 	`
-	assert.True(t, HasMaterializationTags(ddl))
+	assert.Equal(t, 2, len(MaterializiedViewsInDdl(ddl)))
+	assert.Equal(t, []string{"customer.portfolio.vix", "customer.portfolio.vix2"}, MaterializiedViewsInDdl(ddl))
 }
 
 func TestNotMaterialized(t *testing.T) {
@@ -125,5 +134,5 @@ func TestNotMaterialized(t *testing.T) {
 		  (call vix_source.invokeHttp(action=>'GET', endpoint=>'https://datahub.io/core/finance-vix/r/vix-daily.csv')) w, 
 		  texttable(to_chars(w.result, 'ascii') COLUMNS "date" date, "open" HEADER 'Vix Open' double, "high" HEADER 'Vix High' double, "low" HEADER 'Vix Low' double, "close" HEADER 'Vix Close' double HEADER) t;	
 	`
-	assert.False(t, HasMaterializationTags(ddl))
+	assert.Equal(t, 0, len(MaterializiedViewsInDdl(ddl)))
 }

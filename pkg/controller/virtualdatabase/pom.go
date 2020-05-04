@@ -189,7 +189,7 @@ func addCopyPlugIn(vdbDependency maven.Dependency, artifactType string, targetNa
 	project.AddBuildPlugin(plugin)
 }
 
-func addVdbCodeGenPlugIn(project *maven.Project, vdbFilePath string, materializationEnable bool) {
+func addVdbCodeGenPlugIn(project *maven.Project, vdbFilePath string, materializationEnable bool, version string) {
 	plugin := maven.Plugin{
 		GroupID:    "org.teiid",
 		ArtifactID: "vdb-codegen-plugin",
@@ -205,6 +205,7 @@ func addVdbCodeGenPlugIn(project *maven.Project, vdbFilePath string, materializa
 					VdbFile:               vdbFilePath,
 					MaterializationType:   "infinispan-hotrod",
 					MaterializationEnable: materializationEnable,
+					VdbVersion:            version,
 				},
 			},
 		},

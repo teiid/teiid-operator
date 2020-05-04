@@ -68,6 +68,22 @@ func getDefaultEnvs(userDefined []corev1.EnvVar) []corev1.EnvVar {
 				},
 			},
 		},
+		{
+			Name: "TEIID_NODENAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "spec.nodeName",
+				},
+			},
+		},
+		{
+			Name: "TEIID_PODNAME",
+			ValueFrom: &corev1.EnvVarSource{
+				FieldRef: &corev1.ObjectFieldSelector{
+					FieldPath: "metadata.name",
+				},
+			},
+		},
 	}
 
 	// merge/update env with user defined

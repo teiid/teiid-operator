@@ -198,6 +198,9 @@ const (
 	// ReconcilerPhaseInitial --
 	ReconcilerPhaseInitial ReconcilerPhase = ""
 
+	// ReconcilerPhaseCreateCacheStore --
+	ReconcilerPhaseCreateCacheStore ReconcilerPhase = "Creating Cache Store"
+
 	// ReconcilerPhaseS2IReady --
 	ReconcilerPhaseS2IReady ReconcilerPhase = "Ready For S2I"
 
