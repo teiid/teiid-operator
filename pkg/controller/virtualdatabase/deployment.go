@@ -24,7 +24,10 @@ import (
 	obuildv1 "github.com/openshift/api/build/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
+	"github.com/teiid/teiid-operator/pkg/util/cachestore"
+	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/proxy"
+	"github.com/teiid/teiid-operator/pkg/util/vdbutil"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -115,7 +118,7 @@ func (action *deploymentAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 func (action *deploymentAction) ensureReplicas(ctx context.Context, vdb *v1alpha1.VirtualDatabase,
 	item *appsv1.Deployment, r *ReconcileVirtualDatabase) error {
 
-	deploymentEnvs, err := DeploymentEnvironments(vdb, r)
+	deploymentEnvs, err := deploymentEnvironments(vdb, r)
 	if err != nil {
 		return err
 	}
@@ -204,6 +207,27 @@ func (action *deploymentAction) isDeploymentProgressing(dc appsv1.Deployment) bo
 	return true
 }
 
+// DeploymentEnvironments --
+func deploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) ([]corev1.EnvVar, error) {
+	ddlString, err := vdbutil.FetchDdl(vdb)
+	if err != nil {
+		return nil, err
+	}
+	dataSourceInfos := vdbutil.ParseDataSourcesInfoFromDdl(ddlString)
+	dataSourceConfig, err := convert2SpringProperties(vdb.Spec.DataSources, dataSourceInfos)
+	if err != nil {
+		return nil, err
+	}
+	defaultEnvs := getDefaultEnvs(vdb.Spec.Env)
+	if vdb.Spec.Jaeger != "" && r.jaegerClient.Jaegers(vdb.ObjectMeta.Namespace).HasJaeger(vdb.Spec.Jaeger) {
+		defaultEnvs = envvar.Combine(defaultEnvs, getDefaultJaegerEnvs(vdb.ObjectMeta.Name))
+	}
+	if vdb.Status.CacheStore != "" {
+		defaultEnvs = envvar.Combine(defaultEnvs, cachestore.CredentialsAsEnv(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client))
+	}
+	return envvar.Combine(defaultEnvs, dataSourceConfig), nil
+}
+
 func containerPorts() []corev1.ContainerPort {
 	ports := []corev1.ContainerPort{}
 	ports = append(ports, corev1.ContainerPort{Name: "http", ContainerPort: int32(8080), Protocol: corev1.ProtocolTCP})
@@ -262,7 +286,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 	}
 
 	// convert data source properties into ENV properties
-	deploymentEnvs, err := DeploymentEnvironments(vdb, r)
+	deploymentEnvs, err := deploymentEnvironments(vdb, r)
 	if err != nil {
 		return appsv1.Deployment{}, err
 	}

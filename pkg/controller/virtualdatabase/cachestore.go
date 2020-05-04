@@ -18,30 +18,90 @@ limitations under the License.
 */
 
 import (
+	"context"
+	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
+	"github.com/teiid/teiid-operator/pkg/client"
 	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/cachestore"
 	"github.com/teiid/teiid-operator/pkg/util/events"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-//createNewCacheStore -- create a new instance of Infinispan
-func createNewCacheStore(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (bool, error) {
-	exists, err := cachestore.IsInfinispanOperatorAvailable(r.client, vdb.ObjectMeta.Namespace)
-	if err != nil {
-		return false, err
+// NewCacheStoreAction creates a new cachestore action
+func NewCacheStoreAction() Action {
+	return &cacheStoreAction{}
+}
+
+type cacheStoreAction struct {
+	baseAction
+}
+
+// Name returns a common name of the action
+func (action *cacheStoreAction) Name() string {
+	return "cachestore"
+}
+
+// CanHandle tells whether this action can handle the virtualdatabase
+func (action *cacheStoreAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
+	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseCreateCacheStore
+}
+
+// Handle handles the virtualdatabase
+func (action *cacheStoreAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+
+	// check to see if the cache store exists if not create one to be used for Teiid Materialization and
+	// result set caching purposes.
+	var secrectFound bool = true
+	config, _ := cachestore.Credentials(vdb.ObjectMeta.Name, vdb.ObjectMeta.Namespace, r.client)
+	if config == nil {
+		log.Debug("Configuration for the Cache Store Not found, using default settings")
+		config = &cachestore.InfinispanDetails{}
+		config.Name = vdb.ObjectMeta.Name + "-cache-store"
+		config.NameSpace = vdb.ObjectMeta.Namespace
+		config.CreateIfNotFound = true
+		config.Replicas = 3
+		config.User = "developer"
+		config.Password = util.RandomPassword()
+		secrectFound = false
 	}
-	cacheStoreName := vdb.ObjectMeta.Name + "-cache-store"
+
+	if config.CreateIfNotFound {
+		err := action.createNewCacheStore(config, r.client, vdb)
+		if err != nil {
+			log.Info("Failed to create Cache Store ", err)
+		} else {
+			vdb.Status.CacheStore = config.NameSpace + "/" + config.Name
+			// create a secret if we are self-create mode
+			if !secrectFound {
+				action.createCacheStoreSecret(config, r.client, vdb)
+			}
+		}
+	}
+
+	vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
+	return nil
+}
+
+//createNewCacheStore -- create a new instance of Infinispan
+func (action *cacheStoreAction) createNewCacheStore(ispn *cachestore.InfinispanDetails, client client.Client, owner metav1.Object) error {
+	exists, err := cachestore.IsInfinispanOperatorAvailable(client, ispn.NameSpace)
+	if err != nil {
+		return err
+	}
+
+	cacheStoreName := ispn.Name
 	if exists {
-		password := util.RandomPassword()
 		identitySecret := strings.Join([]string{
 			"credentials:",
-			"- username: developer",
-			"  password: " + password,
+			"- username: " + ispn.User,
+			"  password: " + ispn.Password,
 			"- username: operator",
 			"  password: " + util.RandomPassword(),
 		}, "\n")
@@ -51,47 +111,57 @@ func createNewCacheStore(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatab
 		}
 
 		log.Debugf("Creating a Identity Secret for Infinispan access %s", cacheStoreName+"-identity")
-		err = kubernetes.CreateSecret(r.client, cacheStoreName+"-identity", vdb.ObjectMeta.Namespace, vdb, data)
+		err = kubernetes.CreateSecret(client, cacheStoreName+"-identity", ispn.NameSpace, owner, data)
 		if err != nil {
 			log.Debugf("failed, to create Identity Secret for Infinispan access %s", cacheStoreName+"-identity")
-			return false, err
+			return err
 		}
 		log.Debugf("Successfully created Identity Secret for Infinispan access %s", cacheStoreName+"-identity")
 
 		log.Debugf("Starting to create Infinispan Cluster with name %s", cacheStoreName)
-		ispnInstance := cachestore.NewInfinispanResource(vdb.ObjectMeta.Namespace, cacheStoreName, cacheStoreName+"-identity", 3)
-		err = controllerutil.SetControllerReference(vdb, &ispnInstance, r.client.GetScheme())
+		ispnInstance := cachestore.NewInfinispanResource(ispn.NameSpace, cacheStoreName, cacheStoreName+"-identity", 3)
+		err = controllerutil.SetControllerReference(owner, &ispnInstance, client.GetScheme())
 		if err != nil {
 			log.Error(err)
 		}
 
-		_, err := r.client.IspnClient().Infinispans(vdb.ObjectMeta.Namespace).Create(&ispnInstance)
+		_, err := client.IspnClient().Infinispans(ispn.NameSpace).Create(&ispnInstance)
 		if err != nil {
 			log.Debugf("Failed to create Infinispan Cluster with name %s", cacheStoreName)
-			return false, err
+			return err
 		}
-
 		log.Debugf("Success, in creating Infinispan Cluster with name %s", cacheStoreName)
-
-		data = map[string][]byte{
-			"name":      []byte(cacheStoreName),
-			"namespace": []byte(vdb.ObjectMeta.Namespace),
-			"username":  []byte("developer"),
-			"password":  []byte(password),
-			"url":       []byte(cacheStoreName + ":11222"),
-		}
-
-		log.Debugf("Creating a Secret for Infinispan access %s", cacheStoreName)
-		err = kubernetes.CreateSecret(r.client, cacheStoreName, vdb.ObjectMeta.Namespace, vdb, data)
-		if err != nil {
-			log.Debugf("failed, to create Secret for Infinispan access %s", cacheStoreName)
-			return false, err
-		}
-		log.Debugf("Successfully created Secret for Infinispan access %s", cacheStoreName)
 	} else {
 		log.Info("Failed to create CacheStore as Infinispan Operator not found")
+		return errors.New("Failed to create CacheStore as Infinispan Operator not found")
 	}
-	return true, nil
+	return nil
+}
+
+func (action *cacheStoreAction) createCacheStoreSecret(ispn *cachestore.InfinispanDetails, client client.Client, owner metav1.Object) error {
+	create := "TRUE"
+	if ispn.CreateIfNotFound {
+		create = "FALSE"
+	}
+	replicas := strconv.Itoa(int(ispn.Replicas))
+	data := map[string][]byte{
+		"name":      []byte(ispn.Name),
+		"namespace": []byte(ispn.NameSpace),
+		"username":  []byte(ispn.User),
+		"password":  []byte(ispn.Password),
+		"url":       []byte(ispn.Name + ":11222"),
+		"create":    []byte(create),
+		"replicas":  []byte(replicas),
+	}
+
+	log.Debugf("Creating a Secret for Infinispan access %s", ispn.Name)
+	err := kubernetes.CreateSecret(client, ispn.Name, ispn.NameSpace, owner, data)
+	if err != nil {
+		log.Debugf("failed, to create Secret for Infinispan access %s", ispn.Name)
+		return err
+	}
+	log.Debugf("Successfully created Secret for Infinispan access %s", ispn.Name)
+	return nil
 }
 
 // CacheStoreListener --

@@ -70,7 +70,7 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 
 		// initialize with defaults
 		vdb.Status.Failure = ""
-		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseCreateCacheStore
 		if err := action.init(ctx, vdb, r); err != nil {
 			return err
 		}

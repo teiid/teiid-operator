@@ -77,6 +77,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 
 	buildSteps := []Action{
 		NewInitializeAction(),
+		NewCacheStoreAction(),
 		News2IBuilderImageAction(),
 		NewServiceImageAction(),
 		NewCreateServiceAction(),

@@ -242,15 +242,15 @@ func Tar(files map[string]string) (io.Reader, error) {
 func RandomPassword() string {
 	rand.Seed(time.Now().UnixNano())
 	digits := "0123456789"
-	specials := "%!@#$?"
+	//specials := "%!@#$?"
 	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
-		digits + specials
+		digits //+ specials
 	length := 8
 	buf := make([]byte, length)
 	buf[0] = digits[rand.Intn(len(digits))]
-	buf[1] = specials[rand.Intn(len(specials))]
-	for i := 2; i < length; i++ {
+	//buf[1] = specials[rand.Intn(len(specials))]
+	for i := 1; i < length; i++ {
 		buf[i] = all[rand.Intn(len(all))]
 	}
 	rand.Shuffle(len(buf), func(i, j int) {
