@@ -58,7 +58,6 @@ type ReconcileVirtualDatabase struct {
 	prometheusClient monitoringv1.MonitoringV1Interface
 	jaegerClient     *otclient.JaegertracingV1Client
 	kubeClient       kubernetes.Interface
-	vdbContext       VdbContext
 }
 
 // Reconcile reads that state of the cluster for a VirtualDatabase object and makes changes based on the state read

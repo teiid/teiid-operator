@@ -90,7 +90,6 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		prometheusClient: monitorClient,
 		jaegerClient:     jaegerClient,
 		kubeClient:       clientset,
-		vdbContext:       VdbContext{},
 	}
 }
 
