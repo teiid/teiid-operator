@@ -2,20 +2,19 @@ module github.com/teiid/teiid-operator
 
 require (
 	//github.com/Azure/go-autorest/autorest v0.9.3 // indirect
-	github.com/RHsyseng/operator-utils v0.0.0-20200417214513-7aac0c82a293
+	github.com/RHsyseng/operator-utils v0.0.0-20200506183821-e3b4a2ba9c30
 	github.com/coreos/prometheus-operator v0.38.0
 	github.com/emicklei/go-restful v2.11.1+incompatible // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/logr v0.1.0
-	github.com/go-openapi/spec v0.19.4
-	github.com/go-openapi/validate v0.19.5 // indirect
+	github.com/go-openapi/spec v0.19.6
+	github.com/gobuffalo/packr/v2 v2.7.1
 	github.com/hetesiistvan/go-pkcs12 v0.0.0-20191008101753-f02f3241080a
-	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/infinispan/infinispan-operator v0.0.0-20200421123311-ca42dade66d1
 	github.com/jaegertracing/jaeger-operator v1.16.0
 	github.com/magiconair/properties v1.8.1
 	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
-	github.com/openshift/client-go v0.0.0-20190923180330-3b6373338c9b
+	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/operator-framework/operator-sdk v0.17.0
 	github.com/pkg/errors v0.9.1
 	github.com/scylladb/go-set v1.0.2
@@ -59,6 +58,8 @@ replace (
 
 replace github.com/docker/docker => github.com/moby/moby v0.7.3-0.20190826074503-38ab9da00309 // Required by Helm
 
-replace github.com/openshift/api => github.com/openshift/api v0.0.0-20190924102528-32369d4db2ad // Required until https://github.com/operator-framework/operator-lifecycle-manager/pull/1241 is resolved
+replace github.com/openshift/api => github.com/openshift/api v0.0.0-20200205145930-e9d93e317dd1 // Required until https://github.com/operator-framework/operator-lifecycle-manager/pull/1241 is resolved
 
 go 1.13
+
+replace github.com/openshift/client-go => github.com/openshift/client-go v0.0.0-20191125132246-f6563a70e19a

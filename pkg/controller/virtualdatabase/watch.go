@@ -27,6 +27,7 @@ import (
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	teiidclient "github.com/teiid/teiid-operator/pkg/client"
+	"github.com/teiid/teiid-operator/pkg/util/openshift"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -79,6 +80,12 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	if err != nil {
 		log.Errorf("Error getting Teiid client: %v", err)
 		return &ReconcileVirtualDatabase{}
+	}
+
+	if err := openshift.ConsoleYAMLSampleExists(); err == nil {
+		openshift.CreateConsoleYAMLSamples(mgr.GetClient())
+	} else {
+		log.Info("Yaml Samples", "Console YAML sample is not added:", err)
 	}
 
 	return &ReconcileVirtualDatabase{

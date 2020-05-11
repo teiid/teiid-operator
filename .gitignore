@@ -3,6 +3,8 @@ build/_output
 build/_test
 .project
 .settings
+*-packr.go
+/pkg/util/openshift/packrd
 # Created by https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
 ### Emacs ###
 # -*- mode: gitignore; -*-
@@ -77,6 +79,7 @@ tags
 .vscode/*
 .history
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
+.idea/*
 
 # vendor exceptions
 !vendor/**
