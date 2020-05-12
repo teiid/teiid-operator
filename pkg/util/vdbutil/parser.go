@@ -1,3 +1,5 @@
+package vdbutil
+
 /*
 Licensed to the Apache Software Foundation (ASF) under one or more
 contributor license agreements.  See the NOTICE file distributed with
@@ -14,7 +16,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package vdbutil
 
 import (
 	"regexp"
@@ -41,74 +42,47 @@ func ParseDataSourcesInfoFromDdl(ddl string) []DatasourceInfo {
 
 	var sources []DatasourceInfo
 	id := "(\\w+|(?:\"[^\"]*\")|()'[^']*'+)"
-	regEx := "CREATE\\s+SERVER\\s+" + id + "\\s+(TYPE\\s+" + id + "\\s+)??FOREIGN\\s+DATA\\s+WRAPPER\\s+" + id
+	commentOrSpace := "(/\\*([^*]|\\*[^/])*\\*/|--[^\r\n]*[\r\n]|\\s)+"
+	serverRegEx := "CREATE" + commentOrSpace + "SERVER" + commentOrSpace + id + commentOrSpace + "(TYPE" + commentOrSpace + id + commentOrSpace + ")??FOREIGN" + commentOrSpace + "DATA" + commentOrSpace + "WRAPPER" + commentOrSpace + id
 
 	var compRegEx *regexp.Regexp
-	compRegEx = regexp.MustCompile(regEx)
+	compRegEx = regexp.MustCompile(serverRegEx)
 
 	lines := Tokenize(ddl)
 	for _, line := range lines {
 		line = strings.ToUpper(line)
 
-		if ok, _ := regexp.Match(regEx, []byte(line)); ok {
+		if ok, _ := regexp.Match(serverRegEx, []byte(line)); ok {
 			match := compRegEx.FindStringSubmatch(line)
 			sources = append(sources, DatasourceInfo{
-				Name: stripQuotes(match[1]),
-				Type: stripQuotes(match[6]),
+				Name: stripQuotes(match[5]),
+				Type: stripQuotes(match[22]),
 			})
 		}
 	}
 	return sources
 }
 
-// MaterializiedViewsInDdl --
-func MaterializiedViewsInDdl(ddl string) []string {
-	materialization := "MATERIALIZED\\s+'?TRUE'?"
-	materializationTable := "MATERIALIZED_TABLE\\s+"
-	id := "(\\w+|(?:\"[^\"]*\")|()'[^']*'+)"
+// ShouldMaterialize --
+func ShouldMaterialize(ddl string) bool {
+	commentOrSpace := "(/\\*([^*]|\\*[^/])*\\*/|--[^\r\n]*[\r\n]|\\s)+"
+	materialization := "(?i)MATERIALIZED" + commentOrSpace + "'?TRUE'?"
+	materializationTable := "(?i)MATERIALIZED_TABLE" + commentOrSpace
+	viewEx := "(?i)CREATE" + commentOrSpace + "(VIRTUAL" + commentOrSpace + ")?" + "VIEW" + commentOrSpace
 
-	var views []string = make([]string, 0)
-	viewEx := "CREATE\\s+VIEW\\s+" + id + "\\s+.*"
-	viewRegEx := regexp.MustCompile(viewEx)
-
-	databaseEx := "CREATE\\s+DATABASE\\s+" + id + ";?\\s+.*"
-	databaseRegEx := regexp.MustCompile(databaseEx)
-
-	createSchemaEx := "CREATE\\s+VIRTUAL\\s+SCHEMA\\s+" + id + "[;?$|\\s+.*]"
-	createSchemaRegEx := regexp.MustCompile(createSchemaEx)
-
-	setSchemaEx := "SET\\s+SCHEMA\\s+" + id + "[;?$|\\s+.*]"
-	setSchemaRegEx := regexp.MustCompile(setSchemaEx)
-
-	var database string
-	var schema string
 	lines := Tokenize(ddl)
 	for _, line := range lines {
 		line = strings.ToUpper(line)
-
-		if ok, _ := regexp.Match(databaseEx, []byte(line)); ok {
-			database = databaseRegEx.FindStringSubmatch(line)[1]
-		}
-
-		if ok, _ := regexp.Match(createSchemaEx, []byte(line)); ok {
-			schema = createSchemaRegEx.FindStringSubmatch(line)[1]
-		}
-
-		if ok, _ := regexp.Match(setSchemaEx, []byte(line)); ok {
-			schema = setSchemaRegEx.FindStringSubmatch(line)[1]
-		}
-
 		// parse view
 		if ok, _ := regexp.Match(viewEx, []byte(line)); ok {
-			match := viewRegEx.FindStringSubmatch(line)
 			if ok, _ := regexp.Match(materialization, []byte(line)); ok {
 				if ok, _ := regexp.Match(materializationTable, []byte(line)); !ok {
-					views = append(views, stripQuotes(database+"."+schema+"."+match[1]))
+					return true
 				}
 			}
 		}
 	}
-	return views
+	return false
 }
 
 func stripQuotes(s string) string {
