@@ -319,8 +319,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 
 	// Check to see if the VDB has materialization annoations, if yes then generate
 	// materialization schema
-	views := vdbutil.MaterializiedViewsInDdl(ddlStr)
-	vdbNeedsCacheStore := len(views) > 0
+	vdbNeedsCacheStore := vdbutil.ShouldMaterialize(ddlStr)
 
 	//Binary build, generate the pom file
 	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI, vdbNeedsCacheStore)
