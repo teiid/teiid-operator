@@ -75,7 +75,7 @@ func (action *createServiceAction) Handle(ctx context.Context, vdb *v1alpha1.Vir
 			log.Info("Services created:" + vdb.ObjectMeta.Name)
 			// create services that need to be exposed
 			var createRoute bool = true
-			for _, exposeType := range vdb.Spec.Expose.Types {
+			for _, exposeType := range vdb.Spec.Expose {
 				if exposeType == v1alpha1.LoadBalancer {
 					_, err := action.createExternalService(vdb, r, vdb.ObjectMeta.Name+"-external", corev1.ServiceTypeLoadBalancer)
 					if err != nil {

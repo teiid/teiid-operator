@@ -5,8 +5,7 @@ metadata:
 spec:
   replicas: 1
   expose:
-    types:
-      - LoadBalancer
+    - LoadBalancer
   datasources:
     - name: sampledb
       type: postgresql
