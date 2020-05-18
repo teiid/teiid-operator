@@ -4,6 +4,9 @@ metadata:
   name: dv-customer
 spec:
   replicas: 1
+  expose:
+    types:
+      - LoadBalancer
   datasources:
     - name: sampledb
       type: postgresql

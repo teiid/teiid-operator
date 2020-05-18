@@ -228,13 +228,15 @@ func deploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDa
 	return envvar.Combine(defaultEnvs, dataSourceConfig), nil
 }
 
-func containerPorts() []corev1.ContainerPort {
+func containerPorts(externalOnly bool) []corev1.ContainerPort {
 	ports := []corev1.ContainerPort{}
-	ports = append(ports, corev1.ContainerPort{Name: "http", ContainerPort: int32(8080), Protocol: corev1.ProtocolTCP})
-	ports = append(ports, corev1.ContainerPort{Name: "jolokia", ContainerPort: int32(8778), Protocol: corev1.ProtocolTCP})
-	ports = append(ports, corev1.ContainerPort{Name: "prometheus", ContainerPort: int32(9779), Protocol: corev1.ProtocolTCP})
-	ports = append(ports, corev1.ContainerPort{Name: "teiid", ContainerPort: int32(31000), Protocol: corev1.ProtocolTCP})
-	ports = append(ports, corev1.ContainerPort{Name: "pg", ContainerPort: int32(35432), Protocol: corev1.ProtocolTCP})
+	if !externalOnly {
+		ports = append(ports, corev1.ContainerPort{Name: "http", ContainerPort: int32(8080), Protocol: corev1.ProtocolTCP})
+		ports = append(ports, corev1.ContainerPort{Name: "jolokia", ContainerPort: int32(8778), Protocol: corev1.ProtocolTCP})
+		ports = append(ports, corev1.ContainerPort{Name: "prometheus", ContainerPort: int32(9779), Protocol: corev1.ProtocolTCP})
+		ports = append(ports, corev1.ContainerPort{Name: "teiid", ContainerPort: int32(31000), Protocol: corev1.ProtocolTCP})
+		ports = append(ports, corev1.ContainerPort{Name: "pg", ContainerPort: int32(35432), Protocol: corev1.ProtocolTCP})
+	}
 	ports = append(ports, corev1.ContainerPort{Name: "teiid-secure", ContainerPort: int32(31443), Protocol: corev1.ProtocolTCP})
 	ports = append(ports, corev1.ContainerPort{Name: "pg-secure", ContainerPort: int32(35443), Protocol: corev1.ProtocolTCP})
 	return ports
@@ -323,7 +325,7 @@ func (action *deploymentAction) buildDeployment(vdb *v1alpha1.VirtualDatabase, s
 							Resources:       computingResources,
 							Image:           serviceBC.Spec.Output.To.Name,
 							ImagePullPolicy: corev1.PullAlways,
-							Ports:           containerPorts(),
+							Ports:           containerPorts(false),
 							LivenessProbe:   probe,
 							ReadinessProbe:  probe,
 							WorkingDir:      "/deployments",
