@@ -93,7 +93,7 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 		}
 	}
 
-	for _, exposeType := range vdb.Spec.Expose.Types {
+	for _, exposeType := range vdb.Spec.Expose {
 		if exposeType == v1alpha1.ExposeVia3scale {
 			project.AddDependencies(maven.Dependency{
 				GroupID:    "org.teiid",

@@ -400,14 +400,10 @@ spec:
             expose:
               description: Defines the services (LoadBalancer, NodePort, 3scale) to
                 expose
-              properties:
-                types:
-                  description: Types of services to expose
-                  items:
-                    description: ExposeType - type of service to be exposed
-                    type: string
-                  type: array
-              type: object
+              items:
+                description: ExposeType - type of service to be exposed
+                type: string
+              type: array
             jaeger:
               description: Jaeger instance to use to push the tracing information
               type: string

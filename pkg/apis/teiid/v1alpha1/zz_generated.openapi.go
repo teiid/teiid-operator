@@ -14,7 +14,6 @@ import (
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
 		"./pkg/apis/teiid/v1alpha1.DataSourceObject":           schema_pkg_apis_teiid_v1alpha1_DataSourceObject(ref),
-		"./pkg/apis/teiid/v1alpha1.ExposeObject":               schema_pkg_apis_teiid_v1alpha1_ExposeObject(ref),
 		"./pkg/apis/teiid/v1alpha1.Source":                     schema_pkg_apis_teiid_v1alpha1_Source(ref),
 		"./pkg/apis/teiid/v1alpha1.ValueSource":                schema_pkg_apis_teiid_v1alpha1_ValueSource(ref),
 		"./pkg/apis/teiid/v1alpha1.VirtualDatabase":            schema_pkg_apis_teiid_v1alpha1_VirtualDatabase(ref),
@@ -63,33 +62,6 @@ func schema_pkg_apis_teiid_v1alpha1_DataSourceObject(ref common.ReferenceCallbac
 		},
 		Dependencies: []string{
 			"k8s.io/api/core/v1.EnvVar"},
-	}
-}
-
-func schema_pkg_apis_teiid_v1alpha1_ExposeObject(ref common.ReferenceCallback) common.OpenAPIDefinition {
-	return common.OpenAPIDefinition{
-		Schema: spec.Schema{
-			SchemaProps: spec.SchemaProps{
-				Description: "ExposeObject - defines the services that need to be exposed",
-				Type:        []string{"object"},
-				Properties: map[string]spec.Schema{
-					"types": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Types of services to expose",
-							Type:        []string{"array"},
-							Items: &spec.SchemaOrArray{
-								Schema: &spec.Schema{
-									SchemaProps: spec.SchemaProps{
-										Type:   []string{"string"},
-										Format: "",
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
 	}
 }
 
@@ -332,7 +304,15 @@ func schema_pkg_apis_teiid_v1alpha1_VirtualDatabaseSpec(ref common.ReferenceCall
 					"expose": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Defines the services (LoadBalancer, NodePort, 3scale) to expose",
-							Ref:         ref("./pkg/apis/teiid/v1alpha1.ExposeObject"),
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -340,7 +320,7 @@ func schema_pkg_apis_teiid_v1alpha1_VirtualDatabaseSpec(ref common.ReferenceCall
 			},
 		},
 		Dependencies: []string{
-			"./pkg/apis/teiid/v1alpha1.DataSourceObject", "./pkg/apis/teiid/v1alpha1.ExposeObject", "./pkg/apis/teiid/v1alpha1.VirtualDatabaseBuildObject", "k8s.io/api/core/v1.EnvVar", "k8s.io/api/core/v1.ResourceRequirements"},
+			"./pkg/apis/teiid/v1alpha1.DataSourceObject", "./pkg/apis/teiid/v1alpha1.VirtualDatabaseBuildObject", "k8s.io/api/core/v1.EnvVar", "k8s.io/api/core/v1.ResourceRequirements"},
 	}
 }
 
