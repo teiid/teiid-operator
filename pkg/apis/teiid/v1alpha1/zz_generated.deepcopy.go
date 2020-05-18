@@ -47,7 +47,6 @@ func (in *Source) DeepCopyInto(out *Source) {
 			(*out)[key] = val
 		}
 	}
-	in.MavenSettings.DeepCopyInto(&out.MavenSettings)
 	return
 }
 

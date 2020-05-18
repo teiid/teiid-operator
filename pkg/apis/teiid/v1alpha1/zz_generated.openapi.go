@@ -129,17 +129,9 @@ func schema_pkg_apis_teiid_v1alpha1_Source(ref common.ReferenceCallback) common.
 							},
 						},
 					},
-					"mavenSettings": {
-						SchemaProps: spec.SchemaProps{
-							Description: "Custom Maven settings.xml file to go with build in a configmap or secret",
-							Ref:         ref("./pkg/apis/teiid/v1alpha1.ValueSource"),
-						},
-					},
 				},
 			},
 		},
-		Dependencies: []string{
-			"./pkg/apis/teiid/v1alpha1.ValueSource"},
 	}
 }
 
@@ -368,6 +360,13 @@ func schema_pkg_apis_teiid_v1alpha1_VirtualDatabaseStatus(ref common.ReferenceCa
 						},
 					},
 					"version": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Deployed vdb version.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"cachestore": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Deployed vdb version.",
 							Type:        []string{"string"},

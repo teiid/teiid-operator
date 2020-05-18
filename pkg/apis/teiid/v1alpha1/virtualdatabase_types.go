@@ -129,11 +129,6 @@ type Source struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Custom Maven Repositories"
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
-
-	// Custom Maven settings.xml file to go with build in a configmap or secret
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Maven Settings File"
-	MavenSettings ValueSource `json:"mavenSettings,omitempty"`
 }
 
 // ValueSource --
