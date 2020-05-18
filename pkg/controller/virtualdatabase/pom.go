@@ -338,8 +338,31 @@ func createPlainMavenProject(name string) maven.Project {
 
 func readMavenSettingsFile(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase, pom maven.Project) (string, error) {
 	settingsContent, err := maven.EncodeXML(maven.NewDefaultSettings(pom.Repositories))
-	if vdb.Spec.Build.Source.MavenSettings.ConfigMapKeyRef != nil || vdb.Spec.Build.Source.MavenSettings.SecretKeyRef != nil {
-		settingsContent, err = kubernetes.ResolveValueSource(ctx, r.client, vdb.ObjectMeta.Namespace, &vdb.Spec.Build.Source.MavenSettings)
+
+	if kubernetes.HasSecret(ctx, r.client, vdb.ObjectMeta.Name+"-maven-settings", vdb.ObjectMeta.Namespace) {
+		selector := &corev1.SecretKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: vdb.ObjectMeta.Name + "-maven-settings",
+			},
+			Key: "settings.xml",
+		}
+		settingsContent, err = kubernetes.GetSecretRefValue(ctx, r.client, vdb.ObjectMeta.Namespace, selector)
+	} else if kubernetes.HasConfigMap(ctx, r.client, vdb.ObjectMeta.Name+"-maven-settings", vdb.ObjectMeta.Namespace) {
+		selector := &corev1.ConfigMapKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: vdb.ObjectMeta.Name + "-maven-settings",
+			},
+			Key: "settings.xml",
+		}
+		settingsContent, err = kubernetes.GetConfigMapRefValue(ctx, r.client, vdb.ObjectMeta.Namespace, selector)
+	} else if kubernetes.HasSecret(ctx, r.client, "teiid-maven-settings", vdb.ObjectMeta.Namespace) {
+		selector := &corev1.SecretKeySelector{
+			LocalObjectReference: corev1.LocalObjectReference{
+				Name: "teiid-maven-settings",
+			},
+			Key: "settings.xml",
+		}
+		settingsContent, err = kubernetes.GetSecretRefValue(ctx, r.client, vdb.ObjectMeta.Namespace, selector)
 	} else if kubernetes.HasConfigMap(ctx, r.client, "teiid-maven-settings", vdb.ObjectMeta.Namespace) {
 		selector := &corev1.ConfigMapKeySelector{
 			LocalObjectReference: corev1.LocalObjectReference{
