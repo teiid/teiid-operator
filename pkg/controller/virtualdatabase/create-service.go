@@ -73,9 +73,31 @@ func (action *createServiceAction) Handle(ctx context.Context, vdb *v1alpha1.Vir
 			vdb.Status.Failure = "Failed to create Service"
 		} else {
 			log.Info("Services created:" + vdb.ObjectMeta.Name)
-			if vdb.Spec.ExposeVia3Scale {
-				log.Info("creation of Route skipped as it is configured to be exposed through 3scale")
-			} else {
+			// create services that need to be exposed
+			var createRoute bool = true
+			for _, exposeType := range vdb.Spec.Expose.Types {
+				if exposeType == v1alpha1.LoadBalancer {
+					_, err := action.createExternalService(vdb, r, vdb.ObjectMeta.Name+"-external", corev1.ServiceTypeLoadBalancer)
+					if err != nil {
+						vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
+						vdb.Status.Failure = "Failed to create External LoadBalancer Service"
+					}
+				} else if exposeType == v1alpha1.NodePort {
+					_, err := action.createExternalService(vdb, r, vdb.ObjectMeta.Name+"-external", corev1.ServiceTypeNodePort)
+					if err != nil {
+						vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
+						vdb.Status.Failure = "Failed to create External NodePort Service"
+					}
+				} else if exposeType == v1alpha1.ExposeVia3scale {
+					log.Info("creation of Route skipped as it is configured to be exposed through 3scale")
+					createRoute = false
+				} else if exposeType == v1alpha1.Route {
+					createRoute = true
+				}
+			}
+
+			// create route to the odata service
+			if createRoute {
 				route, err := action.createRoute(service, vdb, r)
 				if err != nil {
 					vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
@@ -95,7 +117,7 @@ func (action *createServiceAction) createService(vdb *v1alpha1.VirtualDatabase,
 	r *ReconcileVirtualDatabase, hasCertSecret bool) (corev1.Service, error) {
 
 	servicePorts := []corev1.ServicePort{}
-	for _, port := range containerPorts() {
+	for _, port := range containerPorts(false) {
 		servicePorts = append(servicePorts, corev1.ServicePort{
 			Name:       port.Name,
 			Protocol:   port.Protocol,
@@ -210,4 +232,61 @@ func (action *createServiceAction) createRoute(service corev1.Service, vdb *v1al
 		}
 	}
 	return *found, err
+}
+
+func (action *createServiceAction) createExternalService(vdb *v1alpha1.VirtualDatabase,
+	r *ReconcileVirtualDatabase, name string, serviceType corev1.ServiceType) (corev1.Service, error) {
+
+	servicePorts := []corev1.ServicePort{}
+	for _, port := range containerPorts(true) {
+		servicePorts = append(servicePorts, corev1.ServicePort{
+			Name:       port.Name,
+			Protocol:   port.Protocol,
+			Port:       getExposedPort(port),
+			TargetPort: intstr.FromInt(int(port.ContainerPort)),
+		},
+		)
+	}
+
+	labels := map[string]string{
+		"app":                      vdb.ObjectMeta.Name,
+		"teiid.io/VirtualDatabase": vdb.ObjectMeta.Name,
+		"teiid.io/type":            "VirtualDatabase",
+	}
+
+	matchLables := matchLabels(vdb.ObjectMeta.Name)
+
+	meta := metav1.ObjectMeta{
+		Name:      name,
+		Namespace: vdb.Namespace,
+		Labels:    labels,
+	}
+	timeout := int32(86400)
+	service := corev1.Service{
+		ObjectMeta: meta,
+		Spec: corev1.ServiceSpec{
+			Selector:        matchLables,
+			Type:            serviceType,
+			Ports:           servicePorts,
+			SessionAffinity: corev1.ServiceAffinityClientIP,
+			SessionAffinityConfig: &corev1.SessionAffinityConfig{
+				ClientIP: &corev1.ClientIPConfig{
+					TimeoutSeconds: &timeout,
+				},
+			},
+		},
+	}
+	service.SetGroupVersionKind(corev1.SchemeGroupVersion.WithKind("Service"))
+	err := controllerutil.SetControllerReference(vdb, &service, r.client.GetScheme())
+	if err != nil {
+		log.Error(err)
+	}
+
+	service.ResourceVersion = ""
+	err = kubernetes.EnsureObject(&service,
+		r.client.Get(context.TODO(), types.NamespacedName{Name: service.Name, Namespace: service.Namespace}, &corev1.Service{}), r.client)
+	if err != nil {
+		return corev1.Service{}, err
+	}
+	return service, nil
 }

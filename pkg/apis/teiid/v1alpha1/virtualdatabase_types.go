@@ -16,10 +16,6 @@ type VirtualDatabaseSpec struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Replicas"
 	Replicas *int32 `json:"replicas,omitempty"`
-	// Expose route via 3scale
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Expose Via 3scale"
-	ExposeVia3Scale bool `json:"exposeVia3scale,omitempty"`
 	// Environment properties required for deployment
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Properties"
@@ -40,6 +36,10 @@ type VirtualDatabaseSpec struct {
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
 	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Datasources Configuration"
 	DataSources []DataSourceObject `json:"datasources,omitempty"`
+	// Defines the services (LoadBalancer, NodePort, 3scale) to expose
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Services Created"
+	Expose ExposeObject `json:"expose,omitempty"`
 }
 
 // VirtualDatabaseStatus defines the observed state of VirtualDatabase
@@ -138,6 +138,29 @@ type ValueSource struct {
 	ConfigMapKeyRef *corev1.ConfigMapKeySelector `json:"configMapKeyRef,omitempty"`
 	// Selects a key of a secret.
 	SecretKeyRef *corev1.SecretKeySelector `json:"secretKeyRef,omitempty"`
+}
+
+// ExposeType - type of service to be exposed
+type ExposeType string
+
+const (
+	// LoadBalancer type service to expose
+	LoadBalancer ExposeType = "LoadBalancer"
+	// NodePort type service to expose
+	NodePort ExposeType = "NodePort"
+	// Route Openshift Route to expose
+	Route ExposeType = "Route"
+	// ExposeVia3scale just service, not route
+	ExposeVia3scale ExposeType = "ExposeVia3scale"
+)
+
+// ExposeObject - defines the services that need to be exposed
+// +k8s:openapi-gen=true
+type ExposeObject struct {
+	// Types of services to expose
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="types"
+	Types []ExposeType `json:"types,omitempty"`
 }
 
 // DataSourceObject - define the datasources that this Virtual Database integrates

@@ -93,12 +93,14 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 		}
 	}
 
-	if vdb.Spec.ExposeVia3Scale {
-		project.AddDependencies(maven.Dependency{
-			GroupID:    "org.teiid",
-			ArtifactID: "spring-keycloak",
-			Version:    constants.Config.TeiidSpringBootVersion,
-		})
+	for _, exposeType := range vdb.Spec.Expose.Types {
+		if exposeType == v1alpha1.ExposeVia3scale {
+			project.AddDependencies(maven.Dependency{
+				GroupID:    "org.teiid",
+				ArtifactID: "spring-keycloak",
+				Version:    constants.Config.TeiidSpringBootVersion,
+			})
+		}
 	}
 
 	if includeIspnDependency {
