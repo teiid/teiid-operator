@@ -30,10 +30,10 @@ import (
 var log = logs.GetLogger("vdbutil")
 
 // FetchDdl Get DDL from Custom Resource file, if maven based from Maven file
-func FetchDdl(vdb *v1alpha1.VirtualDatabase) (string, error) {
+func FetchDdl(vdb *v1alpha1.VirtualDatabase, targetName string) (string, error) {
 	ddlStr := vdb.Spec.Build.Source.DDL
 	if vdb.Spec.Build.Source.Maven != "" {
-		str, err := readDdlFromMavenRepo(vdb, "/tmp/teiid.vdb")
+		str, err := readDdlFromMavenRepo(vdb, targetName)
 		if err != nil {
 			log.Error("failed to read VDB from maven ", err)
 			return "", err
