@@ -22,6 +22,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -128,8 +129,18 @@ func ParseGAV(gav string) (Dependency, error) {
 
 // DownloadDependency --
 func DownloadDependency(d Dependency, filepath string, mavenRepos map[string]string) (string, error) {
+	// check if this is SNAPSHOT release, if yes build the version timestamp
+	snapshot := strings.Contains(d.Version, "SNAPSHOT")
+	versionTimestamped := ""
+	if snapshot {
+		versionTimestamped = getSnapshotVersion(d, mavenRepos)
+		if versionTimestamped == "" {
+			return "", errors.New("Failed to download the SNAPSHOT version of the artifact")
+		}
+	}
+
 	parts := append(strings.Split(d.GroupID, "."), d.ArtifactID)
-	artifactName := strings.Join(append(parts, d.Version), "/") + "/" + fileName(d)
+	artifactName := strings.Join(append(parts, d.Version), "/") + "/" + fileName(d, versionTimestamped)
 
 	for _, v := range mavenRepos {
 		url := v + artifactName
@@ -141,16 +152,48 @@ func DownloadDependency(d Dependency, filepath string, mavenRepos map[string]str
 			return filepath, nil
 		}
 	}
-	return "", errors.New("Failed to download the artfact from configured maven repositories")
+	return "", errors.New("Failed to download the artifact from configured maven repositories")
 }
 
-func fileName(a Dependency) string {
+func getSnapshotVersion(a Dependency, mavenRepos map[string]string) string {
+	for _, v := range mavenRepos {
+		url := v
+		if !strings.HasSuffix(v, "/") {
+			url = url + "/"
+		}
+		group := strings.Replace(a.GroupID, ".", "/", -1)
+		url = url + group + "/" + a.ArtifactID + "/" + a.Version + "/maven-metadata.xml"
+		err := downloadFile("/tmp/maven-metadata.xml", url)
+		if err == nil {
+			xmlFile, err := ioutil.ReadFile("/tmp/maven-metadata.xml")
+			if err == nil {
+				m, err := parseMavenMetadata(xmlFile)
+				if err == nil {
+					for _, sv := range m.Versioning.SnapshotVersions {
+						if sv.Extension == a.Type {
+							return sv.Value
+						}
+					}
+				}
+			}
+		}
+	}
+	return ""
+}
+
+func fileName(a Dependency, versionTimestamped string) string {
 	ext := "jar"
 	if a.Type != "" {
 		ext = a.Type
 	}
 	if a.Classifier != "" {
+		if versionTimestamped != "" {
+			return fmt.Sprintf("%s-%s-%s.%s", a.ArtifactID, versionTimestamped, a.Classifier, ext)
+		}
 		return fmt.Sprintf("%s-%s-%s.%s", a.ArtifactID, a.Version, a.Classifier, ext)
+	}
+	if versionTimestamped != "" {
+		return fmt.Sprintf("%s-%s.%s", a.ArtifactID, versionTimestamped, ext)
 	}
 	return fmt.Sprintf("%s-%s.%s", a.ArtifactID, a.Version, ext)
 }

@@ -153,6 +153,34 @@ type Activation struct {
 	Property        *PropertyActivation `xml:"property,omitempty"`
 }
 
+// Metadata --
+type Metadata struct {
+	GroupID    string     `xml:"groupId"`
+	ArtifactID string     `xml:"artifactId"`
+	Version    string     `xml:"version"`
+	Versioning Versioning `xml:"versioning"`
+}
+
+// Versioning --
+type Versioning struct {
+	Snapshot         Snapshot          `xml:"snapshot"`
+	LastUpdated      string            `xml:"lastUpdated"`
+	SnapshotVersions []SnapshotVersion `xml:"snapshotVersions>snapshotVersion,omitempty"`
+}
+
+// Snapshot --
+type Snapshot struct {
+	Timestamp   string `xml:"timestamp"`
+	BuildNumber string `xml:"buildNumber"`
+}
+
+// SnapshotVersion --
+type SnapshotVersion struct {
+	Extension string `xml:"extension"`
+	Value     string `xml:"value"`
+	Updated   string `xml:"updated"`
+}
+
 // PropertyActivation --
 type PropertyActivation struct {
 	Name  string `xml:"name"`
@@ -177,4 +205,13 @@ func (m Properties) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	}
 
 	return e.EncodeToken(start.End())
+}
+
+func parseMavenMetadata(contents []byte) (*Metadata, error) {
+	c := &Metadata{}
+	err := xml.Unmarshal(contents, c)
+	if err != nil {
+		return c, err
+	}
+	return c, nil
 }

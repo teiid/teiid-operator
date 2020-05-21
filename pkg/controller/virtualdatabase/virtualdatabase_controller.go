@@ -105,9 +105,10 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 			phaseFrom := target.Status.Phase
 
 			log.Debugf("Invoking action %s", a.Name())
-			if err := a.Handle(ctx, target, r); err != nil {
-				log.Error("Failed during action ", a.Name(), " ", err)
-				return reconcile.Result{}, err
+			var processError error
+			if processError = a.Handle(ctx, target, r); processError != nil {
+				log.Error("Failed during action ", a.Name(), " ", processError)
+				//return reconcile.Result{}, err
 			}
 
 			// only if the object changed update it
@@ -131,7 +132,7 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 					)
 				}
 				// this will auto-queue since the update is successful
-				return reconcile.Result{}, err
+				return reconcile.Result{}, processError
 			}
 		} else {
 			continue

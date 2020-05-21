@@ -225,3 +225,43 @@ func TestNewRepositoryWithID(t *testing.T) {
 	assert.True(t, r.Releases.Enabled)
 	assert.False(t, r.Snapshots.Enabled)
 }
+
+func TestMetadata(t *testing.T) {
+
+	contents := `<metadata modelVersion="1.1.0">
+	<groupId>org.teiid.examples</groupId>
+	<artifactId>postgresql-maven</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<versioning>
+	  <snapshot>
+	     <timestamp>20200506.095522</timestamp>
+	     <buildNumber>1</buildNumber>
+	  </snapshot>
+	  <lastUpdated>20200506095522</lastUpdated>
+	  <snapshotVersions>
+	     <snapshotVersion>
+	       <extension>vdb</extension>
+	       <value>1.0-20200506.095522-1</value>
+	       <updated>20200506095522</updated>
+	     </snapshotVersion>
+	     <snapshotVersion>
+	        <extension>pom</extension>
+	        <value>1.0-20200506.095522-1</value>
+	        <updated>20200506095522</updated>
+	     </snapshotVersion>
+	   </snapshotVersions>
+	</versioning>
+	</metadata>`
+
+	m, err := parseMavenMetadata([]byte(contents))
+	assert.Nil(t, err)
+	assert.NotNil(t, m)
+
+	assert.Equal(t, "org.teiid.examples", m.GroupID)
+	assert.Equal(t, "postgresql-maven", m.ArtifactID)
+	assert.Equal(t, "1.0-SNAPSHOT", m.Version)
+	assert.Equal(t, 2, len(m.Versioning.SnapshotVersions))
+	assert.Equal(t, "vdb", m.Versioning.SnapshotVersions[0].Extension)
+	assert.Equal(t, "20200506095522", m.Versioning.SnapshotVersions[0].Updated)
+	assert.Equal(t, "1.0-20200506.095522-1", m.Versioning.SnapshotVersions[0].Value)
+}

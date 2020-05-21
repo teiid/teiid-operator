@@ -209,7 +209,7 @@ func (action *deploymentAction) isDeploymentProgressing(dc appsv1.Deployment) bo
 
 // DeploymentEnvironments --
 func deploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) ([]corev1.EnvVar, error) {
-	ddlString, err := vdbutil.FetchDdl(vdb)
+	ddlString, err := vdbutil.FetchDdl(vdb, "/tmp/teiid.vdb")
 	if err != nil {
 		return nil, err
 	}

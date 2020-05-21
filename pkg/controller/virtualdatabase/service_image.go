@@ -64,7 +64,12 @@ func (action *serviceImageAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool 
 func (action *serviceImageAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImageFinished {
 		vdb.Status.Phase = v1alpha1.ReconcilerPhaseServiceImage
-		return action.buildServiceImage(ctx, vdb, r)
+		err := action.buildServiceImage(ctx, vdb, r)
+		if err != nil {
+			vdb.Status.Phase = v1alpha1.ReconcilerPhaseError
+			vdb.Status.Failure = err.Error()
+			return err
+		}
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseServiceImage {
 		return action.monitorServiceImage(ctx, vdb, r)
 	}
@@ -119,13 +124,13 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 		if isFatJarBuild(vdb) {
 			files, err := buildJarBasedPayload(vdb)
 			if err != nil {
-				return nil
+				return err
 			}
 			payload = files
 		} else {
 			files, err := buildVdbBasedPayload(ctx, vdb, r)
 			if err != nil {
-				return nil
+				return err
 			}
 			payload = files
 		}
@@ -311,7 +316,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 	}
 
 	var ddlStr string
-	ddlStr, err := vdbutil.FetchDdl(vdb)
+	ddlStr, err := vdbutil.FetchDdl(vdb, "/tmp/teiid.vdb")
 	if err != nil {
 		log.Error("failed to read VDB from maven ", err)
 		return files, err
@@ -344,6 +349,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		// configure pom.xml to copy the teiid.vdb into classpath
 		addCopyPlugIn(vdbDependency, "vdb", "teiid.vdb", "${project.build.outputDirectory}", &pom)
 		vdbFile = "teiid.vdb-file=teiid.vdb"
+		files["/src/main/resources/teiid.ddl"] = ddlStr
 	} else {
 		addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", vdbNeedsCacheStore, vdb.Status.Version)
 		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
