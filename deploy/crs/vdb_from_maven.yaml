@@ -2,6 +2,8 @@ apiVersion: teiid.io/v1alpha1
 kind: VirtualDatabase
 metadata:
   name: dv-customer
+  annotations:
+    consoleName: dv-customer-maven
 spec:
   replicas: 1
   datasources:
