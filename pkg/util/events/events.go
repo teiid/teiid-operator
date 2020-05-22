@@ -53,7 +53,7 @@ func (u *EventSubscribers) Register(handler EventListener) {
 func (u *EventSubscribers) Trigger(eventType EventType, resource types.NamespacedName, payload interface{}) {
 	u.mutex.Lock()
 	for _, handler := range u.handlers {
-		go handler.onEvent(eventType, resource, payload)
+		handler.onEvent(eventType, resource, payload)
 	}
 	u.mutex.Unlock()
 }

@@ -19,7 +19,9 @@ package kubernetes
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
@@ -27,7 +29,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	yaml2 "gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	kerrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -239,7 +241,7 @@ func ResolveValueSource(ctx context.Context, client k8sclient.Reader, namespace 
 func EnsureObject(obj v1alpha1.OpenShiftObject, err error, client k8sclient.Writer) error {
 	log := log.With("kind", obj.GetObjectKind().GroupVersionKind().Kind, "name", obj.GetName(), "namespace", obj.GetNamespace())
 
-	if err != nil && errors.IsNotFound(err) {
+	if err != nil && kerrors.IsNotFound(err) {
 		// Define a new Object
 		log.Info("Creating")
 		err = client.Create(context.TODO(), obj)
@@ -281,6 +283,17 @@ func EnvironmentPropertiesExists(ctx context.Context, client k8sclient.Reader, n
 		}
 	}
 	return true
+}
+
+// ValidateEnvironmentPropertyNames --
+func ValidateEnvironmentPropertyNames(envs []corev1.EnvVar) error {
+	re := regexp.MustCompile("^[A-Z]{1}[A-Z0-9_]*$")
+	for _, env := range envs {
+		if !re.MatchString(env.Name) {
+			return errors.New("The environment property with name " + env.Name + " does not confirm to naming rules. Can not contain any special characters/hyphens/periods")
+		}
+	}
+	return nil
 }
 
 // RevisionOfConfigMapOrSecret --

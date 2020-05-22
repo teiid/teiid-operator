@@ -326,8 +326,16 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 	// materialization schema
 	vdbNeedsCacheStore := vdbutil.ShouldMaterialize(ddlStr)
 
+	// read data source names from the DDL and make sure they follow the naming restrictions
+	dataSourceInfos := vdbutil.ParseDataSourcesInfoFromDdl(ddlStr)
+	err = vdbutil.ValidateDataSourceNames(dataSourceInfos)
+	if err != nil {
+		log.Error("Data Source names are not in valid format ", err)
+		return files, err
+	}
+
 	//Binary build, generate the pom file
-	pom, err := GenerateVdbPom(vdb, vdbutil.ParseDataSourcesInfoFromDdl(ddlStr), false, addOpenAPI, vdbNeedsCacheStore)
+	pom, err := GenerateVdbPom(vdb, dataSourceInfos, false, addOpenAPI, vdbNeedsCacheStore)
 	if err != nil {
 		return files, err
 	}

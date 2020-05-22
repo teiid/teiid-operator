@@ -54,6 +54,12 @@ func (action *initializeAction) Handle(ctx context.Context, vdb *v1alpha1.Virtua
 
 	if &vdb.Status.Phase == nil || vdb.Status.Phase == v1alpha1.ReconcilerPhaseInitial {
 
+		err := kubernetes.ValidateEnvironmentPropertyNames(vdb.Spec.Env)
+		if err != nil {
+			vdb.Status.Failure = "Invalid propertie(s) defined in Environment, make sure they confirm to naming convention of ENV"
+			return err
+		}
+
 		// make sure all env properties exist before proceeding
 		if !kubernetes.EnvironmentPropertiesExists(ctx, r.client, vdb.ObjectMeta.Namespace, vdb.Spec.Env) {
 			vdb.Status.Failure = "Configuration missing, make sure to supply all the ConfigMaps and Secrets required"
