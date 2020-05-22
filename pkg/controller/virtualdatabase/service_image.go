@@ -122,7 +122,7 @@ func (action *serviceImageAction) buildServiceImage(ctx context.Context, vdb *v1
 
 		var payload map[string]string
 		if isFatJarBuild(vdb) {
-			files, err := buildJarBasedPayload(vdb)
+			files, err := buildJarBasedPayload(vdb, r)
 			if err != nil {
 				return err
 			}
@@ -269,7 +269,7 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 	return bc, nil
 }
 
-func buildJarBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, error) {
+func buildJarBasedPayload(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (map[string]string, error) {
 	files := map[string]string{}
 
 	//Binary build, generate the pom file
@@ -294,7 +294,7 @@ func buildJarBasedPayload(vdb *v1alpha1.VirtualDatabase) (map[string]string, err
 	log.Info("Pom file generated %s", pomContent)
 
 	files["/pom.xml"] = pomContent
-	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
+	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig(r.client, vdb.ObjectMeta.Namespace)
 
 	return files, nil
 }
@@ -378,7 +378,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 
 	files["/settings.xml"] = settingsContent
 	files["/pom.xml"] = pomContent
-	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig()
+	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig(r.client, vdb.ObjectMeta.Namespace)
 	files["/src/main/resources/application.properties"] = applicationProperties(vdbFile, vdb.ObjectMeta.Name)
 
 	return files, nil

@@ -17,8 +17,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+import (
+	"context"
+
+	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
+	k8sclient "sigs.k8s.io/controller-runtime/pkg/client"
+)
+
 // PrometheusConfig --
-func PrometheusConfig() string {
+func PrometheusConfig(client k8sclient.Reader, namespace string) string {
+	cm, err := kubernetes.GetConfigMap(context.TODO(), client, "teiid-prometheus-config", namespace)
+	if err == nil && cm.Data["rules"] != "" {
+		return cm.Data["rules"]
+	}
 	return `
     startDelaySecs: 5
     ssl: false
@@ -109,179 +120,5 @@ func PrometheusConfig() string {
             type: cache
             entry: $1
 
-    # Spring?
-
-    # Services - CXF from s2i default config
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>NumLogicalRuntimeFaults'
-        name: org.apache.cxf.NumLogicalRuntimeFaults
-        help: Number of logical runtime faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>NumLogicalRuntimeFaults'
-        name: org.apache.cxf.NumLogicalRuntimeFaults
-        help: Number of logical runtime faults
-        type: GAUGE
-        labels:
-          bus.id: $1
-          type: $2
-          service: $3
-          port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>AvgResponseTime'
-        name: org.apache.cxf.AvgResponseTime
-        help: Average Response Time
-        type: GAUGE
-        labels:
-          bus.id: $1
-          type: $2
-          service: $3
-          port: $4
-          operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>AvgResponseTime'
-        name: org.apache.cxf.AvgResponseTime
-        help: Average Response Time
-        type: GAUGE
-        labels:
-              bus.id: $1
-              type: $2
-              service: $3
-              port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>NumInvocations'
-        name: org.apache.cxf.NumInvocations
-        help: Number of invocations
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>NumInvocations'
-        name: org.apache.cxf.NumInvocations
-        help: Number of invocations
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>MaxResponseTime'
-        name: org.apache.cxf.MaxResponseTime
-        help: Maximum Response Time
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>MaxResponseTime'
-        name: org.apache.cxf.MaxResponseTime
-        help: Maximum Response Time
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>MinResponseTime'
-        name: org.apache.cxf.MinResponseTime
-        help: Minimum Response Time
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>MinResponseTime'
-        name: org.apache.cxf.MinResponseTime
-        help: Minimum Response Time
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>TotalHandlingTime'
-        name: org.apache.cxf.TotalHandlingTime
-        help: Total Handling Time
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>TotalHandlingTime'
-        name: org.apache.cxf.TotalHandlingTime
-        help: Total Handling Time
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>NumRuntimeFaults'
-        name: org.apache.cxf.NumRuntimeFaults
-        help: Number of runtime faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>NumRuntimeFaults'
-        name: org.apache.cxf.NumRuntimeFaults
-        help: Number of runtime faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>NumUnCheckedApplicationFaults'
-        name: org.apache.cxf.NumUnCheckedApplicationFaults
-        help: Number of unchecked application faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>NumUnCheckedApplicationFaults'
-        name: org.apache.cxf.NumUnCheckedApplicationFaults
-        help: Number of unchecked application faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+), operation=([^,]+)><>NumCheckedApplicationFaults'
-        name: org.apache.cxf.NumCheckedApplicationFaults
-        help: Number of checked application faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
-            operation: $5
-      - pattern: 'org.apache.cxf<bus.id=([^,]+), type=([^,]+), service=([^,]+), port=([^,]+)><>NumCheckedApplicationFaults'
-        name: org.apache.cxf.NumCheckedApplicationFaults
-        help: Number of checked application faults
-        type: GAUGE
-        labels:
-            bus.id: $1
-            type: $2
-            service: $3
-            port: $4
     `
 }

@@ -26,6 +26,6 @@ drivers:
   ucanacess: 5.0.0
 prometheus:
   matchLabels:
-    team: dv
+    team: middleware
 labels:
   version: 1.4.0
