@@ -18,6 +18,7 @@ limitations under the License.
 */
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 )
@@ -90,4 +91,15 @@ func stripQuotes(s string) string {
 		return strings.ToLower(s[1 : len(s)-1])
 	}
 	return strings.ToLower(s)
+}
+
+// ValidateDataSourceNames --
+func ValidateDataSourceNames(ds []DatasourceInfo) error {
+	re := regexp.MustCompile("^[a-zA-Z]{1}[a-zA-Z0-9_]*$")
+	for _, ds := range ds {
+		if !re.MatchString(ds.Name) {
+			return errors.New("The datasource with name " + ds.Name + " does not confirm to naming rules. Can not contain any special characters/hyphens/periods")
+		}
+	}
+	return nil
 }

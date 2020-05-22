@@ -208,3 +208,37 @@ func TestNotMaterialized(t *testing.T) {
 	`
 	assert.Equal(t, false, ShouldMaterialize(ddl))
 }
+
+func TestValidateDataSourceNames(t *testing.T) {
+	ds := []DatasourceInfo{
+		{
+			Name: "foo",
+			Type: "postgresql",
+		},
+	}
+	assert.Nil(t, ValidateDataSourceNames(ds))
+
+	ds = []DatasourceInfo{
+		{
+			Name: "foo-bar",
+			Type: "postgresql",
+		},
+	}
+	assert.NotNil(t, ValidateDataSourceNames(ds))
+
+	ds = []DatasourceInfo{
+		{
+			Name: "foo.bar",
+			Type: "postgresql",
+		},
+	}
+	assert.NotNil(t, ValidateDataSourceNames(ds))
+
+	ds = []DatasourceInfo{
+		{
+			Name: "fooêbar",
+			Type: "postgresql",
+		},
+	}
+	assert.NotNil(t, ValidateDataSourceNames(ds))
+}
