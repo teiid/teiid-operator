@@ -1,4 +1,4 @@
-FROM adoptopenjdk/openjdk11:jdk-11.0.6_10-ubi-minimal
+FROM registry.access.redhat.com/ubi8/openjdk-11:1.3
 
 ENV OPERATOR=/usr/local/bin/teiid-operator
 
@@ -6,6 +6,8 @@ ENV OPERATOR=/usr/local/bin/teiid-operator
 COPY build/_output/bin/teiid-operator ${OPERATOR}
 
 COPY build/bin /usr/local/bin
+
+USER 0
 RUN  /usr/local/bin/user_setup
 
 # Add conf directory

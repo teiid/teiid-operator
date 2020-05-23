@@ -176,9 +176,9 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	incremental := true
 	bi := constants.Config.BuildImage
 	imageName := fmt.Sprintf("%s:%s", bi.ImageName, bi.Tag)
-	isNamespace := vdb.ObjectMeta.Namespace
+	//isNamespace := vdb.ObjectMeta.Namespace
 	// check if the base image is found otherwise use from dockerhub, add to local images
-	if !image.CheckImageStream(imageName, isNamespace, r.imageClient) {
+	if !image.CheckImageStream(imageName, vdb.ObjectMeta.Namespace, r.imageClient) {
 		dockerImage := fmt.Sprintf("%s/%s/%s", bi.Registry, bi.ImagePrefix, bi.ImageName)
 		err := image.CreateImageStream(bi.ImageName, vdb.ObjectMeta.Namespace, dockerImage, bi.Tag, r.imageClient, r.client.GetScheme())
 		if err != nil {
@@ -202,7 +202,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 		Env:         envs,
 		From: corev1.ObjectReference{
 			Name:      imageName,
-			Namespace: isNamespace,
+			Namespace: vdb.ObjectMeta.Namespace,
 			Kind:      "ImageStreamTag",
 		},
 	}

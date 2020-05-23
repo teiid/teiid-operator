@@ -40,6 +40,16 @@
       "springBootPropertyPrefix" : "spring.teiid.data.amazon-s3",
       "jdbc" : false
     },
+    "cassandra" : {
+      "name" : "cassandra",
+      "driverNames" : [ "org.teiid.spring.data.cassandra.CassandraConnectionFactory" ],
+      "datasourceNames" : [ ],
+      "translatorName" : "cassandra",
+      "dialect" : null,
+      "gav" : [ "org.teiid:spring-data-cassandra" ],
+      "springBootPropertyPrefix" : "spring.teiid.data.cassandra",
+      "jdbc" : false
+    },
     "db2" : {
       "name" : "db2",
       "driverNames" : [ "com.ibm.db2.jcc.DB2Driver" ],
