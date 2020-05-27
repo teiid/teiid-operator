@@ -92,8 +92,12 @@ type OpenShiftObject interface {
 // +k8s:openapi-gen=true
 type VirtualDatabaseBuildObject struct {
 	// Environment properties set build purpose
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Environment properties for s2i"
 	Env []corev1.EnvVar `json:"env,omitempty"`
 	// VDB Source details
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="S2I based Source information"
 	Source Source `json:"source,omitempty"`
 }
 
@@ -101,33 +105,33 @@ type VirtualDatabaseBuildObject struct {
 // +k8s:openapi-gen=true
 type Source struct {
 	// Deployed vdb version. For embedded DDL version this will be implicitly provided when ignored, for maven based vdb the maven version is always
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Version Of the VDB"
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Version Of the VDB"
 	Version string `json:"version,omitempty"`
 
 	// DDL based VDB
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="DDL Of the VDB"
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="DDL Of the VDB"
 	DDL string `json:"ddl,omitempty"`
 
 	// A VDB defined in GAV format
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Maven Coordinates for VDB"
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Maven Coordinates for VDB"
 	Maven string `json:"maven,omitempty"`
 
 	// Open API contract that is exposed by the VDB
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="OpenAPI of exposed"
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="OpenAPI of exposed"
 	OpenAPI string `json:"openapi,omitempty"`
 
 	// List of maven dependencies for the build in GAV format
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Maven Dependencies for VDB"
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Maven Dependencies for VDB"
 	Dependencies []string `json:"dependencies,omitempty"`
 
 	// Custom maven repositories that need to be used for the S2I build
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors=true
-	// +operator-sdk:gen-csv:customresourcedefinitions.statusDescriptors.displayName="Custom Maven Repositories"
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors=true
+	// +operator-sdk:gen-csv:customresourcedefinitions.specDescriptors.displayName="Custom Maven Repositories"
 	MavenRepositories map[string]string `json:"mavenRepositories,omitempty"`
 }
 
