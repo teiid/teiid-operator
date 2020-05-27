@@ -1,7 +1,7 @@
-#REGISTRY=quay.io/teiid
-REGISTRY?=`whoami`
+REGISTRY=quay.io/teiid
+#REGISTRY?=`whoami`
 IMAGE=teiid-operator
-TAG?=latest
+TAG?=0.3.0
 CRC_REGISTRY=image-registry.openshift-image-registry.svc:5000
 QUAY_REPOSITORY?=quay.io/teiid/teiid-operator
 
