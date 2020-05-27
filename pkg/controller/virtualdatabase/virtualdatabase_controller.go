@@ -27,7 +27,6 @@ import (
 	imagev1 "github.com/openshift/client-go/image/clientset/versioned/typed/image/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	teiidclient "github.com/teiid/teiid-operator/pkg/client"
-	"github.com/teiid/teiid-operator/pkg/util/events"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -37,7 +36,8 @@ import (
 
 var log = logs.GetLogger("virtualdatabase")
 var _ reconcile.Reconciler = &ReconcileVirtualDatabase{}
-var eventSubscribers = &events.EventSubscribers{}
+
+//var eventSubscribers = &events.EventSubscribers{}
 
 // ReconcileVirtualDatabase reconciles a VirtualDatabase object
 type ReconcileVirtualDatabase struct {
@@ -59,14 +59,14 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	ctx := context.TODO()
 
 	// event listeners
-	eventSubscribers.Register(CacheStoreListener{})
+	//eventSubscribers.Register(CacheStoreListener{})
 
 	// Fetch the VirtualDatabase instance
 	instance := &v1alpha1.VirtualDatabase{}
 	err := r.client.Get(ctx, request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			eventSubscribers.Trigger(events.VdbDeleted, request.NamespacedName, r)
+			// eventSubscribers.Trigger(events.VdbDeleted, request.NamespacedName, r)
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
