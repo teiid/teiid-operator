@@ -41,7 +41,7 @@ metadata:
             ],
             "replicas": 1
           }
-        },
+        }
       ]
     capabilities: Seamless Upgrades
     categories: Database, Integration & Delivery
@@ -575,6 +575,7 @@ spec:
     - email: teiid-dev@lists.jboss.org
       name: https://teiid.io
   maturity: beta
+  replaces: teiid.v0.2.0
   provider:
     name: https://teiid.io
   version: 0.3.0
