@@ -1,21 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: teiid-operator
+  name: dv-operator
+  labels:
+    com.redhat.product-name: Red_Hat_Integration
+    com.redhat.component-name: Data_Virtualization
+    com.redhat.product-version: 2020/Q2
+    com.redhat.component-version: "1.0"
+    com.redhat.component-type: infrastructure
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: teiid-operator
+      name: dv-operator
   template:
     metadata:
       labels:
-        name: teiid-operator
+        name: dv-operator
     spec:
-      serviceAccountName: teiid-operator
+      serviceAccountName: dv-operator
       containers:
-        - name: teiid-operator
-          image: quay.io/teiid/teiid-operator:0.3.0
+        - name: dv-operator
+          image: quay.io/teiid/teiid-operator:1.0.0
           command:
             - teiid-operator
           imagePullPolicy: Always

@@ -3,7 +3,9 @@ teiidVersion: 14.0.0
 springBootVersion: 2.2.6.RELEASE
 mavenRepositories:
   central: https://repo.maven.apache.org/maven2
-productized: false
+  repo-02-redhat-ga: http://maven.repository.redhat.com/ga/
+  repo-03-jboss-ga: https://repository.jboss.org/
+productized: true
 buildImage:
   registry: registry.access.redhat.com
   prefix: ubi8
@@ -13,8 +15,10 @@ drivers:
   h2: 1.4.200
   postgresql: 42.2.8
   mysql: 5.1.40
+  mongodb: 3.6.3
   narayana: 2.1.0
   athena: 2.0.2
+  db2: 11.5.0.0
   hana: 2.4.70
   hbase: 4.14.3-HBase-1.4
   hive: 3.1.2
@@ -28,4 +32,8 @@ prometheus:
   matchLabels:
     team: middleware
 labels:
-  version: 0.4.0
+  com.redhat.product-name: Red_Hat_Integration
+  com.redhat.component-name: Data_Virtualization
+  com.redhat.product-version: 2020/Q2
+  com.redhat.component-version: "1.0"
+  com.redhat.component-type: application
