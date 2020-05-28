@@ -121,19 +121,27 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 			if err = action.triggerBuild(ctx, *bc, mavenRepos, r); err != nil {
 				return err
 			}
+		} else {
+			// if in case nay previous build failed try again
+			builds, err := getBuilds(vdb, r)
+			if err != nil {
+				return err
+			}
+			for _, build := range builds.Items {
+				if build.Status.Phase == obuildv1.BuildPhaseError || build.Status.Phase == obuildv1.BuildPhaseFailed || build.Status.Phase == obuildv1.BuildPhaseCancelled {
+					log.Info("triggering the base builder image build")
+					mavenRepos := constants.GetMavenRepositories(vdb)
+					if err = action.triggerBuild(ctx, *bc, mavenRepos, r); err != nil {
+						return err
+					}
+				}
+			}
 		}
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImage {
-		builds := &obuildv1.BuildList{}
-		options := metav1.ListOptions{
-			FieldSelector: "metadata.namespace=" + vdb.ObjectMeta.Namespace,
-			LabelSelector: "buildconfig=" + constants.BuilderImageTargetName,
-		}
-
-		builds, err := r.buildClient.Builds(vdb.ObjectMeta.Namespace).List(options)
+		builds, err := getBuilds(vdb, r)
 		if err != nil {
 			return err
 		}
-
 		for _, build := range builds.Items {
 			// set status of the build
 			if build.Status.Phase == obuildv1.BuildPhaseComplete && vdb.Status.Phase != v1alpha1.ReconcilerPhaseBuilderImageFinished {
@@ -148,6 +156,19 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 		}
 	}
 	return nil
+}
+
+func getBuilds(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) (*obuildv1.BuildList, error) {
+	builds := &obuildv1.BuildList{}
+	options := metav1.ListOptions{
+		FieldSelector: "metadata.namespace=" + vdb.ObjectMeta.Namespace,
+		LabelSelector: "buildconfig=" + constants.BuilderImageTargetName,
+	}
+	builds, err := r.buildClient.Builds(vdb.ObjectMeta.Namespace).List(options)
+	if err != nil {
+		return builds, err
+	}
+	return builds, nil
 }
 
 // newBCForCR returns a BuildConfig with the same name/namespace as the cr
