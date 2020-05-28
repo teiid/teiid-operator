@@ -1,0 +1,628 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "teiid.io/v1alpha1",
+          "kind": "VirtualDatabase",
+          "metadata": {
+            "name": "dv-customer"
+          },
+          "spec": {
+            "build": {
+              "source": {
+                "ddl": "CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');\nUSE DATABASE customer;\n\nCREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;\n\nCREATE SCHEMA accounts SERVER sampledb;\nCREATE VIRTUAL SCHEMA portfolio;\n\nSET SCHEMA accounts;\nIMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS(\"importer.useFullSchemaName\" 'false');\n\nSET SCHEMA portfolio;\n\nCREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS \n    SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip \n    FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a \n    ON c.ID = a.CUSTOMER_ID;\n"
+              }
+            },
+            "datasources": [
+              {
+                "name": "sampledb",
+                "properties": [
+                  {
+                    "name": "username",
+                    "value": "postgres"
+                  },
+                  {
+                    "name": "password",
+                    "value": "postgres"
+                  },
+                  {
+                    "name": "jdbc-url",
+                    "value": "jdbc:postgresql://database/postgres"
+                  }
+                ],
+                "type": "postgresql"
+              }
+            ],
+            "expose": [
+              "LoadBalancer"
+            ],
+            "replicas": 1
+          }
+        }
+      ]
+    capabilities: Seamless Upgrades
+    categories: Database, Integration & Delivery
+    certified: "false"
+    containerImage: registry.redhat.io/integration-tech-preview/dv-rhel8-operator:8.0.0
+    createdAt: "2020-05-27T12:48:22Z"
+    description: Red Hat Data Virtualization Operator for deployment and management
+      of data integration services on OpenShift based on Teiid technologies.
+    repository: https://github.com/teiid/teiid-operator
+    support: Red Hat
+    tectonic-visibility: ocs
+  labels:
+    operator-teiid: "true"
+  name: dv.v1.0.0
+  namespace: placeholder
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+      - description: VirtualDatabase is the Schema for the virtualdatabases API
+        displayName: Virtual Database Application
+        kind: VirtualDatabase
+        name: virtualdatabases.teiid.io
+        specDescriptors:
+          - description: S2I Build configuration
+            displayName: VDB Build
+            path: build
+          - description: Environment properties set build purpose
+            displayName: Environment properties for s2i
+            path: build.env
+          - description: VDB Source details
+            displayName: S2I based Source information
+            path: build.source
+          - description: DDL based VDB
+            displayName: DDL Of the VDB
+            path: build.source.ddl
+          - description: List of maven dependencies for the build in GAV format
+            displayName: Maven Dependencies for VDB
+            path: build.source.dependencies
+          - description: A VDB defined in GAV format
+            displayName: Maven Coordinates for VDB
+            path: build.source.maven
+          - description: Custom maven repositories that need to be used for the S2I build
+            displayName: Custom Maven Repositories
+            path: build.source.mavenRepositories
+          - description: Open API contract that is exposed by the VDB
+            displayName: OpenAPI of exposed
+            path: build.source.openapi
+          - description: Deployed vdb version. For embedded DDL version this will be implicitly
+              provided when ignored, for maven based vdb the maven version is always
+            displayName: Version Of the VDB
+            path: build.source.version
+          - description: DataSources configuration for this Virtual Database
+            displayName: Datasources Configuration
+            path: datasources
+          - description: Name of the Data Source
+            displayName: Properties
+            path: datasources[0].name
+          - description: Properties required for Data Source connection
+            displayName: Properties
+            path: datasources[0].properties
+          - description: "Type of Data Source. ex: Oracle, PostgreSQL, MySQL, Salesforce
+              etc."
+            displayName: Properties
+            path: datasources[0].type
+          - description: Environment properties required for deployment
+            displayName: Properties
+            path: env
+          - description: Defines the services (LoadBalancer, NodePort, 3scale) to expose
+            displayName: Services Created
+            path: expose
+          - description: Jaeger instance to use to push the tracing information
+            displayName: Jaeger Name
+            path: jaeger
+          - description: Number Of deployment units required
+            displayName: Replicas
+            path: replicas
+          - description: memory, disk cpu requirements
+            displayName: Resources
+            path: resources
+            x-descriptors:
+              - urn:alm:descriptor:com.tectonic.ui:resourceRequirements
+        statusDescriptors:
+          - description: Deployed vdb version.
+            displayName: CacheStore In use
+            path: cachestore
+          - description: ConfigDigest value of the vdb
+            displayName: SHA Of the Configuration
+            path: configdigest
+          - description: Digest value of the vdb
+            displayName: SHA Of the VDB
+            path: digest
+          - description: Failure message if deployment ended in failure
+            displayName: Failure Message
+            path: failure
+          - description: The current phase of the build the operator deployment is running
+            displayName: Phase
+            path: phase
+            x-descriptors:
+              - urn:alm:descriptor:io.kubernetes.phase
+          - description: Route information that is exposed for clients
+            displayName: Route Exposed for OData
+            path: route
+          - description: Deployed vdb version.
+            displayName: Version Of the VDB deployed
+            path: version
+        version: v1alpha1
+  description: |-
+    **Data Virtualization** is a system that allows you to convert your existing data assets from the "Data that you have into the data that you want."
+
+    Virtualization is a highly performant, optimized, in-memory relational database engine that allows applications to federate data from multiple disparate, heterogeneous data stores. For example, you can access all of your data from Oracle, PostgreSQL, MongoDB, Amazon S3, REST API, and other data sources with a single request. Though the data virtualization abstraction and federation layers, data is integrated in real-time from across your distributed data sources, and users can access all of the data without copying or otherwise moving data from its system of record.
+
+    To assist organizations that want to migrate their data from monolithic services to microservices, the logical and abstraction layers of Red Hat Data Virtualization enable you to apply a consistent policy to data access, schema versioning, and domain model support.
+
+    **Data Virtualization** gives you all the tools required to build a logical/abstraction layer that hides the complexity of your source data, exposing it through a virtual database. Because there is no ETL process to run, data integration occurs in real time so that data always remains fresh. For users, a virtual database appears to be like any relational database, and it can be accessed using JDBC, ODBC, OData V4, and PostgreSQL protocols, in other words, from any language that you have your application written in.
+
+    **The core capabilities include:**
+
+    * Highly optimized and performant database engine with abstraction layer, to decouple your databases from your application layer.
+
+    * Single access layer for one or more data sources.
+
+    * Ability to define logical/domain models without affecting the physical models. Define an enterprise domain model, or a domain model for microservices, over your existing data assets.
+
+    * Secure data access to all data sources from a single location.
+
+    * Ability to define a single data governance policy across your all your data sources in a single location and enable monitoring through audit logs.
+
+    * Data access over multiple protocols and programing languages such as JDBC, ODBC, OData V4 (Rest API), SQLAlchemy, ADO.NET.
+
+    * Locally cached data for faster response time.
+
+    * Easy access to data from business intelligence tools such as Tableau, Business Objects, Qlik.
+
+    * Access to data through OpenAPI, and integration with Red Hat 3scale for API management.
+
+    * Other features include SQL/MED for view definition, transaction support, source hints, query plans, virtual procedures, temp-tables, user-defined functions, extensible translator layer to name a few.
+
+    ### What is new in Data Virtualization 8.0.0
+
+    * Support for cluster proxy settings
+
+    * Improvements in RH-SSO handling
+
+    * More structured input of Data source properties
+
+    * Initial support for Materialization with JBoss Data Grid
+
+    ### Security
+
+    Data Virtualization supports authentication, authorization, and TLS encryption of JDBC and ODBC transports. It supports username and password, and OAuth-based authentication through Red Hat SSO integration.
+
+    Data-level security can be defined by establishing "Data Roles", in which an individual's access to data is monitored and verified at the table, column, or row level.
+
+    ### Monitoring
+
+    Data Virtualization has support for Prometheus metrics. After you configure a Prometheus server, the Operator can register data virtualization Pods for metrics scraping.
+
+    ### Documentation
+    Documentation for the current release can be found on the Red Hat [Customer Portal](https://access.redhat.com/documentation/en-us/red_hat_integration/).
+
+    Create a new CR of Kind VirtualDatabase (click the Create New button). The CR spec contains all defaults (see below).
+  displayName: Red Hat Integration - Data Virtualization
+  icon:
+    - base64data: PHN2ZyBpZD0iTGF5ZXJfMSIgZGF0YS1uYW1lPSJMYXllciAxIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3MjEuMTUgNzIxLjE1Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2RkMzkyNjt9LmNscy0ye2ZpbGw6I2NjMzQyNzt9LmNscy0ze2ZpbGw6I2ZmZjt9LmNscy00e2ZpbGw6I2U1ZTVlNDt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPlByb2R1Y3RfSWNvbi1SZWRfSGF0LURhdGFfVmlydHVhbGl6YXRpb24tUkdCPC90aXRsZT48Y2lyY2xlIGNsYXNzPSJjbHMtMSIgY3g9IjM2MC41NyIgY3k9IjM2MC41NyIgcj0iMzU4LjU4Ii8+PHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNjE0LjEyLDEwNy4wOSwxMDcuMDYsNjE0LjE2YzE0MC4xNCwxMzguNjIsMzY2LjExLDEzOC4xNiw1MDUuNjctMS40Uzc1Mi43NCwyNDcuMjQsNjE0LjEyLDEwNy4wOVoiLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjM2MC41OCIgY3k9IjE1Ny43NCIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjM2MC41OCIgY3k9IjU2My40MSIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjE1Ny43NCIgY3k9IjM2MC41NyIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjU2My40MSIgY3k9IjM2MC41OCIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjUwNCIgY3k9IjIxNy4xNSIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjIxNy4xNSIgY3k9IjUwNCIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjIxNy4xNSIgY3k9IjIxNy4xNSIgcj0iMjYuNjciLz48Y2lyY2xlIGNsYXNzPSJjbHMtMyIgY3g9IjUwNCIgY3k9IjUwNCIgcj0iMjYuNjciLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0yODcuNTEsMzg2LjI5Yy0xMS4zOS0zLjQ3LTIwLjE1LTcuNzUtMjYtMTIuNTh2MzAuMTJjMCw5LDEyLjg4LDE3LjA1LDMzLjMxLDIyLjU4bDMyLjUyLTMyLjUyQTIxNi41LDIxNi41LDAsMCwxLDI4Ny41MSwzODYuMjlaIi8+PHBhdGggY2xhc3M9ImNscy0zIiBkPSJNMjYxLjUxLDQyOS4wOXYzMC4xMmMwLC4xNiwwLC4zMiwwLC40OGwyMC0yMEMyNzMsNDM2LjYyLDI2Ni4yOSw0MzMsMjYxLjUxLDQyOS4wOVoiLz48cGF0aCBjbGFzcz0iY2xzLTMiIGQ9Ik0zNjAuNTgsMjMxLjc1Yy01NC43MiwwLTk5LjA3LDEzLjUyLTk5LjA3LDMwLjE5djMwLjE5YzAsMTYuNjcsNDQuMzUsMzAuMTksOTkuMDcsMzAuMTlhMzAwLjI4LDMwMC4yOCwwLDAsMCw0MS0yLjcxbDU4LTU4QzQ1OSwyNDUuMDgsNDE0LjkyLDIzMS43NSwzNjAuNTgsMjMxLjc1WiIvPjxwYXRoIGNsYXNzPSJjbHMtMyIgZD0iTTM2MC41OCwzMzkuNzJjLTI3LjQ3LDAtNTMuNDItMy4zLTczLjA3LTkuMjktMTEuMzktMy40Ny0yMC4xNS03Ljc0LTI2LTEyLjU4VjM0OGMwLDE0LjksMzUuNDIsMjcuMjcsODIsMjkuNzRMMzgyLjIxLDMzOUMzNzUuMTYsMzM5LjQ4LDM2Ny45MywzMzkuNzIsMzYwLjU4LDMzOS43MloiLz48cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik00NTkuNjQsNDAzLjgzVjM3My43MWMtNS44NSw0LjgzLTE0LjYxLDkuMTEtMjYsMTIuNTgtMTkuNjUsNi00NS42LDkuMjgtNzMuMDYsOS4yOGEzMjMsMzIzLDAsMCwxLTMzLjI0LTEuNjhsLTMyLjUyLDMyLjUyYzE3LjQ5LDQuNzMsNDAuNTIsNy42MSw2NS43Niw3LjYxQzQxNS4yOSw0MzQsNDU5LjY0LDQyMC41LDQ1OS42NCw0MDMuODNaIi8+PHBhdGggY2xhc3M9ImNscy00IiBkPSJNNDU5LjY0LDI5Mi4xM1YyNjEuOTRjMC0uMTIsMC0uMjMsMC0uMzRsLTU4LDU4QzQzNS44NCwzMTQuODYsNDU5LjY0LDMwNC4zNCw0NTkuNjQsMjkyLjEzWiIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTM2MC41OCw0ODkuNGM1NC43MSwwLDk5LjA2LTEzLjUyLDk5LjA2LTMwLjE5VjQyOS4wOWMtNS44NSw0LjgzLTE0LjYxLDkuMTEtMjYsMTIuNThDNDE0LDQ0Ny42NiwzODgsNDUxLDM2MC41OCw0NTFzLTUzLjQyLTMuMjktNzMuMDctOS4yOHEtMy4xMi0xLTYtMmwtMjAsMjBDMjYyLjM3LDQ3Ni4xNCwzMDYuMzksNDg5LjQsMzYwLjU4LDQ4OS40WiIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQ1OS42NCwzNDhWMzE3Ljg1Yy01Ljg1LDQuODQtMTQuNjEsOS4xMS0yNiwxMi41OC0xNC4zOSw0LjM5LTMyLjE2LDcuMzItNTEuNDMsOC41OWwtMzguNzEsMzguN2M1LjU1LjI5LDExLjI1LjQ1LDE3LjA4LjQ1QzQxNS4yOSwzNzguMTcsNDU5LjY0LDM2NC42NSw0NTkuNjQsMzQ4WiIvPjwvc3ZnPg==
+      mediatype: image/svg+xml    
+  install:
+    spec:
+      clusterPermissions:
+        - rules:
+            - apiGroups:
+                - console.openshift.io
+              resources:
+                - consoleyamlsamples
+              verbs:
+                - create
+                - delete
+                - get
+          serviceAccountName: dv-operator
+      deployments:
+        - name: dv-operator
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                name: dv-operator
+            strategy: {}
+            template:
+              metadata:
+                labels:
+                  name: dv-operator
+              spec:
+                containers:
+                  - command:
+                      - teiid-operator
+                    env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.annotations['olm.targetNamespaces']
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.labels['name']
+                    image: registry.redhat.io/integration-tech-preview/dv-rhel8-operator:1.0
+                    imagePullPolicy: Always
+                    name: dv-operator
+                    resources: {}
+                serviceAccountName: dv-operator
+      permissions:
+        - rules:
+            - apiGroups:
+                - teiid.io
+              resources:
+                - "*"
+                - "*/finalizers"
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - endpoints
+                - persistentvolumeclaims
+                - configmaps
+                - secrets
+                - serviceaccounts
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+            - apiGroups:
+                - ""
+              resources:
+                - replicationcontrollers
+                - replicationcontrollers/scale
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - apps
+              resources:
+                - daemonsets
+                - deployments
+                - deployments/scale
+                - replicasets
+                - replicasets/scale
+                - statefulsets
+                - statefulsets/scale
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - extensions
+              resources:
+                - daemonsets
+                - deployments
+                - deployments/scale
+                - ingresses
+                - networkpolicies
+                - replicasets
+                - replicasets/scale
+                - replicationcontrollers/scale
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - ""
+              resources:
+                - bindings
+                - events
+                - limitranges
+                - namespaces/status
+                - pods/log
+                - pods/status
+                - replicationcontrollers/status
+                - resourcequotas
+                - resourcequotas/status
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - buildconfigs
+                - buildconfigs/webhooks
+                - builds
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - buildconfigs/instantiate
+                - buildconfigs/instantiatebinary
+                - builds/clone
+              verbs:
+                - create
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - builds/details
+              verbs:
+                - update
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - builds/log
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
+                - ""
+                - apps.openshift.io
+              resources:
+                - deploymentconfigs
+                - deploymentconfigs/scale
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - ""
+                - apps.openshift.io
+              resources:
+                - deploymentconfigrollbacks
+                - deploymentconfigs/instantiate
+                - deploymentconfigs/rollback
+              verbs:
+                - create
+            - apiGroups:
+                - ""
+                - apps.openshift.io
+              resources:
+                - deploymentconfigs/log
+                - deploymentconfigs/status
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
+                - ""
+                - image.openshift.io
+              resources:
+                - imagestreams
+                - imagestreamimages
+                - imagestreammappings
+                - imagestreams/secrets
+                - imagestreamtags
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - ""
+                - image.openshift.io
+              resources:
+                - imagestreamimports
+              verbs:
+                - create
+            - apiGroups:
+                - ""
+                - image.openshift.io
+              resources:
+                - imagestreams/status
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
+                - ""
+              resources:
+                - events
+              verbs:
+                - get
+                - list
+            - apiGroups:
+                - rbac.authorization.k8s.io
+              resources:
+                - roles
+                - rolebindings
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+            - apiGroups:
+                - ""
+                - template.openshift.io
+              resources:
+                - processedtemplates
+                - templateconfigs
+                - templateinstances
+                - templates
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - ""
+                - build.openshift.io
+              resources:
+                - buildlogs
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - authorization.openshift.io
+              resources:
+                - rolebindings
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+            - apiGroups:
+                - route.openshift.io
+              resources:
+                - routes
+                - routes/custom-host
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+                - patch
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - alertmanagers
+                - prometheuses
+                - servicemonitors
+                - prometheusrules
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+            - apiGroups:
+                - jaegertracing.io
+              resources:
+                - jaegers
+              verbs:
+                - get
+                - list
+                - watch
+            - apiGroups:
+                - infinispan.org
+              resources:
+                - infinispans
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - delete
+                - deletecollection
+                - watch
+            - apiGroups:
+                - apps
+              resourceNames:
+                - dv-operator
+              resources:
+                - deployments/finalizers
+              verbs:
+                - update
+          serviceAccountName: dv-operator
+    strategy: deployment
+  installModes:
+    - supported: true
+      type: OwnNamespace
+    - supported: true
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: true
+      type: AllNamespaces
+  keywords:
+    - teiid
+    - vdb
+    - datavirt
+    - operator
+    - springboot
+    - data
+    - database
+    - federation
+    - proxy
+  labels:
+    alm-owner-teiid: dv-operator
+    operated-by: teiid.1.0.0
+  links:
+    - name: Product Page
+      url: https://access.redhat.com/products/red-hat-integration
+  maintainers:
+    - email: customerservice@redhat.com
+      name: Red Hat
+  maturity: beta
+  provider:
+    name: Red Hat
+  replaces: dv.v1.0.0
+  selector:
+    matchLabels:
+      alm-owner-teiid: dv-operator
+      operated-by: teiid.1.0.0
+  version: 1.0.0

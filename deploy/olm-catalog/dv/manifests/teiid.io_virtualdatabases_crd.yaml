@@ -104,9 +104,13 @@ spec:
                                   optional for env vars'
                                 type: string
                               divisor:
+                                anyOf:
+                                - type: integer
+                                - type: string
                                 description: Specifies the output format of the exposed
                                   resources, defaults to "1"
-                                type: string
+                                pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                x-kubernetes-int-or-string: true
                               resource:
                                 description: 'Required: resource to select'
                                 type: string
@@ -157,46 +161,6 @@ spec:
                         type: string
                       description: Custom maven repositories that need to be used
                         for the S2I build
-                      type: object
-                    mavenSettings:
-                      description: Custom Maven settings.xml file to go with build
-                        in a configmap or secret
-                      properties:
-                        configMapKeyRef:
-                          description: Selects a key of a ConfigMap.
-                          properties:
-                            key:
-                              description: The key to select.
-                              type: string
-                            name:
-                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                TODO: Add other useful fields. apiVersion, kind, uid?'
-                              type: string
-                            optional:
-                              description: Specify whether the ConfigMap or its key
-                                must be defined
-                              type: boolean
-                          required:
-                          - key
-                          type: object
-                        secretKeyRef:
-                          description: Selects a key of a secret.
-                          properties:
-                            key:
-                              description: The key of the secret to select from.  Must
-                                be a valid secret key.
-                              type: string
-                            name:
-                              description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                TODO: Add other useful fields. apiVersion, kind, uid?'
-                              type: string
-                            optional:
-                              description: Specify whether the Secret or its key must
-                                be defined
-                              type: boolean
-                          required:
-                          - key
-                          type: object
                       type: object
                     openapi:
                       description: Open API contract that is exposed by the VDB
@@ -287,9 +251,13 @@ spec:
                                     optional for env vars'
                                   type: string
                                 divisor:
+                                  anyOf:
+                                  - type: integer
+                                  - type: string
                                   description: Specifies the output format of the
                                     exposed resources, defaults to "1"
-                                  type: string
+                                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                                  x-kubernetes-int-or-string: true
                                 resource:
                                   description: 'Required: resource to select'
                                   type: string
@@ -393,9 +361,13 @@ spec:
                               for env vars'
                             type: string
                           divisor:
+                            anyOf:
+                            - type: integer
+                            - type: string
                             description: Specifies the output format of the exposed
                               resources, defaults to "1"
-                            type: string
+                            pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                            x-kubernetes-int-or-string: true
                           resource:
                             description: 'Required: resource to select'
                             type: string
@@ -425,9 +397,13 @@ spec:
                 - name
                 type: object
               type: array
-            exposeVia3scale:
-              description: Expose route via 3scale
-              type: boolean
+            expose:
+              description: Defines the services (LoadBalancer, NodePort, 3scale) to
+                expose
+              items:
+                description: ExposeType - type of service to be exposed
+                type: string
+              type: array
             jaeger:
               description: Jaeger instance to use to push the tracing information
               type: string
@@ -440,13 +416,21 @@ spec:
               properties:
                 limits:
                   additionalProperties:
-                    type: string
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   description: 'Limits describes the maximum amount of compute resources
                     allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
                   type: object
                 requests:
                   additionalProperties:
-                    type: string
+                    anyOf:
+                    - type: integer
+                    - type: string
+                    pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                    x-kubernetes-int-or-string: true
                   description: 'Requests describes the minimum amount of compute resources
                     required. If Requests is omitted for a container, it defaults
                     to Limits if that is explicitly specified, otherwise to an implementation-defined
@@ -459,6 +443,9 @@ spec:
         status:
           description: Virtual Database Status
           properties:
+            cachestore:
+              description: Deployed vdb version.
+              type: string
             configdigest:
               description: ConfigDigest value of the vdb
               type: string

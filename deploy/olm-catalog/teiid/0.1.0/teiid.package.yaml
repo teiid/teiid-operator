@@ -1,5 +1,0 @@
-#! package-manifest: deploy/courier/0.1.0/teiid.v0.1.0.clusterserviceversion.yaml
-packageName: teiid
-channels:
-  - name: beta
-    currentCSV: teiid.0.1.0
