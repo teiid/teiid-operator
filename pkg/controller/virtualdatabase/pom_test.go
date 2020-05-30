@@ -44,6 +44,23 @@ func TestParsingDataSources(t *testing.T) {
 	assert.Equal(t, "postgresql", dsInfo[0].Type)
 }
 
+func TestParsingDataSources2(t *testing.T) {
+
+	contents, _ := ioutil.ReadFile("../../../deploy/crs/vdb_for_s3.yaml")
+	var vdb v1alpha1.VirtualDatabase
+	err := yaml.Unmarshal(contents, &vdb)
+	assert.Nil(t, err)
+
+	dsInfo := vdbutil.ParseDataSourcesInfoFromDdl(vdb.Spec.Build.Source.DDL)
+
+	assert.Equal(t, 2, len(dsInfo))
+	assert.Equal(t, "user-s3", dsInfo[0].Name)
+	assert.Equal(t, "amazon-s3", dsInfo[0].Type)
+
+	assert.Equal(t, "s3", dsInfo[1].Name)
+	assert.Equal(t, "user-s3", dsInfo[1].Type)
+}
+
 func TestPomGeneration(t *testing.T) {
 	contents, _ := ioutil.ReadFile("../../../deploy/crds/vdb_from_ddl.yaml")
 	var vdb v1alpha1.VirtualDatabase
@@ -55,6 +72,24 @@ func TestPomGeneration(t *testing.T) {
 	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
 	assert.True(t, hasDependency(project, "org.postgresql", "postgresql"))
+	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
+	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
+	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-odata"))
+	assert.True(t, hasDependency(project, "me.snowdrop", "narayana-spring-boot-starter"))
+}
+
+func TestPomGeneration2(t *testing.T) {
+	contents, _ := ioutil.ReadFile("../../../deploy/crs/vdb_for_s3.yaml")
+	var vdb v1alpha1.VirtualDatabase
+	err := yaml.Unmarshal(contents, &vdb)
+	assert.Nil(t, err)
+
+	dsInfo := vdbutil.ParseDataSourcesInfoFromDdl(vdb.Spec.Build.Source.DDL)
+
+	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
+	assert.Nil(t, err)
+	assert.True(t, hasDependency(project, "org.teiid", "spring-data-amazon-s3"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
 	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
 	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))
