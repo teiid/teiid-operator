@@ -11,7 +11,7 @@ fi
 
 sed "s|quay\.io\/teiid\/teiid-operator\:latest|${IMAGE}|g" deploy/operator.yaml > deploy/operator-`whoami`.yaml
 
-for FILE in deploy/crds/teiid.io_virtualdatabases_crd.yaml deploy/role.yaml deploy/service_account.yaml deploy/role_binding.yaml deploy/operator-`whoami`.yaml
+for FILE in deploy/crds/teiid.io_virtualdatabases_crd.yaml deploy/role.yaml deploy/cluster_role.yaml deploy/service_account.yaml deploy/role_binding.yaml deploy/cluster_role_binding.yaml deploy/operator-`whoami`.yaml
 do
 	oc apply -f ${FILE}
 done

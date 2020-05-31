@@ -180,7 +180,7 @@ type DataSourceObject struct {
 // VirtualDatabase is the Schema for the virtualdatabases API
 // +k8s:openapi-gen=true
 // +operator-sdk:gen-csv:customresourcedefinitions.displayName="Virtual Database Application"
-// +kubebuilder:resource:path=virtualdatabases,shortName=vdb;vdbs
+// +kubebuilder:resource:path=virtualdatabases,shortName=vdb;vdbs,scope=Cluster
 // +kubebuilder:singular=virtualdatabase
 type VirtualDatabase struct {
 	metav1.TypeMeta   `json:",inline"`
