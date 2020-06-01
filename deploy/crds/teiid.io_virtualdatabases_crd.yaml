@@ -12,7 +12,7 @@ spec:
     - vdb
     - vdbs
     singular: virtualdatabase
-  scope: Cluster
+  scope: Namespaced
   validation:
     openAPIV3Schema:
       description: VirtualDatabase is the Schema for the virtualdatabases API

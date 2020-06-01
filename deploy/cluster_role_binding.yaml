@@ -3,9 +3,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: teiid-operator
 subjects:
-  - kind: ServiceAccount
-    name: teiid-operator
-    namespace: placeholder
+- kind: ServiceAccount
+  name: teiid-operator
 roleRef:
   kind: ClusterRole
   name: teiid-operator
