@@ -1,0 +1,31 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: example
+spec:
+  replicas: 1
+  expose:
+    - LoadBalancer
+  datasources:
+    - name: bqt
+      type: salesforce
+      properties:
+        - name: accesskey
+          value: xxxx
+        - name: bucket
+          value: xxx
+        - name: region
+          value: us-east-1
+        - name: secretkey
+          value: xxx
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE example;
+        USE DATABASE example;
+          
+        CREATE FOREIGN DATA WRAPPER "user-s3" TYPE "amazon-s3";
+        CREATE SERVER s3 FOREIGN DATA WRAPPER "user-s3";
+        CREATE SCHEMA s3 SERVER s3;
+
+        IMPORT FROM SERVER s3 INTO s3;
