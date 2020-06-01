@@ -45,19 +45,28 @@ func ParseDataSourcesInfoFromDdl(ddl string) []DatasourceInfo {
 	id := "(\\w+|(?:\"[^\"]*\")|()'[^']*'+)"
 	commentOrSpace := "(/\\*([^*]|\\*[^/])*\\*/|--[^\r\n]*[\r\n]|\\s)+"
 	serverRegEx := "CREATE" + commentOrSpace + "SERVER" + commentOrSpace + id + commentOrSpace + "(TYPE" + commentOrSpace + id + commentOrSpace + ")??FOREIGN" + commentOrSpace + "DATA" + commentOrSpace + "WRAPPER" + commentOrSpace + id
+	wrapperRegEx := "CREATE" + commentOrSpace + "FOREIGN" + commentOrSpace + "DATA" + commentOrSpace + "WRAPPER" + commentOrSpace + id + commentOrSpace + "TYPE" + commentOrSpace + id
 
-	var compRegEx *regexp.Regexp
-	compRegEx = regexp.MustCompile(serverRegEx)
+	compiledServerRegEx := regexp.MustCompile(serverRegEx)
+	compiledWrapperRegEx := regexp.MustCompile(wrapperRegEx)
 
 	lines := Tokenize(ddl)
 	for _, line := range lines {
 		line = strings.ToUpper(line)
 
 		if ok, _ := regexp.Match(serverRegEx, []byte(line)); ok {
-			match := compRegEx.FindStringSubmatch(line)
+			match := compiledServerRegEx.FindStringSubmatch(line)
 			sources = append(sources, DatasourceInfo{
 				Name: stripQuotes(match[5]),
 				Type: stripQuotes(match[22]),
+			})
+		}
+
+		if ok, _ := regexp.Match(wrapperRegEx, []byte(line)); ok {
+			match := compiledWrapperRegEx.FindStringSubmatch(line)
+			sources = append(sources, DatasourceInfo{
+				Name: stripQuotes(match[9]),
+				Type: stripQuotes(match[15]),
 			})
 		}
 	}
