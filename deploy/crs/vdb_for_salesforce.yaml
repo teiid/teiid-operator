@@ -1,0 +1,27 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: example
+spec:
+  replicas: 1
+  expose:
+    - LoadBalancer
+  datasources:
+    - name: bqt
+      type: salesforce
+      properties:
+        - name: username
+          value: rareddy@redhat.com
+        - name: password
+          value: Wild00d20KHMGAK6WO49rpzwO0
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE example;
+        USE DATABASE example;
+          
+        CREATE FOREIGN DATA WRAPPER "salesforce";
+        CREATE SERVER bqt FOREIGN DATA WRAPPER "salesforce";
+        CREATE SCHEMA salesforce SERVER bqt;
+        SET SCHEMA salesforce;          
+        IMPORT FROM SERVER bqt INTO salesforce;

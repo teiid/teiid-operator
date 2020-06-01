@@ -39,7 +39,7 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 		datasourceName := sanitizeName(removeDash(strings.ToLower(source.Name)))
 		configuredSource, err := findConfiguredProperties(source.Name, sourcesConfigured)
 		if err != nil {
-			log.Info(err)
+			log.Debug(err)
 			continue
 		}
 
