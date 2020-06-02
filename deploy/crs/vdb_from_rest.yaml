@@ -1,0 +1,39 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: rest-example
+spec:
+  replicas: 1
+  expose:
+    - LoadBalancer
+  datasources:
+    - name: apiServer
+      type: rest
+      properties:
+        - name: endpoint
+          value: http://dummy.restapiexample.com/api/v1/
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE example;
+        USE DATABASE example;
+
+        CREATE SERVER apiServer FOREIGN DATA WRAPPER rest;
+        CREATE SCHEMA api SERVER apiserver;
+        CREATE VIRTUAL SCHEMA virt;
+
+        SET SCHEMA api;
+        IMPORT FROM SERVER apiserver INTO api;
+
+        SET SCHEMA virt;
+
+        CREATE VIEW Employees (
+            id integer PRIMARY KEY,
+            employee_name string,
+            employee_salary double,
+            employee_age integer
+        ) AS
+            SELECT p.id, p.employee_name, p.employee_salary, p.employee_age
+            FROM TABLE(call invokeHttp(action=>'GET', endpoint=>'employees')) as x,
+            JSONTABLE(JSONPARSE(x.result,true), '$.data' COLUMNS id integer, 
+            employee_name string, employee_salary double, employee_age integer) as p;
