@@ -55,6 +55,8 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 			prefix = "spring.teiid.data." + removeDash(strings.ToLower(source.Type))
 		}
 
+		log.Debug("prefix chosen:" + prefix)
+
 		// covert properties
 		for _, p := range configuredSource.Properties {
 			if strings.Contains(p.Name, " ") {
@@ -74,7 +76,7 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 
 func findConfiguredProperties(name string, configured []v1alpha1.DataSourceObject) (v1alpha1.DataSourceObject, error) {
 	for _, ds := range configured {
-		if ds.Name == name {
+		if strings.EqualFold(ds.Name, name) {
 			return ds, nil
 		}
 	}
