@@ -214,6 +214,7 @@ func deploymentEnvironments(vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDa
 		return nil, err
 	}
 	dataSourceInfos := vdbutil.ParseDataSourcesInfoFromDdl(ddlString)
+	log.Debug(dataSourceInfos)
 	dataSourceConfig, err := convert2SpringProperties(vdb.Spec.DataSources, dataSourceInfos)
 	if err != nil {
 		return nil, err
