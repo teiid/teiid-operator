@@ -47,13 +47,15 @@ metadata:
     categories: Database, Integration & Delivery
     certified: "false"
     containerImage: quay.io/teiid/teiid-operator:0.3.0
-    createdAt: "2020-05-27T00:00:00Z"
+    createdAt: "2020-06-03T00:00:00Z"
     description: Teiid Operator for deployment and management of Data Virtualization
       services in Kubernetes/OpenShift cloud.
     repository: https://github.com/teiid/teiid-operator
     support: https://teiid.io
     tectonic-visibility: ocs
-  name: teiid-operator.v0.3.0
+  labels:
+    operator-teiid: "true"
+  name: teiid.v0.3.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -575,7 +577,11 @@ spec:
     - email: teiid-dev@lists.jboss.org
       name: https://teiid.io
   maturity: beta
-  replaces: teiid.v0.2.0
   provider:
     name: https://teiid.io
+  replaces: teiid.v0.2.0
+  selector:
+    matchLabels:
+      alm-owner-teiid: teiid-operator
+      operated-by: teiid.v0.3.0
   version: 0.3.0
