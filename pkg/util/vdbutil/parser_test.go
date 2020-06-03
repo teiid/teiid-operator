@@ -38,6 +38,11 @@ func TestDS(t *testing.T) {
 
 	CREATE SERVER mongo TYPE 'NONE' FOREIGN DATA WRAPPER mongodb;
 
+	CREATE FOREIGN DATA WRAPPER "amazon-s3";
+
+	CREATE FOREIGN DATA WRAPPER "user-s3" TYPE "amazon-s3" OPTIONS (accesskey 'xxx', bucket 'xx', region 'us-east-1', secretkey 'xxx');	
+	CREATE SERVER s3 FOREIGN DATA WRAPPER "user-s3";
+
 	CREATE SCHEMA accounts SERVER sampledb;
 	CREATE VIRTUAL SCHEMA portfolio;`
 
@@ -49,6 +54,11 @@ func TestDS(t *testing.T) {
 	assert.Equal(t, "mongo", sources[1].Name)
 	assert.Equal(t, "mongodb", sources[1].Type)
 
+	assert.Equal(t, "user-s3", sources[2].Name)
+	assert.Equal(t, "amazon-s3", sources[2].Type)
+
+	assert.Equal(t, "s3", sources[3].Name)
+	assert.Equal(t, "user-s3", sources[3].Type)
 }
 
 func TestDS2(t *testing.T) {

@@ -39,7 +39,7 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 		datasourceName := sanitizeName(removeDash(strings.ToLower(source.Name)))
 		configuredSource, err := findConfiguredProperties(source.Name, sourcesConfigured)
 		if err != nil {
-			log.Info(err)
+			log.Debug(err)
 			continue
 		}
 
@@ -54,6 +54,8 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 			// Custom translators must map to this property prefix
 			prefix = "spring.teiid.data." + removeDash(strings.ToLower(source.Type))
 		}
+
+		log.Debug("prefix chosen:" + prefix)
 
 		// covert properties
 		for _, p := range configuredSource.Properties {
@@ -74,7 +76,7 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 
 func findConfiguredProperties(name string, configured []v1alpha1.DataSourceObject) (v1alpha1.DataSourceObject, error) {
 	for _, ds := range configured {
-		if ds.Name == name {
+		if strings.EqualFold(ds.Name, name) {
 			return ds, nil
 		}
 	}
