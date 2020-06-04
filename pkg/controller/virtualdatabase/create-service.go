@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/teiid/teiid-operator/pkg/util/openshift"
+
 	oroutev1 "github.com/openshift/api/route/v1"
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
@@ -105,6 +107,10 @@ func (action *createServiceAction) Handle(ctx context.Context, vdb *v1alpha1.Vir
 				} else {
 					log.Info("Route created:" + vdb.ObjectMeta.Name)
 					vdb.Status.Route = fmt.Sprintf("https://%s/odata", route.Spec.Host)
+
+					if err := openshift.ConsoleLinkExists(); err == nil {
+						openshift.CreateConsoleLink(ctx, &route, r.client, vdb)
+					}
 				}
 			}
 		}
