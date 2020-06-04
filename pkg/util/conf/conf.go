@@ -59,18 +59,19 @@ func GetConfiguration() Configuration {
 
 	log := logs.GetLogger("configuration")
 
-	rootDirectory := ""
-	_, filename, _, _ := runtime.Caller(0)
-	if idx := strings.Index(filename, "/pkg/"); idx != -1 && !strings.HasPrefix(filename, "teiid-operator") {
-		rootDirectory = filename[:idx]
-	}
-
 	var c Configuration
-	yamlFile, err := ioutil.ReadFile(rootDirectory + "/conf/config.yaml")
+	yamlFile, err := ioutil.ReadFile("/conf/config.yaml")
 	if err != nil {
-		yamlFile, err = ioutil.ReadFile(rootDirectory + "/build/conf/config.yaml")
-		if err != nil {
-			log.Error("Failed to read configuration file at /conf/config.yaml", err)
+		// for unit testing
+		_, filename, _, _ := runtime.Caller(0)
+		if idx := strings.Index(filename, "/pkg/"); idx != -1 && !strings.HasPrefix(filename, "teiid-operator") {
+			yamlFile, err = ioutil.ReadFile(filename[:idx] + "/build/conf/config.yaml")
+			if err != nil {
+				log.Error("Failed to read configuration file at "+filename[:idx]+"/build/conf/config.yaml ", err)
+				return c
+			}
+		} else {
+			log.Error("Failed to read configuration file at /conf/config.yaml ", err)
 			return c
 		}
 	}
