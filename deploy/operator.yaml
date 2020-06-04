@@ -5,7 +5,7 @@ metadata:
   labels:
     com.redhat.product-name: Red_Hat_Integration
     com.redhat.component-name: Data_Virtualization
-    com.redhat.product-version: 2020/Q2
+    com.redhat.product-version: 2020_Q2
     com.redhat.component-version: "1.0"
     com.redhat.component-type: infrastructure
 spec:
