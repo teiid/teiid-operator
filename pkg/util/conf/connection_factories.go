@@ -45,18 +45,18 @@ type ConnectionFactoryList struct {
 func GetConnectionFactories() map[string]ConnectionFactory {
 	log := logs.GetLogger("configuration")
 
-	rootDirectory := ""
-
-	_, filename, _, _ := runtime.Caller(0)
-	if idx := strings.Index(filename, "/pkg/"); idx != -1 && !strings.HasPrefix(filename, "teiid-operator") {
-		rootDirectory = filename[:idx]
-	}
-
-	jsonFile, err := ioutil.ReadFile(rootDirectory + "/conf/connection_factories.json")
+	jsonFile, err := ioutil.ReadFile("/conf/connection_factories.json")
 	if err != nil {
-		jsonFile, err = ioutil.ReadFile(rootDirectory + "/build/conf/connection_factories.json")
-		if err != nil {
-			log.Error("Failed to read Connection Factories Configuration file at /conf/connection-factories.json", err)
+		// for unit testing
+		_, filename, _, _ := runtime.Caller(0)
+		if idx := strings.Index(filename, "/pkg/"); idx != -1 && !strings.HasPrefix(filename, "teiid-operator") {
+			jsonFile, err = ioutil.ReadFile(filename[:idx] + "/build/conf/connection_factories.json")
+			if err != nil {
+				log.Error("Failed to read Connection Factories Configuration file at "+filename[:idx]+"/build/conf/connection_factories.json ", err)
+				return map[string]ConnectionFactory{}
+			}
+		} else {
+			log.Error("Failed to read Connection Factories Configuration file at /conf/connection_factories.json ", err)
 			return map[string]ConnectionFactory{}
 		}
 	}
