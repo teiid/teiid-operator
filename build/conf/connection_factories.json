@@ -450,16 +450,6 @@
       "springBootPropertyPrefix" : "spring.datasource",
       "jdbc" : true
     },
-    "soap" : {
-      "name" : "soap",
-      "driverNames" : [ "org.teiid.spring.data.soap.SoapConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "ws",
-      "dialect" : null,
-      "gav" : [ "org.teiid:spring-data-soap" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.soap",
-      "jdbc" : false
-    },
     "sqlserver" : {
       "name" : "sqlserver",
       "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
@@ -529,16 +519,6 @@
       "gav" : [ "org.clojars.erp12:jdbc-vertica" ],
       "springBootPropertyPrefix" : "spring.datasource",
       "jdbc" : true
-    },
-    "ws" : {
-      "name" : "ws",
-      "driverNames" : [ "org.teiid.spring.data.soap.WsConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "ws",
-      "dialect" : null,
-      "gav" : [ "org.teiid:spring-data-soap" ],
-      "springBootPropertyPrefix" : "spring.teiid.data.ws",
-      "jdbc" : false
     }
   }
 }
