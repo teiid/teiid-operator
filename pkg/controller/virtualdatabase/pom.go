@@ -60,12 +60,6 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 	// generate pom.xml
 	project := createMavenProject(vdb.ObjectMeta.Name)
 
-	mavenRepos := constants.GetMavenRepositories(vdb)
-	for k, v := range mavenRepos {
-		project.AddRepository(maven.NewRepository(v + "@id=" + k))
-		project.AddPluginRepository(maven.NewRepository(v + "@id=" + k))
-	}
-
 	// looking that the CRD we need to fill in the dependencies
 	for _, str := range vdb.Spec.Build.Source.Dependencies {
 		d, err := maven.ParseGAV(str)
@@ -338,8 +332,8 @@ func createPlainMavenProject(name string) maven.Project {
 	return project
 }
 
-func readMavenSettingsFile(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase, pom maven.Project) (string, error) {
-	settingsContent, err := maven.EncodeXML(maven.NewDefaultSettings(pom.Repositories))
+func readMavenSettingsFile(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase, configuredRepositories []maven.Repository) (string, error) {
+	settingsContent, err := maven.EncodeXML(maven.NewDefaultSettings(configuredRepositories))
 
 	if kubernetes.HasSecret(ctx, r.client, vdb.ObjectMeta.Name+"-maven-settings", vdb.ObjectMeta.Namespace) {
 		selector := &corev1.SecretKeySelector{
