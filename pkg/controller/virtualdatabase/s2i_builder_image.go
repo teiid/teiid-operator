@@ -191,7 +191,7 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 	}, " ")
 
 	envvar.SetVal(&envs, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
-	envvar.SetVal(&envs, "MAVEN_ARGS_APPEND", "clean package -s settings.xml "+javaProperties+str)
+	envvar.SetVal(&envs, "MAVEN_ARGS_APPEND", "clean package "+javaProperties+str)
 	envvar.SetVal(&envs, "ARTIFACT_DIR", "target/")
 
 	incremental := true
@@ -266,14 +266,23 @@ func (action *s2iBuilderImageAction) triggerBuild(ctx context.Context, bc obuild
 	}
 	log.Debug(" Base Build Pom ", pomContent)
 
+	// build default maven repository
+	repositories := []maven.Repository{}
+	mavenRepos := constants.GetMavenRepositories(vdbCopy)
+	for k, v := range mavenRepos {
+		repositories = append(repositories, maven.NewRepository(v+"@id="+k))
+	}
+
 	// read the settings file
-	settingsContent, err := readMavenSettingsFile(ctx, vdbCopy, r, pom)
+	settingsContent, err := readMavenSettingsFile(ctx, vdbCopy, r, repositories)
 	if err != nil {
 		log.Debugf("Failed reading the settings.xml file for vdb %s", vdbCopy.ObjectMeta.Name)
 		return err
 	}
 
-	files["/settings.xml"] = settingsContent
+	log.Debugf("settings.xml file generated %s", settingsContent)
+
+	files["/configuration/settings.xml"] = settingsContent
 	files["/pom.xml"] = pomContent
 	files["/src/main/resources/teiid.ddl"] = action.ddlFile()
 

@@ -223,7 +223,7 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 	// set it back original default
 	envvar.SetVal(&envs, "DEPLOYMENTS_DIR", "/deployments")
 	// this below is add clean, to remove the previous jar file in target from builder image
-	envvar.SetVal(&envs, "MAVEN_ARGS", "clean package -s settings.xml "+javaProperties+str)
+	envvar.SetVal(&envs, "MAVEN_ARGS", "clean package "+javaProperties+str)
 	envvar.SetVal(&envs, "DIGEST", vdb.Status.Digest)
 
 	// build config
@@ -375,8 +375,14 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 
 	log.Debugf("Pom file generated %s", pomContent)
 
+	// build default maven repository
+	repositories := []maven.Repository{}
+	mavenRepos := constants.GetMavenRepositories(vdb)
+	for k, v := range mavenRepos {
+		repositories = append(repositories, maven.NewRepository(v+"@id="+k))
+	}
 	// read the settings file
-	settingsContent, err := readMavenSettingsFile(ctx, vdb, r, pom)
+	settingsContent, err := readMavenSettingsFile(ctx, vdb, r, repositories)
 	if err != nil {
 		log.Debugf("Failed reading the settings.xml file for vdb %s", vdb.ObjectMeta.Name)
 		return files, err
@@ -384,7 +390,7 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 
 	log.Debugf("settings.xml file generated %s", settingsContent)
 
-	files["/settings.xml"] = settingsContent
+	files["/configuration/settings.xml"] = settingsContent
 	files["/pom.xml"] = pomContent
 	files["/src/main/resources/prometheus-config.yml"] = PrometheusConfig(r.client, vdb.ObjectMeta.Namespace)
 	files["/src/main/resources/application.properties"] = applicationProperties(vdbFile, vdb.ObjectMeta.Name)
