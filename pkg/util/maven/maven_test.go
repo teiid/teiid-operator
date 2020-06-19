@@ -32,6 +32,11 @@ const expectedPom = `<?xml version="1.0" encoding="UTF-8"?>
   <artifactId>camel-k-integration</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
+  <parent>
+    <groupId>org.basepom</groupId>
+    <artifactId>basepom-oss</artifactId>
+    <version>30</version>
+  </parent>
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -92,6 +97,11 @@ func TestPomGeneration(t *testing.T) {
 		ArtifactID:        "camel-k-integration",
 		Version:           "1.0.0",
 		Packaging:         "jar",
+		Parent: Parent{
+			GroupID:    "org.basepom",
+			ArtifactID: "basepom-oss",
+			Version:    "30",
+		},
 		DependencyManagement: DependencyManagement{
 			Dependencies: []Dependency{
 				{
