@@ -221,6 +221,12 @@ func createMavenProject(name string) maven.Project {
 		Version:           "1.0.0",
 		Packaging:         "jar",
 
+		Parent: maven.Parent{
+			GroupID:    "org.basepom",
+			ArtifactID: "basepom-oss",
+			Version:    "30",
+		},
+
 		Dependencies: []maven.Dependency{
 			{
 				GroupID:    "org.teiid",
