@@ -32,6 +32,7 @@ type Project struct {
 	ArtifactID           string               `xml:"artifactId"`
 	Version              string               `xml:"version"`
 	Packaging            string               `xml:"packaging"`
+	Parent               Parent               `xml:"parent,omitempty"`
 	Properties           Properties           `xml:"properties,omitempty"`
 	DependencyManagement DependencyManagement `xml:"dependencyManagement"`
 	Dependencies         []Dependency         `xml:"dependencies>dependency,omitempty"`
@@ -40,10 +41,17 @@ type Project struct {
 	Build                Build                `xml:"build,omitempty"`
 }
 
-// Exclusion represent a maven's dependency exlucsion
+// Exclusion represent a maven's dependency exclusion
 type Exclusion struct {
 	GroupID    string `xml:"groupId" yaml:"groupId"`
 	ArtifactID string `xml:"artifactId" yaml:"artifactId"`
+}
+
+// Parent --
+type Parent struct {
+	GroupID    string `xml:"groupId,omitempty" yaml:"groupId,omitempty"`
+	ArtifactID string `xml:"artifactId,omitempty" yaml:"artifactId,omitempty"`
+	Version    string `xml:"version,omitempty" yaml:"version,omitempty"`
 }
 
 // DependencyManagement represent maven's dependency management block

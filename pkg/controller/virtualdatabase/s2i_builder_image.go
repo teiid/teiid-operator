@@ -188,6 +188,16 @@ func (action *s2iBuilderImageAction) buildBC(vdb *v1alpha1.VirtualDatabase, r *R
 		"-Djava.net.useSystemProxies=true",
 		"-Dmaven.compiler.source=1.8",
 		"-Dmaven.compiler.target=1.8",
+		"-Dbasepom.check.skip-dependency=true",
+		"-Dbasepom.check.skip-duplicate-finder=true",
+		"-Dbasepom.check.skip-spotbugs=true",
+		"-Dbasepom.check.skip-dependency-versions-check=true",
+		"-Dbasepom.check.skip-dependency-management=true",
+		"-Dbasepom.check.skip-dependency-scope=true",
+		"-Dbasepom.check.skip-license=true",
+		"-Dbasepom.check.skip-pmd=true",
+		"-Dbasepom.check.skip-checkstyle=true",
+		"-Dbasepom.check.skip-javadoc=true",
 	}, " ")
 
 	envvar.SetVal(&envs, "DEPLOYMENTS_DIR", "/tmp") // this is avoid copying the jar file
