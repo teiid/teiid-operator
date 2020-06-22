@@ -49,10 +49,10 @@ func convert2SpringProperties(sourcesConfigured []v1alpha1.DataSourceObject, sou
 		}
 
 		if c, ok := constants.ConnectionFactories[strings.ToLower(source.Type)]; ok {
-			prefix = removeDash(strings.ToLower(c.SpringBootPropertyPrefix))
+			prefix = strings.ToLower(c.SpringBootPropertyPrefix)
 		} else {
 			// Custom translators must map to this property prefix
-			prefix = "spring.teiid.data." + removeDash(strings.ToLower(source.Type))
+			prefix = "spring.teiid.data." + strings.ToLower(source.Type)
 		}
 
 		log.Debug("prefix chosen:" + prefix)

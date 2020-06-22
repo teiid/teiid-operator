@@ -87,8 +87,8 @@ func TestSpringProperties(t *testing.T) {
 
 	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
 	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
-	assertEnv(t, "SPRING_TEIID_DATA_INFINISPANHOTROD_CACHESTORE_URL", "localhost:11222", envs)
-	assertEnv(t, "SPRING_TEIID_DATA_INFINISPANHOTROD_CACHESTORE_IMPORTER_PROTOBUF_NAME", "accounts.proto", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_CACHESTORE_URL", "localhost:11222", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_CACHESTORE_IMPORTER_PROTOBUF_NAME", "accounts.proto", envs)
 }
 
 func TestUpperCase(t *testing.T) {
