@@ -1,0 +1,30 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: hello-world
+spec:
+  replicas: 1
+  env:
+    - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
+      value: sa
+    - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
+      value: sa
+    - name: SPRING_DATASOURCE_SAMPLEDB_DRIVER_CLASS_NAME
+      value: org.h2.Driver
+    - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
+      value: jdbc:h2:mem:sampledb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;INIT=create table note(id integer primary key, msg varchar(80))\;INSERT INTO note VALUES(1, 'First note')\;INSERT INTO note VALUES(2, 'Second note');
+  build:
+    source:
+      dependencies:
+        - com.h2database:h2:1.4.199
+      ddl: |
+        CREATE DATABASE dispatch OPTIONS (ANNOTATION 'Dispatch VDB');
+        USE DATABASE dispatch;
+        CREATE FOREIGN DATA WRAPPER h2;
+
+        CREATE SERVER sampledb FOREIGN DATA WRAPPER h2;
+
+        CREATE SCHEMA dispatch SERVER sampledb;
+
+        -- H2 converts the schema name to capital case
+        IMPORT FOREIGN SCHEMA "PUBLIC" FROM SERVER sampledb INTO dispatch;
