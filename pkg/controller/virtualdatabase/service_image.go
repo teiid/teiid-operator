@@ -324,12 +324,6 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		addOpenAPI = true
 	}
 
-	// check to make sure which type of vdb
-	mavenVdb := false
-	if vdb.Spec.Build.Source.Maven != "" {
-		mavenVdb = true
-	}
-
 	var ddlStr string
 	ddlStr, err := vdbutil.FetchDdl(vdb, "/tmp/teiid.vdb")
 	if err != nil {
@@ -356,27 +350,8 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 	}
 	vdbFile := "teiid.vdb-file=teiid.ddl"
 
-	if mavenVdb {
-		// vdb-code-gen plugin is finding the vdb.ddl file before the dependency
-		// or the .vdb file from the base image, this is way hard code to use the
-		// correct vdb file.
-		addVdbCodeGenPlugIn(&pom, "/tmp/teiid.vdb", vdbNeedsCacheStore, vdb.Status.Version)
-		// maven based vdb is given
-		vdbDependency, err := maven.ParseGAV(vdb.Spec.Build.Source.Maven)
-		if err != nil {
-			log.Error("The Maven based VDB is provided in bad format", err)
-			return files, err
-		}
-		// Add VDB as dependency
-		pom.AddDependencies(vdbDependency)
-		// configure pom.xml to copy the teiid.vdb into classpath
-		addCopyPlugIn(vdbDependency, "vdb", "teiid.vdb", "${project.build.outputDirectory}", &pom)
-		vdbFile = "teiid.vdb-file=teiid.vdb"
-		files["/src/main/resources/teiid.ddl"] = ddlStr
-	} else {
-		addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", vdbNeedsCacheStore, vdb.Status.Version)
-		files["/src/main/resources/teiid.ddl"] = vdb.Spec.Build.Source.DDL
-	}
+	addVdbCodeGenPlugIn(&pom, "/tmp/src/src/main/resources/teiid.ddl", vdbNeedsCacheStore, vdb.Status.Version)
+	files["/src/main/resources/teiid.ddl"] = ddlStr
 
 	// if the materialization is in play then we have a new vdb file
 	if vdbNeedsCacheStore {
