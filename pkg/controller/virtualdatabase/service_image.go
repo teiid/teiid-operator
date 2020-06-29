@@ -190,18 +190,7 @@ func (action *serviceImageAction) monitorServiceImage(ctx context.Context, vdb *
 	return nil
 }
 
-func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (obuildv1.BuildConfig, error) {
-	baseImage := strings.Join([]string{constants.BuilderImageTargetName, "latest"}, ":")
-
-	envs := envvar.Clone(vdb.Spec.Build.Env)
-
-	// handle proxy settings
-	envs, jp := proxy.HTTPSettings(envs)
-	var javaProperties string
-	for k, v := range jp {
-		javaProperties = javaProperties + "-D" + k + "=" + v + " "
-	}
-
+func defaultBuildOptions() string {
 	str := strings.Join([]string{
 		" ",
 		"-Djava.net.useSystemProxies=true",
@@ -229,6 +218,22 @@ func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (o
 		"-e",
 		"-B",
 	}, " ")
+	return str
+}
+
+func (action *serviceImageAction) newServiceBC(vdb *v1alpha1.VirtualDatabase) (obuildv1.BuildConfig, error) {
+	baseImage := strings.Join([]string{constants.BuilderImageTargetName, "latest"}, ":")
+
+	envs := envvar.Clone(vdb.Spec.Build.Env)
+
+	// handle proxy settings
+	envs, jp := proxy.HTTPSettings(envs)
+	var javaProperties string
+	for k, v := range jp {
+		javaProperties = javaProperties + "-D" + k + "=" + v + " "
+	}
+
+	str := defaultBuildOptions()
 
 	// set it back original default
 	envvar.SetVal(&envs, "DEPLOYMENTS_DIR", "/deployments")
