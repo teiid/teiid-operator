@@ -71,7 +71,7 @@ func TestPomGeneration(t *testing.T) {
 
 	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
-	assert.True(t, hasDependency(project, "org.postgresql", "postgresql"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-data-postgresql"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
 	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
 	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))
@@ -125,7 +125,7 @@ func TestMinimalGavPomGeneration(t *testing.T) {
 
 	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
-	assert.True(t, hasDependency(project, "org.postgresql", "postgresql"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-data-postgresql"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
 	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
 	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))

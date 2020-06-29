@@ -31,7 +31,6 @@ type ConnectionFactory struct {
 	DriverNames              []string `json:"driverNames,omitempty"`
 	TranslatorName           string   `json:"translatorName,omitempty"`
 	Dialect                  string   `json:"dialect,omitempty"`
-	Gav                      []string `json:"gav,omitempty"`
 	SpringBootPropertyPrefix string   `json:"springBootPropertyPrefix,omitempty"`
 	JdbcSource               bool     `json:"jdbc,omitempty"`
 }

@@ -20,8 +20,6 @@ package virtualdatabase
 import (
 	"context"
 	"encoding/xml"
-	"errors"
-	"strings"
 
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	"github.com/teiid/teiid-operator/pkg/controller/virtualdatabase/constants"
@@ -33,24 +31,13 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func addDependency(project *maven.Project, sourceType string, cf conf.ConnectionFactory) error {
-	for _, gav := range cf.Gav {
-		dependency, err := maven.ParseGAV(gav)
-		if err != nil {
-			return err
-		}
-		if dependency.Version == "" && constants.Config.Drivers[sourceType] != "" {
-			dependency.Version = constants.Config.Drivers[sourceType]
-		} else if dependency.Version == "" && constants.Config.Drivers[sourceType] == "" && cf.JdbcSource {
-			continue
-		} else if dependency.Version == "" && strings.HasPrefix(dependency.GroupID, "org.teiid") {
-			dependency.Version = constants.Config.TeiidSpringBootVersion
-		} else {
-			return errors.New("No version defined for Dependency " + gav + ". Please provide the version")
-		}
-		project.AddDependencies(dependency)
+func addDependency(project *maven.Project, sourceType string, cf conf.ConnectionFactory) {
+	dependency := maven.Dependency{
+		GroupID:    "org.teiid",
+		ArtifactID: "spring-data-" + cf.Name,
+		Version:    constants.Config.TeiidSpringBootVersion,
 	}
-	return nil
+	project.AddDependencies(dependency)
 }
 
 // GenerateVdbPom -- Generate the POM file based on the VDb provided
@@ -71,16 +58,12 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 
 	if includeAllDependencies {
 		for k, v := range constants.ConnectionFactories {
-			if err := addDependency(&project, k, v); err != nil {
-				return project, err
-			}
+			addDependency(&project, k, v)
 		}
 	} else {
 		for _, s := range sources {
 			if v, ok := constants.ConnectionFactories[s.Type]; ok {
-				if err := addDependency(&project, s.Type, v); err != nil {
-					return project, err
-				}
+				addDependency(&project, s.Type, v)
 			} else {
 				log.Info("No predefined Connection Factory found for ", s, " Treating as custom source, dependency must de defined in YAML file")
 			}
@@ -134,7 +117,7 @@ func GenerateVdbPom(vdb *v1alpha1.VirtualDatabase, sources []vdbutil.DatasourceI
 	project.AddDependencies(maven.Dependency{
 		GroupID:    "me.snowdrop",
 		ArtifactID: "narayana-spring-boot-starter",
-		Version:    constants.Config.Drivers["narayana"],
+		Version:    "2.1.0",
 	})
 
 	return project, nil

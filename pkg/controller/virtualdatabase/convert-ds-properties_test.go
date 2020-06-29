@@ -85,8 +85,8 @@ func TestSpringProperties(t *testing.T) {
 	assert.NotNil(t, envs)
 	assert.Nil(t, err)
 
-	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
-	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
+	assertEnv(t, "SPRING_TEIID_DATA_POSTGRESQL_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
+	assertEnvFromSource(t, "SPRING_TEIID_DATA_POSTGRESQL_SAMPLEDB_PASSWORD", &source, envs)
 	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_CACHESTORE_URL", "localhost:11222", envs)
 	assertEnv(t, "SPRING_TEIID_DATA_INFINISPAN_HOTROD_CACHESTORE_IMPORTER_PROTOBUF_NAME", "accounts.proto", envs)
 }
@@ -173,11 +173,11 @@ func TestSoapProperties(t *testing.T) {
 
 	assert.Equal(t, 6, len(envs))
 	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_WSDL", "http://www.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL", envs)
-	assertEnv(t, "SPRING_DATASOURCE_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
+	assertEnv(t, "SPRING_TEIID_DATA_POSTGRESQL_SAMPLEDB_JDBC_URL", "jdbc:postgresql://localhost:5432/sampledb", envs)
 	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_END_POINT_NAME", "CountryInfoServiceSoap12", envs)
 	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_SERVICE_NAME", "CountryInfoService", envs)
 	assertEnv(t, "SPRING_TEIID_DATA_SOAP_SOAPCOUNTRY_NAMESPACE_URI", "http://www.oorsprong.org/websamples.countryinfo", envs)
-	assertEnvFromSource(t, "SPRING_DATASOURCE_SAMPLEDB_PASSWORD", &source, envs)
+	assertEnvFromSource(t, "SPRING_TEIID_DATA_POSTGRESQL_SAMPLEDB_PASSWORD", &source, envs)
 }
 
 func TestCustom(t *testing.T) {
