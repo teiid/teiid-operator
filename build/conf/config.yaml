@@ -19,11 +19,8 @@ drivers:
   hbase: 4.14.3-HBase-1.4
   hive: 3.1.2
   hsql: 2.5.0
-  informix: 4.50.3
-  ingres: 10.2-4.1.10
   jtds: 1.3.1
   sqlserver: 8.2.0.jre11
-  ucanacess: 5.0.0
 prometheus:
   matchLabels:
     team: middleware
