@@ -35,8 +35,7 @@ func TestConnectionFactories(t *testing.T) {
 		DriverNames:              []string{"org.h2.Driver"},
 		TranslatorName:           "h2",
 		Dialect:                  "org.hibernate.dialect.H2Dialect",
-		Gav:                      []string{"com.h2database:h2"},
-		SpringBootPropertyPrefix: "spring.datasource",
+		SpringBootPropertyPrefix: "spring.teiid.data.h2",
 		JdbcSource:               true,
 	}
 	assert.NotNil(t, factories)
