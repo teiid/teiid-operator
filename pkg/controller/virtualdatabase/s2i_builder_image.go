@@ -64,7 +64,6 @@ func (action *s2iBuilderImageAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bo
 func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
 
 	if vdb.Status.Phase == v1alpha1.ReconcilerPhaseS2IReady {
-		vdb.Status.Phase = v1alpha1.ReconcilerPhaseBuilderImage
 
 		opDeployment := &appsv1.Deployment{}
 		opDeploymentNS := os.Getenv("WATCH_NAMESPACE")
@@ -137,6 +136,7 @@ func (action *s2iBuilderImageAction) Handle(ctx context.Context, vdb *v1alpha1.V
 				}
 			}
 		}
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseBuilderImage
 	} else if vdb.Status.Phase == v1alpha1.ReconcilerPhaseBuilderImage {
 		builds, err := getBuilds(vdb, r)
 		if err != nil {
