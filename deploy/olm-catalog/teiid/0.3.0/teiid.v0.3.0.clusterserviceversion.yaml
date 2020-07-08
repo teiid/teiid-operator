@@ -53,7 +53,7 @@ metadata:
     repository: https://github.com/teiid/teiid-operator
     support: https://teiid.io
     tectonic-visibility: ocs
-  name: teiid-operator.v0.3.0
+  name: teiid.v0.3.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -178,6 +178,7 @@ spec:
                 - console.openshift.io
               resources:
                 - consoleyamlsamples
+                - consolelinks
               verbs:
                 - create
                 - delete

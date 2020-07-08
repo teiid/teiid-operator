@@ -28,9 +28,11 @@ import (
 	"github.com/teiid/teiid-operator/pkg/apis/teiid/v1alpha1"
 	teiidclient "github.com/teiid/teiid-operator/pkg/client"
 	"github.com/teiid/teiid-operator/pkg/util/logs"
+	"github.com/teiid/teiid-operator/pkg/util/openshift"
 	otclient "github.com/teiid/teiid-operator/pkg/util/opentracing/client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 )
 
@@ -67,6 +69,13 @@ func (r *ReconcileVirtualDatabase) Reconcile(request reconcile.Request) (reconci
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// eventSubscribers.Trigger(events.VdbDeleted, request.NamespacedName, r)
+			if err := openshift.ConsoleLinkExists(); err == nil {
+				instance.ObjectMeta = metav1.ObjectMeta{
+					Name:      request.Name,
+					Namespace: request.Namespace,
+				}
+				openshift.RemoveConsoleLink(ctx, r.client, instance)
+			}
 			return reconcile.Result{}, nil
 		}
 		// Error reading the object - requeue the request.
