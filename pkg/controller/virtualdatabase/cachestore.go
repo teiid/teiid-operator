@@ -27,6 +27,7 @@ import (
 	"github.com/teiid/teiid-operator/pkg/client"
 	"github.com/teiid/teiid-operator/pkg/util"
 	"github.com/teiid/teiid-operator/pkg/util/cachestore"
+	"github.com/teiid/teiid-operator/pkg/util/envvar"
 	"github.com/teiid/teiid-operator/pkg/util/events"
 	"github.com/teiid/teiid-operator/pkg/util/kubernetes"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,8 +54,32 @@ func (action *cacheStoreAction) CanHandle(vdb *v1alpha1.VirtualDatabase) bool {
 	return vdb.Status.Phase == v1alpha1.ReconcilerPhaseCreateCacheStore
 }
 
+// IgnoreCacheStore Check to see if the cacheStore needs to be used or not
+func IgnoreCacheStore(r *ReconcileVirtualDatabase, vdb *v1alpha1.VirtualDatabase) bool {
+	disableIspn := true
+	ispnAvailable, err := cachestore.IsInfinispanOperatorAvailable(r.client, vdb.ObjectMeta.Namespace)
+	if err != nil {
+		ispnAvailable = false
+	}
+	// is ispn is available by default allow, unless explicitly turned off
+	if ispnAvailable {
+		disableIspn = false
+	}
+	cachingFlag := envvar.Get(vdb.Spec.Env, "DISABLE_ISPN_CACHING")
+	if cachingFlag != nil {
+		disableIspn, err = strconv.ParseBool(cachingFlag.Value) // ignore error
+	}
+	return !ispnAvailable || disableIspn
+}
+
 // Handle handles the virtualdatabase
 func (action *cacheStoreAction) Handle(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r *ReconcileVirtualDatabase) error {
+
+	// make sure the cache store is ignored.
+	if IgnoreCacheStore(r, vdb) {
+		vdb.Status.Phase = v1alpha1.ReconcilerPhaseS2IReady
+		return nil
+	}
 
 	// check to see if the cache store exists if not create one to be used for Teiid Materialization and
 	// result set caching purposes.
