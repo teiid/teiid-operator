@@ -331,9 +331,12 @@ func buildVdbBasedPayload(ctx context.Context, vdb *v1alpha1.VirtualDatabase, r 
 		return files, err
 	}
 
+	// check to see if Infinispan is available
+	ignoreIspn := IgnoreCacheStore(r, vdb)
+
 	// Check to see if the VDB has materialization annoations, if yes then generate
 	// materialization schema
-	vdbNeedsCacheStore := vdbutil.ShouldMaterialize(ddlStr)
+	vdbNeedsCacheStore := vdbutil.ShouldMaterialize(ddlStr) && !ignoreIspn
 
 	// read data source names from the DDL and make sure they follow the naming restrictions
 	dataSourceInfos := vdbutil.ParseDataSourcesInfoFromDdl(ddlStr)
