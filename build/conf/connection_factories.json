@@ -1,190 +1,129 @@
 {
   "items" : {
     "actian" : {
-      "name" : "actian",
-      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "actian-vector",
-      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.actian",
-      "jdbc" : true,
-      "url" : "jdbc:ingres://{host}:AH7/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
         "defaultValue" : "com.ingres.jdbc.IngresDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
+      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
+      "jdbc" : true,
+      "name" : "actian",
+      "springBootPropertyPrefix" : "spring.teiid.data.actian",
+      "translatorName" : "actian-vector",
+      "url" : "jdbc:ingres://{host}:AH7/{db-name}"
     },
     "actian-vector" : {
-      "name" : "actian",
-      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "actian-vector",
-      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.actian",
-      "jdbc" : true,
-      "url" : "jdbc:ingres://{host}:AH7/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
         "defaultValue" : "com.ingres.jdbc.IngresDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
+      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
+      "jdbc" : true,
+      "name" : "actian",
+      "springBootPropertyPrefix" : "spring.teiid.data.actian",
+      "translatorName" : "actian-vector",
+      "url" : "jdbc:ingres://{host}:AH7/{db-name}"
     },
     "amazon-athena" : {
-      "name" : "amazon-athena",
-      "driverNames" : [ "com.simba.athena.jdbc.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "jdbc-ansi",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.amazon-athena",
-      "jdbc" : true,
-      "url" : "jdbc:awsathena://User=[AccessKey];Password=[SecretKey];S3OutputLocation=[Output];[Property1]=[Value1];[Property2]=[Value2];",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
       }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
+        "advanced" : true,
         "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
+        "name" : "maximumPoolSize",
+        "type" : "number"
       }, {
-        "name" : "driverClassName",
-        "defaultValue" : "com.simba.athena.jdbc.Driver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "com.simba.athena.jdbc.Driver" ]
-      } ]
-    },
-    "amazon-s3" : {
-      "name" : "amazon-s3",
-      "driverNames" : [ "org.teiid.spring.data.amazon.s3.AmazonS3ConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "amazon-s3",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.amazon-s3",
-      "jdbc" : false,
-      "url" : null,
-      "configuration" : [ {
-        "name" : "securityType",
-        "type" : "string"
-      }, {
-        "name" : "clientId",
-        "type" : "string"
-      }, {
-        "name" : "clientSecret",
-        "type" : "string"
-      }, {
-        "name" : "refreshToken",
-        "type" : "string"
-      }, {
-        "name" : "authorizeUrl",
-        "type" : "string"
-      }, {
-        "name" : "accessTokenUrl",
-        "type" : "string"
-      }, {
-        "name" : "endpoint",
-        "type" : "string"
-      }, {
-        "name" : "disableTrustManager",
-        "type" : "boolean"
-      }, {
-        "name" : "disableHostNameVerification",
-        "type" : "boolean"
-      }, {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
-        "name" : "scope",
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
         "type" : "string"
       }, {
         "name" : "username",
+        "required" : true,
         "type" : "string"
       }, {
-        "name" : "password",
+        "allowedValues" : [ "com.simba.athena.jdbc.Driver" ],
+        "defaultValue" : "com.simba.athena.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.simba.athena.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "amazon-athena",
+      "springBootPropertyPrefix" : "spring.teiid.data.amazon-athena",
+      "translatorName" : "jdbc-ansi",
+      "url" : "jdbc:awsathena://User=[AccessKey];Password=[SecretKey];S3OutputLocation=[Output];[Property1]=[Value1];[Property2]=[Value2];"
     },
     "cassandra" : {
-      "name" : "cassandra",
-      "driverNames" : [ "org.teiid.spring.data.cassandra.CassandraConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "cassandra",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.cassandra",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
         "name" : "address",
         "type" : "string"
@@ -195,179 +134,179 @@
         "name" : "keyspace",
         "type" : "string"
       }, {
-        "name" : "username",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.cassandra.CassandraConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "cassandra",
+      "springBootPropertyPrefix" : "spring.teiid.data.cassandra",
+      "translatorName" : "cassandra",
+      "url" : null
     },
     "db2" : {
-      "name" : "db2",
-      "driverNames" : [ "com.ibm.db2.jcc.DB2Driver" ],
-      "datasourceNames" : [ "com.ibm.db2.jcc.DB2XADataSource" ],
-      "translatorName" : "db2",
-      "dialect" : "org.hibernate.dialect.DB2Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.db2",
-      "jdbc" : true,
-      "url" : "jdbc:db2://{host}:50000/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.ibm.db2.jcc.DB2Driver" ],
         "defaultValue" : "com.ibm.db2.jcc.DB2Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.ibm.db2.jcc.DB2Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "com.ibm.db2.jcc.DB2XADataSource" ],
+      "dialect" : "org.hibernate.dialect.DB2Dialect",
+      "driverNames" : [ "com.ibm.db2.jcc.DB2Driver" ],
+      "jdbc" : true,
+      "name" : "db2",
+      "springBootPropertyPrefix" : "spring.teiid.data.db2",
+      "translatorName" : "db2",
+      "url" : "jdbc:db2://{host}:50000/{db-name}"
     },
     "derby" : {
-      "name" : "derby",
-      "driverNames" : [ "org.apache.derby.jdbc.ClientDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "derby",
-      "dialect" : "org.hibernate.dialect.DerbyTenSevenDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.derby",
-      "jdbc" : true,
-      "url" : "jdbc:derby://{host}:1527/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.apache.derby.jdbc.ClientDriver" ],
         "defaultValue" : "org.apache.derby.jdbc.ClientDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.apache.derby.jdbc.ClientDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.DerbyTenSevenDialect",
+      "driverNames" : [ "org.apache.derby.jdbc.ClientDriver" ],
+      "jdbc" : true,
+      "name" : "derby",
+      "springBootPropertyPrefix" : "spring.teiid.data.derby",
+      "translatorName" : "derby",
+      "url" : "jdbc:derby://{host}:1527/{db-name}"
     },
     "exasol" : {
-      "name" : "exasol",
-      "driverNames" : [ "com.exasol.jdbc.EXADriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "exasol",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.exasol",
-      "jdbc" : true,
-      "url" : "jdbc:exa:<host>:<port>[;<prop_1>=<value_1>]...[;<prop_n>=<value_n>]",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.exasol.jdbc.EXADriver" ],
         "defaultValue" : "com.exasol.jdbc.EXADriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.exasol.jdbc.EXADriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.exasol.jdbc.EXADriver" ],
+      "jdbc" : true,
+      "name" : "exasol",
+      "springBootPropertyPrefix" : "spring.teiid.data.exasol",
+      "translatorName" : "exasol",
+      "url" : "jdbc:exa:<host>:<port>[;<prop_1>=<value_1>]...[;<prop_n>=<value_n>]"
     },
     "excel" : {
-      "name" : "excel",
-      "driverNames" : [ "org.teiid.spring.data.excel.ExcelConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "excel",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.excel",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
         "name" : "parentDirectory",
         "type" : "string"
       }, {
         "name" : "fileMapping",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.excel.ExcelConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "excel",
+      "springBootPropertyPrefix" : "spring.teiid.data.excel",
+      "translatorName" : "excel",
+      "url" : null
     },
     "file" : {
-      "name" : "file",
-      "driverNames" : [ "org.teiid.spring.data.file.FileConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "file",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.file",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
         "name" : "parentDirectory",
         "type" : "string"
       }, {
         "name" : "fileMapping",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.file.FileConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "file",
+      "springBootPropertyPrefix" : "spring.teiid.data.file",
+      "translatorName" : "file",
+      "url" : null
     },
     "ftp" : {
-      "name" : "ftp",
-      "driverNames" : [ "org.teiid.spring.data.ftp.FtpConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "file",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.ftp",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
         "name" : "port",
         "type" : "string"
@@ -429,35 +368,26 @@
         "name" : "execProt",
         "type" : "string"
       }, {
-        "name" : "username",
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
         "name" : "password",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
+        "name" : "username",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.ftp.FtpConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "ftp",
+      "springBootPropertyPrefix" : "spring.teiid.data.ftp",
+      "translatorName" : "file",
+      "url" : null
     },
     "google-spreadsheet" : {
-      "name" : "google-spreadsheet",
-      "driverNames" : [ "org.teiid.spring.data.google.SpreadsheetConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "google-spreadsheet",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.google-spreadsheet",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "clientId",
-        "type" : "string"
-      }, {
-        "name" : "clientSecret",
-        "type" : "string"
-      }, {
-        "name" : "refreshToken",
-        "type" : "string"
-      }, {
         "name" : "batchSize",
         "type" : "string"
       }, {
@@ -466,246 +396,249 @@
       }, {
         "name" : "spreadsheets",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "clientId",
+        "type" : "string"
+      }, {
+        "name" : "clientSecret",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.google.SpreadsheetConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "google-spreadsheet",
+      "springBootPropertyPrefix" : "spring.teiid.data.google-spreadsheet",
+      "translatorName" : "google-spreadsheet",
+      "url" : null
     },
     "h2" : {
-      "name" : "h2",
-      "driverNames" : [ "org.h2.Driver" ],
-      "datasourceNames" : [ "org.h2.jdbcx.JdbcDataSource" ],
-      "translatorName" : "h2",
-      "dialect" : "org.hibernate.dialect.H2Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.h2",
-      "jdbc" : true,
-      "url" : "jdbc:h2:tcp://{host}[:{port}]/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.h2.Driver" ],
         "defaultValue" : "org.h2.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.h2.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "org.h2.jdbcx.JdbcDataSource" ],
+      "dialect" : "org.hibernate.dialect.H2Dialect",
+      "driverNames" : [ "org.h2.Driver" ],
+      "jdbc" : true,
+      "name" : "h2",
+      "springBootPropertyPrefix" : "spring.teiid.data.h2",
+      "translatorName" : "h2",
+      "url" : "jdbc:h2:tcp://{host}[:{port}]/{db-name}"
     },
     "hana" : {
-      "name" : "hana",
-      "driverNames" : [ "com.sap.db.jdbc.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "hana",
-      "dialect" : "org.hibernate.dialect.HANARowStoreDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.hana",
-      "jdbc" : true,
-      "url" : "jdbc:sap://{host}>:{port}[/?<options>]",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.sap.db.jdbc.Driver" ],
         "defaultValue" : "com.sap.db.jdbc.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.sap.db.jdbc.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.HANARowStoreDialect",
+      "driverNames" : [ "com.sap.db.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "hana",
+      "springBootPropertyPrefix" : "spring.teiid.data.hana",
+      "translatorName" : "hana",
+      "url" : "jdbc:sap://{host}>:{port}[/?<options>]"
     },
     "hdfs" : {
-      "name" : "hdfs",
-      "driverNames" : [ "org.teiid.spring.data.hdfs.HdfsConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "file",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.hdfs",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
         "name" : "fsUri",
         "type" : "string"
       }, {
         "name" : "resourcePath",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.hdfs.HdfsConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "hdfs",
+      "springBootPropertyPrefix" : "spring.teiid.data.hdfs",
+      "translatorName" : "file",
+      "url" : null
     },
     "hive" : {
-      "name" : "hive",
-      "driverNames" : [ "org.apache.hive.jdbc.HiveDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "hive",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.hive",
-      "jdbc" : true,
-      "url" : "jdbc:hive2://{host}:10000/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.apache.hive.jdbc.HiveDriver" ],
         "defaultValue" : "org.apache.hive.jdbc.HiveDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.apache.hive.jdbc.HiveDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.apache.hive.jdbc.HiveDriver" ],
+      "jdbc" : true,
+      "name" : "hive",
+      "springBootPropertyPrefix" : "spring.teiid.data.hive",
+      "translatorName" : "hive",
+      "url" : "jdbc:hive2://{host}:10000/{db-name}"
     },
     "hsql" : {
-      "name" : "hsql",
-      "driverNames" : [ "org.hsqldb.jdbc.JDBCDriver" ],
-      "datasourceNames" : [ "org.hsqldb.jdbc.pool.JDBCXADataSource" ],
-      "translatorName" : "hsql",
-      "dialect" : "org.hibernate.dialect.HSQLDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.hsql",
-      "jdbc" : true,
-      "url" : "jdbc:hsqldb:http://{host}[:port][/<alias>][<key-value-pairs>]",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.hsqldb.jdbc.JDBCDriver" ],
         "defaultValue" : "org.hsqldb.jdbc.JDBCDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.hsqldb.jdbc.JDBCDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "org.hsqldb.jdbc.pool.JDBCXADataSource" ],
+      "dialect" : "org.hibernate.dialect.HSQLDialect",
+      "driverNames" : [ "org.hsqldb.jdbc.JDBCDriver" ],
+      "jdbc" : true,
+      "name" : "hsql",
+      "springBootPropertyPrefix" : "spring.teiid.data.hsql",
+      "translatorName" : "hsql",
+      "url" : "jdbc:hsqldb:http://{host}[:port][/<alias>][<key-value-pairs>]"
     },
     "impala" : {
-      "name" : "impala",
-      "driverNames" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "impala",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.impala",
-      "jdbc" : true,
-      "url" : "jdbc:impala://{host}:{port}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ],
         "defaultValue" : "org.apache.hadoop.hive.jdbc.HiveDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ],
+      "jdbc" : true,
+      "name" : "impala",
+      "springBootPropertyPrefix" : "spring.teiid.data.impala",
+      "translatorName" : "impala",
+      "url" : "jdbc:impala://{host}:{port}"
     },
     "infinispan-hotrod" : {
-      "name" : "infinispan-hotrod",
-      "driverNames" : [ "org.teiid.spring.data.infinispan.InfinispanConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "infinispan-hotrod",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.infinispan-hotrod",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
         "name" : "cacheName",
         "type" : "string"
       }, {
@@ -716,6 +649,12 @@
         "type" : "string"
       }, {
         "name" : "authenticationServerName",
+        "type" : "string"
+      }, {
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
         "type" : "string"
       }, {
         "name" : "keyStoreFileName",
@@ -736,276 +675,276 @@
         "name" : "url",
         "type" : "string"
       }, {
-        "name" : "username",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.infinispan.InfinispanConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "infinispan-hotrod",
+      "springBootPropertyPrefix" : "spring.teiid.data.infinispan-hotrod",
+      "translatorName" : "infinispan-hotrod",
+      "url" : null
     },
     "informix" : {
-      "name" : "informix",
-      "driverNames" : [ "com.informix.jdbc.IfxDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "informix",
-      "dialect" : "org.hibernate.dialect.InformixDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.informix",
-      "jdbc" : true,
-      "url" : "jdbc:informix-sqli://{host}:{port}/{db-name>}:INFORMIXSERVER=<server-name>",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "minimumIdle",
-        "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
-        "defaultValue" : "com.informix.jdbc.IfxDriver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "com.informix.jdbc.IfxDriver" ]
-      } ]
-    },
-    "ingres" : {
-      "name" : "ingres",
-      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "ingres",
-      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.ingres",
-      "jdbc" : true,
-      "url" : "jdbc:ingres://{host}:{port:21071}/{db-name}",
-      "configuration" : [ {
         "name" : "jdbcUrl",
-        "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "minimumIdle",
-        "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
-        "defaultValue" : "com.ingres.jdbc.IngresDriver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ]
-      } ]
-    },
-    "jdbc-ansi" : {
-      "name" : "jdbc-ansi",
-      "driverNames" : [ "java.sql.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "jdbc-ansi",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.jdbc-ansi",
-      "jdbc" : true,
-      "url" : null,
-      "configuration" : [ {
-        "name" : "jdbcUrl",
-        "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "minimumIdle",
-        "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
-        "defaultValue" : "java.sql.Driver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "java.sql.Driver" ]
-      } ]
-    },
-    "jdbc-simple" : {
-      "name" : "jdbc-simple",
-      "driverNames" : [ "java.sql.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "jdbc-simple",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.jdbc-simple",
-      "jdbc" : true,
-      "url" : null,
-      "configuration" : [ {
-        "name" : "jdbcUrl",
-        "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "minimumIdle",
-        "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
-        "defaultValue" : "java.sql.Driver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "java.sql.Driver" ]
-      } ]
-    },
-    "jtds" : {
-      "name" : "jtds-sqlserver",
-      "driverNames" : [ "net.sourceforge.jtds.jdbc.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "sqlserver",
-      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.jtds-sqlserver",
-      "jdbc" : true,
-      "url" : "jdbc:jtds:sqlserver://{host}:1433/{db-name}",
-      "configuration" : [ {
-        "name" : "jdbcUrl",
-        "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "minimumIdle",
-        "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
-        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ]
-      } ]
-    },
-    "jtds-sqlserver" : {
-      "name" : "jtds-sqlserver",
-      "driverNames" : [ "net.sourceforge.jtds.jdbc.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "sqlserver",
-      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.jtds-sqlserver",
-      "jdbc" : true,
-      "url" : "jdbc:jtds:sqlserver://{host}:1433/{db-name}",
-      "configuration" : [ {
-        "name" : "jdbcUrl",
-        "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "minimumIdle",
-        "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "username",
-        "type" : "string",
-        "required" : true
-      }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
-        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
-        "type" : "string",
-        "required" : false,
-        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ]
-      } ]
-    },
-    "mongodb" : {
-      "name" : "mongodb",
-      "driverNames" : [ "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "mongodb",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.mongodb",
-      "jdbc" : false,
-      "url" : null,
-      "configuration" : [ {
-        "name" : "securityType",
+        "required" : true,
         "type" : "string"
       }, {
+        "advanced" : true,
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "name" : "username",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "allowedValues" : [ "com.informix.jdbc.IfxDriver" ],
+        "defaultValue" : "com.informix.jdbc.IfxDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.InformixDialect",
+      "driverNames" : [ "com.informix.jdbc.IfxDriver" ],
+      "jdbc" : true,
+      "name" : "informix",
+      "springBootPropertyPrefix" : "spring.teiid.data.informix",
+      "translatorName" : "informix",
+      "url" : "jdbc:informix-sqli://{host}:{port}/{db-name>}:INFORMIXSERVER=<server-name>"
+    },
+    "ingres" : {
+      "configuration" : [ {
+        "displayName" : "Connection URL",
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "name" : "username",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
+        "defaultValue" : "com.ingres.jdbc.IngresDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.Ingres10Dialect",
+      "driverNames" : [ "com.ingres.jdbc.IngresDriver" ],
+      "jdbc" : true,
+      "name" : "ingres",
+      "springBootPropertyPrefix" : "spring.teiid.data.ingres",
+      "translatorName" : "ingres",
+      "url" : "jdbc:ingres://{host}:{port:21071}/{db-name}"
+    },
+    "jdbc-ansi" : {
+      "configuration" : [ {
+        "displayName" : "Connection URL",
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "name" : "username",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "allowedValues" : [ "java.sql.Driver" ],
+        "defaultValue" : "java.sql.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "java.sql.Driver" ],
+      "jdbc" : true,
+      "name" : "jdbc-ansi",
+      "springBootPropertyPrefix" : "spring.teiid.data.jdbc-ansi",
+      "translatorName" : "jdbc-ansi",
+      "url" : null
+    },
+    "jdbc-simple" : {
+      "configuration" : [ {
+        "displayName" : "Connection URL",
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "name" : "username",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "allowedValues" : [ "java.sql.Driver" ],
+        "defaultValue" : "java.sql.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "java.sql.Driver" ],
+      "jdbc" : true,
+      "name" : "jdbc-simple",
+      "springBootPropertyPrefix" : "spring.teiid.data.jdbc-simple",
+      "translatorName" : "jdbc-simple",
+      "url" : null
+    },
+    "jtds" : {
+      "configuration" : [ {
+        "displayName" : "Connection URL",
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "name" : "username",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "driverNames" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "jtds-sqlserver",
+      "springBootPropertyPrefix" : "spring.teiid.data.jtds-sqlserver",
+      "translatorName" : "sqlserver",
+      "url" : "jdbc:jtds:sqlserver://{host}:1433/{db-name}"
+    },
+    "jtds-sqlserver" : {
+      "configuration" : [ {
+        "displayName" : "Connection URL",
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "name" : "username",
+        "required" : true,
+        "type" : "string"
+      }, {
+        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "driverNames" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "jtds-sqlserver",
+      "springBootPropertyPrefix" : "spring.teiid.data.jtds-sqlserver",
+      "translatorName" : "sqlserver",
+      "url" : "jdbc:jtds:sqlserver://{host}:1433/{db-name}"
+    },
+    "mongodb" : {
+      "configuration" : [ {
         "name" : "remoteServerList",
         "type" : "string"
       }, {
         "name" : "uri",
+        "type" : "string"
+      }, {
+        "name" : "database",
         "type" : "string"
       }, {
         "name" : "user",
@@ -1014,191 +953,191 @@
         "name" : "ssl",
         "type" : "boolean"
       }, {
+        "name" : "securityType",
+        "type" : "string"
+      }, {
         "name" : "authDatabase",
         "type" : "string"
       }, {
-        "name" : "database",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.mongodb.MongoDBConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "mongodb",
+      "springBootPropertyPrefix" : "spring.teiid.data.mongodb",
+      "translatorName" : "mongodb",
+      "url" : null
     },
     "ms-sqlserver" : {
-      "name" : "mssql-server",
-      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
-      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
-      "translatorName" : "sqlserver",
-      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.mssql-server",
-      "jdbc" : true,
-      "url" : "jdbc:microsoft:sqlserver://{host}:1433",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
         "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+      "jdbc" : true,
+      "name" : "mssql-server",
+      "springBootPropertyPrefix" : "spring.teiid.data.mssql-server",
+      "translatorName" : "sqlserver",
+      "url" : "jdbc:microsoft:sqlserver://{host}:1433"
     },
     "mssql-server" : {
-      "name" : "mssql-server",
-      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
-      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
-      "translatorName" : "sqlserver",
-      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.mssql-server",
-      "jdbc" : true,
-      "url" : "jdbc:microsoft:sqlserver://{host}:1433",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
         "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+      "jdbc" : true,
+      "name" : "mssql-server",
+      "springBootPropertyPrefix" : "spring.teiid.data.mssql-server",
+      "translatorName" : "sqlserver",
+      "url" : "jdbc:microsoft:sqlserver://{host}:1433"
     },
     "mysql" : {
-      "name" : "mysql",
-      "driverNames" : [ "com.mysql.jdbc.Driver" ],
-      "datasourceNames" : [ "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" ],
-      "translatorName" : "mysql",
-      "dialect" : "org.hibernate.dialect.MySQL5InnoDBDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.mysql",
-      "jdbc" : true,
-      "url" : "jdbc:mysql://{host}:3306/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.mysql.jdbc.Driver" ],
         "defaultValue" : "com.mysql.jdbc.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.mysql.jdbc.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" ],
+      "dialect" : "org.hibernate.dialect.MySQL5InnoDBDialect",
+      "driverNames" : [ "com.mysql.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "mysql",
+      "springBootPropertyPrefix" : "spring.teiid.data.mysql",
+      "translatorName" : "mysql",
+      "url" : "jdbc:mysql://{host}:3306/{db-name}"
     },
     "netezza" : {
-      "name" : "netezza",
-      "driverNames" : [ "org.netezza.Driver " ],
-      "datasourceNames" : [ ],
-      "translatorName" : "netezza",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.netezza",
-      "jdbc" : true,
-      "url" : "jdbc:netezza://{host}:{port}/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.netezza.Driver " ],
         "defaultValue" : "org.netezza.Driver ",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.netezza.Driver " ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.netezza.Driver " ],
+      "jdbc" : true,
+      "name" : "netezza",
+      "springBootPropertyPrefix" : "spring.teiid.data.netezza",
+      "translatorName" : "netezza",
+      "url" : "jdbc:netezza://{host}:{port}/{db-name}"
     },
     "odata" : {
-      "name" : "odata",
-      "driverNames" : [ "org.teiid.spring.data.odata.ODataConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "odata",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.odata",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "securityType",
+        "name" : "refreshToken",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1207,7 +1146,13 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "authorizeUrl",
@@ -1225,33 +1170,27 @@
         "name" : "disableHostNameVerification",
         "type" : "boolean"
       }, {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
         "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "username",
         "type" : "string"
       }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.odata.ODataConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "odata",
+      "springBootPropertyPrefix" : "spring.teiid.data.odata",
+      "translatorName" : "odata",
+      "url" : null
     },
     "odata4" : {
-      "name" : "odata4",
-      "driverNames" : [ "org.teiid.spring.data.odata4.OData4ConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "odata4",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.odata4",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "securityType",
+        "name" : "refreshToken",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1260,7 +1199,13 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "authorizeUrl",
@@ -1278,33 +1223,27 @@
         "name" : "disableHostNameVerification",
         "type" : "boolean"
       }, {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
         "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "username",
         "type" : "string"
       }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.odata4.OData4ConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "odata4",
+      "springBootPropertyPrefix" : "spring.teiid.data.odata4",
+      "translatorName" : "odata4",
+      "url" : null
     },
     "openapi" : {
-      "name" : "openapi",
-      "driverNames" : [ "org.teiid.spring.data.openapi.OpenApiConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "openapi",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.openapi",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "securityType",
+        "name" : "refreshToken",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1313,7 +1252,13 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "authorizeUrl",
@@ -1331,279 +1276,273 @@
         "name" : "disableHostNameVerification",
         "type" : "boolean"
       }, {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
         "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "username",
         "type" : "string"
       }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.openapi.OpenApiConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "openapi",
+      "springBootPropertyPrefix" : "spring.teiid.data.openapi",
+      "translatorName" : "openapi",
+      "url" : null
     },
     "oracle" : {
-      "name" : "oracle",
-      "driverNames" : [ "oracle.jdbc.OracleDriver" ],
-      "datasourceNames" : [ "oracle.jdbc.xa.client.OracleXADataSource" ],
-      "translatorName" : "oracle",
-      "dialect" : "org.hibernate.dialect.Oracle12cDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.oracle",
-      "jdbc" : true,
-      "url" : "jdbc:oracle:thin:{host}:1521:orcl",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "oracle.jdbc.OracleDriver" ],
         "defaultValue" : "oracle.jdbc.OracleDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "oracle.jdbc.OracleDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "oracle.jdbc.xa.client.OracleXADataSource" ],
+      "dialect" : "org.hibernate.dialect.Oracle12cDialect",
+      "driverNames" : [ "oracle.jdbc.OracleDriver" ],
+      "jdbc" : true,
+      "name" : "oracle",
+      "springBootPropertyPrefix" : "spring.teiid.data.oracle",
+      "translatorName" : "oracle",
+      "url" : "jdbc:oracle:thin:{host}:1521:orcl"
     },
     "osisoft-pi" : {
-      "name" : "osisoft-pi",
-      "driverNames" : [ "com.osisoft.jdbc.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "osisoft-pi",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.osisoft-pi",
-      "jdbc" : true,
-      "url" : "jdbc:pioledbent://{das-name}/Data Source={af-name};Integrated Security=SSPI",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.osisoft.jdbc.Driver" ],
         "defaultValue" : "com.osisoft.jdbc.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.osisoft.jdbc.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.osisoft.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "osisoft-pi",
+      "springBootPropertyPrefix" : "spring.teiid.data.osisoft-pi",
+      "translatorName" : "osisoft-pi",
+      "url" : "jdbc:pioledbent://{das-name}/Data Source={af-name};Integrated Security=SSPI"
     },
     "phoenix" : {
-      "name" : "phoenix",
-      "driverNames" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "phoenix",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.phoenix",
-      "jdbc" : true,
-      "url" : "jdbc:phoenix:{host}:{port}:/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
         "defaultValue" : "org.apache.phoenix.jdbc.PhoenixDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
+      "jdbc" : true,
+      "name" : "phoenix",
+      "springBootPropertyPrefix" : "spring.teiid.data.phoenix",
+      "translatorName" : "phoenix",
+      "url" : "jdbc:phoenix:{host}:{port}:/{db-name}"
     },
     "postgresql" : {
-      "name" : "postgresql",
-      "driverNames" : [ "org.postgresql.Driver" ],
-      "datasourceNames" : [ "org.postgresql.xa.PGXADataSource" ],
-      "translatorName" : "postgresql",
-      "dialect" : "org.hibernate.dialect.PostgreSQL9Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.postgresql",
-      "jdbc" : true,
-      "url" : "jdbc:postgresql://{host}:5432/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.postgresql.Driver" ],
         "defaultValue" : "org.postgresql.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.postgresql.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "org.postgresql.xa.PGXADataSource" ],
+      "dialect" : "org.hibernate.dialect.PostgreSQL9Dialect",
+      "driverNames" : [ "org.postgresql.Driver" ],
+      "jdbc" : true,
+      "name" : "postgresql",
+      "springBootPropertyPrefix" : "spring.teiid.data.postgresql",
+      "translatorName" : "postgresql",
+      "url" : "jdbc:postgresql://{host}:5432/{db-name}"
     },
     "prestodb" : {
-      "name" : "prestodb",
-      "driverNames" : [ "com.facebook.presto.jdbc.PrestoDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "prestodb",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.prestodb",
-      "jdbc" : true,
-      "url" : "jdbc:presto://{host}:{port};",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.facebook.presto.jdbc.PrestoDriver" ],
         "defaultValue" : "com.facebook.presto.jdbc.PrestoDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.facebook.presto.jdbc.PrestoDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.facebook.presto.jdbc.PrestoDriver" ],
+      "jdbc" : true,
+      "name" : "prestodb",
+      "springBootPropertyPrefix" : "spring.teiid.data.prestodb",
+      "translatorName" : "prestodb",
+      "url" : "jdbc:presto://{host}:{port};"
     },
     "redshift" : {
-      "name" : "redshift",
-      "driverNames" : [ "com.amazon.redshift.jdbc42.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "redshift",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.redshift",
-      "jdbc" : true,
-      "url" : "jdbc:redshift://{host}:{port}/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.amazon.redshift.jdbc42.Driver" ],
         "defaultValue" : "com.amazon.redshift.jdbc42.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.amazon.redshift.jdbc42.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.amazon.redshift.jdbc42.Driver" ],
+      "jdbc" : true,
+      "name" : "redshift",
+      "springBootPropertyPrefix" : "spring.teiid.data.redshift",
+      "translatorName" : "redshift",
+      "url" : "jdbc:redshift://{host}:{port}/{db-name}"
     },
     "rest" : {
-      "name" : "rest",
-      "driverNames" : [ "org.teiid.spring.data.rest.RestConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "rest",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.rest",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "securityType",
+        "name" : "refreshToken",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1612,7 +1551,13 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "authorizeUrl",
@@ -1630,39 +1575,71 @@
         "name" : "disableHostNameVerification",
         "type" : "boolean"
       }, {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
         "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "username",
         "type" : "string"
       }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.rest.RestConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "rest",
+      "springBootPropertyPrefix" : "spring.teiid.data.rest",
+      "translatorName" : "rest",
+      "url" : null
+    },
+    "s3" : {
+      "configuration" : [ {
+        "name" : "region",
+        "type" : "string"
+      }, {
+        "name" : "sseAlgorithm",
+        "type" : "string"
+      }, {
+        "name" : "sseKey",
+        "type" : "string"
+      }, {
+        "name" : "bucket",
+        "type" : "string"
+      }, {
+        "name" : "endpoint",
+        "type" : "string"
+      }, {
+        "name" : "accessKey",
+        "type" : "string"
+      }, {
+        "name" : "secretKey",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.s3.S3ConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "s3",
+      "springBootPropertyPrefix" : "spring.teiid.data.s3",
+      "translatorName" : "file",
+      "url" : null
     },
     "salesforce" : {
-      "name" : "salesforce",
-      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "salesforce-41",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
         "name" : "clientId",
         "type" : "string"
       }, {
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "authorizeUrl",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
         "type" : "string"
       }, {
         "name" : "pollingInterval",
@@ -1671,39 +1648,45 @@
         "name" : "restTemplate",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
+        "name" : "tokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
         "name" : "url",
         "type" : "string"
       }, {
-        "name" : "username",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
+        "name" : "username",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "salesforce",
+      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
+      "translatorName" : "salesforce-41",
+      "url" : null
     },
     "salesforce-34" : {
-      "name" : "salesforce",
-      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "salesforce-41",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
         "name" : "clientId",
         "type" : "string"
       }, {
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "authorizeUrl",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
         "type" : "string"
       }, {
         "name" : "pollingInterval",
@@ -1712,39 +1695,45 @@
         "name" : "restTemplate",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
+        "name" : "tokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
         "name" : "url",
         "type" : "string"
       }, {
-        "name" : "username",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
+        "name" : "username",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "salesforce",
+      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
+      "translatorName" : "salesforce-41",
+      "url" : null
     },
     "salesforce-41" : {
-      "name" : "salesforce",
-      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "salesforce-41",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
         "name" : "clientId",
         "type" : "string"
       }, {
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "authorizeUrl",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
         "type" : "string"
       }, {
         "name" : "pollingInterval",
@@ -1753,33 +1742,33 @@
         "name" : "restTemplate",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
+        "name" : "tokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
         "name" : "url",
         "type" : "string"
       }, {
-        "name" : "username",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
+        "name" : "username",
         "type" : "string"
-      } ]
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.salesforce.SalesforceConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "salesforce",
+      "springBootPropertyPrefix" : "spring.teiid.data.salesforce",
+      "translatorName" : "salesforce-41",
+      "url" : null
     },
     "sap-gateway" : {
-      "name" : "sap-gateway",
-      "driverNames" : [ "org.teiid.spring.data.sap.SapGatewayConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "sap-gateway",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.sap-gateway",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
-        "name" : "securityType",
+        "name" : "refreshToken",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1788,7 +1777,13 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "refreshToken",
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "authorizeUrl",
@@ -1806,80 +1801,74 @@
         "name" : "disableHostNameVerification",
         "type" : "boolean"
       }, {
-        "name" : "trustStoreFileName",
-        "type" : "string"
-      }, {
-        "name" : "trustStorePassword",
-        "type" : "string"
-      }, {
         "name" : "scope",
         "type" : "string"
       }, {
-        "name" : "username",
-        "type" : "string"
-      }, {
         "name" : "password",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "username",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.sap.SapGatewayConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "sap-gateway",
+      "springBootPropertyPrefix" : "spring.teiid.data.sap-gateway",
+      "translatorName" : "sap-gateway",
+      "url" : null
     },
     "sap-iq" : {
-      "name" : "sap-iq",
-      "driverNames" : [ "com.sybase.jdbc4.jdbc.SybDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "sap-iq",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.sap-iq",
-      "jdbc" : true,
-      "url" : "jdbc:sybase:Tds:{host}:{port}?ServiceName=database",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.sybase.jdbc4.jdbc.SybDriver" ],
         "defaultValue" : "com.sybase.jdbc4.jdbc.SybDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.sybase.jdbc4.jdbc.SybDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.sybase.jdbc4.jdbc.SybDriver" ],
+      "jdbc" : true,
+      "name" : "sap-iq",
+      "springBootPropertyPrefix" : "spring.teiid.data.sap-iq",
+      "translatorName" : "sap-iq",
+      "url" : "jdbc:sybase:Tds:{host}:{port}?ServiceName=database"
     },
     "soap" : {
-      "name" : "soap",
-      "driverNames" : [ "org.teiid.spring.data.soap.SoapConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "ws",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.soap",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
+        "name" : "securityType",
+        "type" : "string"
+      }, {
         "name" : "wsdl",
         "type" : "string"
       }, {
         "name" : "endPoint",
-        "type" : "string"
-      }, {
-        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "serviceName",
@@ -1903,276 +1892,276 @@
         "name" : "requestTimeout",
         "type" : "string"
       }, {
-        "name" : "namespaceUri",
-        "type" : "string"
-      }, {
         "name" : "connectTimeout",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "namespaceUri",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.soap.SoapConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "soap",
+      "springBootPropertyPrefix" : "spring.teiid.data.soap",
+      "translatorName" : "ws",
+      "url" : null
     },
     "sqlserver" : {
-      "name" : "mssql-server",
-      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
-      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
-      "translatorName" : "sqlserver",
-      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.mssql-server",
-      "jdbc" : true,
-      "url" : "jdbc:microsoft:sqlserver://{host}:1433",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
         "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
+      "dialect" : "org.hibernate.dialect.SQLServer2012Dialect",
+      "driverNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+      "jdbc" : true,
+      "name" : "mssql-server",
+      "springBootPropertyPrefix" : "spring.teiid.data.mssql-server",
+      "translatorName" : "sqlserver",
+      "url" : "jdbc:microsoft:sqlserver://{host}:1433"
     },
     "sybase" : {
-      "name" : "sybase",
-      "driverNames" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "sybase",
-      "dialect" : "org.hibernate.dialect.SybaseDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.sybase",
-      "jdbc" : true,
-      "url" : "jdbc:sybase:Tds:{host}:{port}[?ServiceName= {db-name}]",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ],
         "defaultValue" : "com.sybase.jdbc2.jdbc.SybDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.SybaseDialect",
+      "driverNames" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ],
+      "jdbc" : true,
+      "name" : "sybase",
+      "springBootPropertyPrefix" : "spring.teiid.data.sybase",
+      "translatorName" : "sybase",
+      "url" : "jdbc:sybase:Tds:{host}:{port}[?ServiceName= {db-name}]"
     },
     "teiid" : {
-      "name" : "teiid",
-      "driverNames" : [ "org.teiid.jdbc.TeiidDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "teiid",
-      "dialect" : "org.teiid.dialect.TeiidDialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.teiid",
-      "jdbc" : true,
-      "url" : "jdbc:teiid:{vdb}@mm://{host}:31000",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "org.teiid.jdbc.TeiidDriver" ],
         "defaultValue" : "org.teiid.jdbc.TeiidDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "org.teiid.jdbc.TeiidDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.teiid.dialect.TeiidDialect",
+      "driverNames" : [ "org.teiid.jdbc.TeiidDriver" ],
+      "jdbc" : true,
+      "name" : "teiid",
+      "springBootPropertyPrefix" : "spring.teiid.data.teiid",
+      "translatorName" : "teiid",
+      "url" : "jdbc:teiid:{vdb}@mm://{host}:31000"
     },
     "teradata" : {
-      "name" : "teradata",
-      "driverNames" : [ "com.teradata.jdbc.TeraDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "teradata",
-      "dialect" : "org.hibernate.dialect.Teradata14Dialect",
-      "springBootPropertyPrefix" : "spring.teiid.data.teradata",
-      "jdbc" : true,
-      "url" : "jdbc:teradata://{host}:{port}/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.teradata.jdbc.TeraDriver" ],
         "defaultValue" : "com.teradata.jdbc.TeraDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.teradata.jdbc.TeraDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : "org.hibernate.dialect.Teradata14Dialect",
+      "driverNames" : [ "com.teradata.jdbc.TeraDriver" ],
+      "jdbc" : true,
+      "name" : "teradata",
+      "springBootPropertyPrefix" : "spring.teiid.data.teradata",
+      "translatorName" : "teradata",
+      "url" : "jdbc:teradata://{host}:{port}/{db-name}"
     },
     "ucanaccess" : {
-      "name" : "ucanaccess",
-      "driverNames" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "ucanaccess",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.ucanaccess",
-      "jdbc" : true,
-      "url" : "jdbc:ucanaccess://c:/data/pippo.mdb;memory=false",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ],
         "defaultValue" : "net.ucanaccess.jdbc.UcanaccessDriver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ],
+      "jdbc" : true,
+      "name" : "ucanaccess",
+      "springBootPropertyPrefix" : "spring.teiid.data.ucanaccess",
+      "translatorName" : "ucanaccess",
+      "url" : "jdbc:ucanaccess://c:/data/pippo.mdb;memory=false"
     },
     "vertica" : {
-      "name" : "vertica",
-      "driverNames" : [ "com.vertica.jdbc.Driver" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "vertica",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.vertica",
-      "jdbc" : true,
-      "url" : "jdbc:vertica:{host}:5433/{db-name}",
       "configuration" : [ {
-        "name" : "jdbcUrl",
         "displayName" : "Connection URL",
-        "type" : "string",
-        "required" : true
+        "name" : "jdbcUrl",
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "minimumIdle",
+        "advanced" : true,
         "defaultValue" : "0",
-        "type" : "number",
-        "advanced" : true
+        "name" : "minimumIdle",
+        "type" : "number"
+      }, {
+        "advanced" : true,
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
+        "type" : "number"
+      }, {
+        "masked" : true,
+        "name" : "password",
+        "required" : true,
+        "type" : "string"
       }, {
         "name" : "username",
-        "type" : "string",
-        "required" : true
+        "required" : true,
+        "type" : "string"
       }, {
-        "name" : "password",
-        "type" : "string",
-        "masked" : true,
-        "required" : true
-      }, {
-        "name" : "maximumPoolSize",
-        "defaultValue" : "5",
-        "type" : "number",
-        "advanced" : true
-      }, {
-        "name" : "driverClassName",
+        "allowedValues" : [ "com.vertica.jdbc.Driver" ],
         "defaultValue" : "com.vertica.jdbc.Driver",
-        "type" : "string",
+        "name" : "driverClassName",
         "required" : false,
-        "allowedValues" : [ "com.vertica.jdbc.Driver" ]
-      } ]
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "com.vertica.jdbc.Driver" ],
+      "jdbc" : true,
+      "name" : "vertica",
+      "springBootPropertyPrefix" : "spring.teiid.data.vertica",
+      "translatorName" : "vertica",
+      "url" : "jdbc:vertica:{host}:5433/{db-name}"
     },
     "ws" : {
-      "name" : "soap",
-      "driverNames" : [ "org.teiid.spring.data.soap.SoapConnectionFactory" ],
-      "datasourceNames" : [ ],
-      "translatorName" : "ws",
-      "dialect" : null,
-      "springBootPropertyPrefix" : "spring.teiid.data.soap",
-      "jdbc" : false,
-      "url" : null,
       "configuration" : [ {
+        "name" : "securityType",
+        "type" : "string"
+      }, {
         "name" : "wsdl",
         "type" : "string"
       }, {
         "name" : "endPoint",
-        "type" : "string"
-      }, {
-        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "serviceName",
@@ -2196,12 +2185,20 @@
         "name" : "requestTimeout",
         "type" : "string"
       }, {
-        "name" : "namespaceUri",
-        "type" : "string"
-      }, {
         "name" : "connectTimeout",
         "type" : "string"
-      } ]
+      }, {
+        "name" : "namespaceUri",
+        "type" : "string"
+      } ],
+      "datasourceNames" : [ ],
+      "dialect" : null,
+      "driverNames" : [ "org.teiid.spring.data.soap.SoapConnectionFactory" ],
+      "jdbc" : false,
+      "name" : "soap",
+      "springBootPropertyPrefix" : "spring.teiid.data.soap",
+      "translatorName" : "ws",
+      "url" : null
     }
   }
 }
