@@ -7,8 +7,8 @@ spec:
   expose:
     - LoadBalancer
   datasources:
-    - name: bqt
-      type: salesforce
+    - name: cephstore
+      type: s3
       properties:
         - name: accesskey
           value: xxxx
@@ -23,9 +23,23 @@ spec:
       ddl: |
         CREATE DATABASE example;
         USE DATABASE example;
-          
-        CREATE FOREIGN DATA WRAPPER "user-s3" TYPE "amazon-s3";
-        CREATE SERVER s3 FOREIGN DATA WRAPPER "user-s3";
-        CREATE SCHEMA s3 SERVER s3;
 
-        IMPORT FROM SERVER s3 INTO s3;
+        CREATE FOREIGN DATA WRAPPER "user-s3" TYPE s3;  
+        CREATE SERVER cephstore FOREIGN DATA WRAPPER "user-s3";
+        CREATE SCHEMA ceph SERVER cephstore;
+        CREATE VIRTUAL SCHEMA testing;
+
+        SET SCHEMA ceph;
+        IMPORT FROM SERVER cephstore INTO ceph;
+
+        SET SCHEMA testing;
+
+        CREATE VIEW sample(
+          symbol string,
+          price double,
+          PRIMARY KEY(symbol)
+        ) AS
+        SELECT tt.symbol, tt.price,
+        FROM 
+          (EXEC testing.getTextFiles('sample_data.csv')) AS f, 
+          TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;        

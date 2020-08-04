@@ -4,15 +4,18 @@ metadata:
   name: hello-world
 spec:
   replicas: 1
-  env:
-    - name: SPRING_DATASOURCE_SAMPLEDB_USERNAME
-      value: sa
-    - name: SPRING_DATASOURCE_SAMPLEDB_PASSWORD
-      value: sa
-    - name: SPRING_DATASOURCE_SAMPLEDB_DRIVER_CLASS_NAME
-      value: org.h2.Driver
-    - name: SPRING_DATASOURCE_SAMPLEDB_JDBCURL
-      value: jdbc:h2:mem:sampledb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;INIT=create table note(id integer primary key, msg varchar(80))\;INSERT INTO note VALUES(1, 'First note')\;INSERT INTO note VALUES(2, 'Second note');
+  datasources:
+    - name: sampledb
+      type: h2
+      properties:
+        - name: username
+          value: sa
+        - name: password
+          value: sa
+        - name: jdbc-url
+          value: jdbc:h2:mem:sampledb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;INIT=create table note(id integer primary key, msg varchar(80))\;INSERT INTO note VALUES(1, 'First note')\;INSERT INTO note VALUES(2, 'Second note');
+        - name: driver-class-name
+          value: org.h2.Driver
   build:
     source:
       dependencies:

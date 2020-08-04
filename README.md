@@ -97,6 +97,16 @@ Before submitting PR, please be sure to generate, vet, format, and test your cod
 make ci
 ```
 
+### Updating the CRDs and Adding new data sources
+
+If the Operator being released and if you need to update the CRD to a new version or if you added a new data source in Teiid Spring Boot that needs to be used with Operator then run 
+
+```bash
+make generate
+```
+
+This will generate the new CRDs or `connection_factories.json` file
+
 ### Deploying Teiid Operator in OpenShift
 
 To deploy the Operator to running Openshift that is installed above or to any Openshift cluster that you are already connected using the `oc` command, execute the following

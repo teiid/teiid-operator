@@ -7,39 +7,34 @@ QUAY_REPOSITORY?=quay.io/teiid/teiid-operator
 
 IMAGE_NAME=$(REGISTRY)/$(IMAGE):$(TAG)
 CRC_IMAGE_NAME=$(CRC_REGISTRY)/`oc project --short`/$(IMAGE):$(TAG)
-GO_FLAGS ?= GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GO111MODULE=on
-SDK_VERSION=v0.15.1
+GO_FLAGS ?= GOOS=linux GOARCH=amd64 CGO_ENABLED=0 GO111MODULE=on GOROOT=`go env GOROOT`
+SDK_VERSION=v0.17.0
 GOPATH ?= "$(HOME)/go"
 FMT_LOG=fmt.log
 
 .PHONY: all
 all: build
 
-.PHONY: dep
-dep:
-	export GO111MODULE=on
-	echo $(IMAGE_NAME)
-
 .PHONY: vet
-vet: dep sdk-generate
-	go vet ./...
+vet: sdk-generate
+	@${GO_FLAGS} go vet ./...
 
 .PHONY: fmt
 fmt:
-	gofmt -s -l -w cmd/ pkg/ 
+	@${GO_FLAGS} gofmt -s -l -w cmd/ pkg/ 
 
 .PHONY: test
 test: vet fmt
 	GOCACHE=on 
-	go test ./...
+	@${GO_FLAGS} go test ./...
 
 .PHONY: sdk-generate
-sdk-generate: dep
-	operator-sdk generate k8s
+sdk-generate:
+	@${GO_FLAGS} operator-sdk generate k8s
 
 .PHONY: build
 build: format test
-	@echo Building...
+	@echo Building image $(IMAGE_NAME)
 	go generate ./...
 	@${GO_FLAGS} operator-sdk build --image-builder buildah $(IMAGE_NAME)
 
@@ -88,7 +83,7 @@ generate: internal-generate format
 
 .PHONY: internal-generate
 internal-generate:
-	@GOPATH=${GOPATH} ./scripts/generate.sh	
+	@GOPATH=${GOPATH} ./scripts/generate.sh	@${GO_FLAGS}
 
 .PHONY: format
 format:

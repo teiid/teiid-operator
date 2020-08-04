@@ -1,5 +1,8 @@
 #!/bin/bash
 
+export GO111MODULE=on 
+export GOROOT=`go env GOROOT`
+
 # taken from https://stackoverflow.com/questions/5014632/how-can-i-parse-a-yaml-file-from-a-linux-shell-script
 function parse_yaml {
    local prefix=$2
