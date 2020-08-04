@@ -102,6 +102,44 @@ http://maven.apache.org/xsd/settings-1.0.0.xsd">
                 </repository>
             </repositories>
         </profile>
+        <profile>
+            <id>jboss-developer-repository</id>
+            <repositories>
+                <repository>
+                <id>jboss-developer-repository-group</id>
+                <name>JBoss Developer Maven Repository Group</name>
+                <url>https://repository.jboss.org/nexus/content/groups/developer/</url>
+                <layout>default</layout>
+                <releases>
+                    <enabled>true</enabled>
+                    <updatePolicy>never</updatePolicy>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                    <updatePolicy>never</updatePolicy>
+                </snapshots>
+                </repository>
+            </repositories> 
+        </profile>   
+        <profile>
+            <id>apache-snapshot-repository</id>
+            <repositories>
+                <repository>
+                <id>apache-snapshot-repository-group</id>
+                <name>Apache Snapshot Maven Repository Group</name>
+                <url>https://repository.apache.org/content/groups/snapshots/</url>
+                <layout>default</layout>
+                <releases>
+                    <enabled>false</enabled>
+                    <updatePolicy>never</updatePolicy>
+                </releases>
+                <snapshots>
+                    <enabled>true</enabled>
+                    <updatePolicy>never</updatePolicy>
+                </snapshots>
+                </repository>
+            </repositories> 
+        </profile>
     </profiles>
 
 
@@ -110,6 +148,8 @@ http://maven.apache.org/xsd/settings-1.0.0.xsd">
         <activeProfile>rh-earlyaccess</activeProfile>
         <activeProfile>rh-techpreview</activeProfile>
         <activeProfile>jboss-public-repository</activeProfile>
+        <activeProfile>apache-snapshot-repository</activeProfile>
+        <activeProfile>jboss-developer-repository</activeProfile>
     </activeProfiles>
 
 </settings>
