@@ -41,7 +41,7 @@ func TestParsingDataSources(t *testing.T) {
 
 	assert.Equal(t, 1, len(dsInfo))
 	assert.Equal(t, "sampledb", dsInfo[0].Name)
-	assert.Equal(t, "postgresql", dsInfo[0].Type)
+	assert.Equal(t, "h2", dsInfo[0].Type)
 }
 
 func TestParsingDataSources2(t *testing.T) {
@@ -57,7 +57,7 @@ func TestParsingDataSources2(t *testing.T) {
 	assert.Equal(t, "user-s3", dsInfo[0].Name)
 	assert.Equal(t, "s3", dsInfo[0].Type)
 
-	assert.Equal(t, "cephstore", dsInfo[1].Name)
+	assert.Equal(t, "store", dsInfo[1].Name)
 	assert.Equal(t, "user-s3", dsInfo[1].Type)
 }
 
@@ -71,7 +71,7 @@ func TestPomGeneration(t *testing.T) {
 
 	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
-	assert.True(t, hasDependency(project, "org.teiid", "spring-data-postgresql"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-data-h2"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
 	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
 	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))
@@ -125,7 +125,7 @@ func TestMinimalGavPomGeneration(t *testing.T) {
 
 	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
-	assert.True(t, hasDependency(project, "org.teiid", "spring-data-postgresql"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-data-h2"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
 	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
 	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))

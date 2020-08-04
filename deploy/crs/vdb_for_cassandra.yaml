@@ -1,0 +1,30 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: example
+spec:
+  replicas: 1
+  datasources:
+    - name: store
+      type: cassandra
+      properties:
+        - name: username
+          value: sa
+        - name: password
+          value: sa
+        - name: address
+          value: myhost.example.com
+        - name: port
+          value: "9042"
+        - name: keyspace
+          value: test
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE example;
+        USE DATABASE example;
+        
+        CREATE SERVER store FOREIGN DATA WRAPPER file;
+        CREATE SCHEMA testing SERVER store;
+        IMPORT FROM SERVER store INTO testing;
+

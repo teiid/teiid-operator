@@ -7,7 +7,7 @@ spec:
   expose:
     - LoadBalancer
   datasources:
-    - name: cephstore
+    - name: store
       type: s3
       properties:
         - name: accesskey
@@ -25,16 +25,13 @@ spec:
         USE DATABASE example;
 
         CREATE FOREIGN DATA WRAPPER "user-s3" TYPE s3;  
-        CREATE SERVER cephstore FOREIGN DATA WRAPPER "user-s3";
-        CREATE SCHEMA ceph SERVER cephstore;
-        CREATE VIRTUAL SCHEMA testing;
+        CREATE SERVER store FOREIGN DATA WRAPPER "user-s3";
+        CREATE SCHEMA ceph SERVER store;
 
         SET SCHEMA ceph;
-        IMPORT FROM SERVER cephstore INTO ceph;
+        IMPORT FROM SERVER store INTO ceph;
 
-        SET SCHEMA testing;
-
-        CREATE VIEW sample(
+        CREATE VIEW stock_price(
           symbol string,
           price double,
           PRIMARY KEY(symbol)
