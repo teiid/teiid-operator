@@ -2,19 +2,25 @@
   "items" : {
     "actian" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
+        "defaultValue" : "com.ingres.jdbc.IngresDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -24,12 +30,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
-        "defaultValue" : "com.ingres.jdbc.IngresDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -43,19 +43,25 @@
     },
     "actian-vector" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
+        "defaultValue" : "com.ingres.jdbc.IngresDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -65,12 +71,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
-        "defaultValue" : "com.ingres.jdbc.IngresDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -84,19 +84,25 @@
     },
     "amazon-athena" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.simba.athena.jdbc.Driver" ],
+        "defaultValue" : "com.simba.athena.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -106,12 +112,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.simba.athena.jdbc.Driver" ],
-        "defaultValue" : "com.simba.athena.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -128,13 +128,13 @@
         "name" : "address",
         "type" : "string"
       }, {
-        "name" : "port",
-        "type" : "string"
-      }, {
         "name" : "keyspace",
         "type" : "string"
       }, {
         "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "port",
         "type" : "string"
       }, {
         "name" : "username",
@@ -151,19 +151,25 @@
     },
     "db2" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.ibm.db2.jcc.DB2Driver" ],
+        "defaultValue" : "com.ibm.db2.jcc.DB2Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -173,12 +179,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.ibm.db2.jcc.DB2Driver" ],
-        "defaultValue" : "com.ibm.db2.jcc.DB2Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "com.ibm.db2.jcc.DB2XADataSource" ],
@@ -192,19 +192,25 @@
     },
     "derby" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.apache.derby.jdbc.ClientDriver" ],
+        "defaultValue" : "org.apache.derby.jdbc.ClientDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -214,12 +220,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.apache.derby.jdbc.ClientDriver" ],
-        "defaultValue" : "org.apache.derby.jdbc.ClientDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -233,19 +233,25 @@
     },
     "exasol" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.exasol.jdbc.EXADriver" ],
+        "defaultValue" : "com.exasol.jdbc.EXADriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -255,12 +261,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.exasol.jdbc.EXADriver" ],
-        "defaultValue" : "com.exasol.jdbc.EXADriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -274,10 +274,10 @@
     },
     "excel" : {
       "configuration" : [ {
-        "name" : "parentDirectory",
+        "name" : "fileMapping",
         "type" : "string"
       }, {
-        "name" : "fileMapping",
+        "name" : "parentDirectory",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -291,10 +291,10 @@
     },
     "file" : {
       "configuration" : [ {
-        "name" : "parentDirectory",
+        "name" : "fileMapping",
         "type" : "string"
       }, {
-        "name" : "fileMapping",
+        "name" : "parentDirectory",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -308,74 +308,74 @@
     },
     "ftp" : {
       "configuration" : [ {
+        "name" : "authValue",
+        "type" : "string"
+      }, {
+        "name" : "bufferSize",
+        "type" : "string"
+      }, {
+        "name" : "cipherSuites",
+        "type" : "string"
+      }, {
+        "name" : "clientMode",
+        "type" : "string"
+      }, {
+        "name" : "connectTimeout",
+        "type" : "string"
+      }, {
+        "name" : "controlEncoding",
+        "type" : "string"
+      }, {
+        "name" : "dataTimeout",
+        "type" : "string"
+      }, {
+        "name" : "defaultTimeout",
+        "type" : "string"
+      }, {
+        "name" : "execProt",
+        "type" : "string"
+      }, {
+        "name" : "fileMapping",
+        "type" : "string"
+      }, {
+        "name" : "fileType",
+        "type" : "string"
+      }, {
+        "name" : "host",
+        "type" : "string"
+      }, {
+        "name" : "isFtps",
+        "type" : "boolean"
+      }, {
+        "name" : "needClientAuth",
+        "type" : "boolean"
+      }, {
+        "name" : "parentDirectory",
+        "type" : "string"
+      }, {
+        "name" : "password",
+        "type" : "string"
+      }, {
         "name" : "port",
         "type" : "string"
       }, {
         "name" : "protocol",
         "type" : "string"
       }, {
-        "name" : "host",
+        "name" : "protocols",
         "type" : "string"
       }, {
-        "name" : "parentDirectory",
-        "type" : "string"
-      }, {
-        "name" : "fileMapping",
-        "type" : "string"
-      }, {
-        "name" : "bufferSize",
-        "type" : "string"
-      }, {
-        "name" : "clientMode",
-        "type" : "string"
-      }, {
-        "name" : "fileType",
-        "type" : "string"
-      }, {
-        "name" : "controlEncoding",
-        "type" : "string"
-      }, {
-        "name" : "defaultTimeout",
-        "type" : "string"
-      }, {
-        "name" : "dataTimeout",
-        "type" : "string"
-      }, {
-        "name" : "isFtps",
+        "name" : "sessionCreation",
         "type" : "boolean"
       }, {
         "name" : "useClientMode",
         "type" : "boolean"
       }, {
-        "name" : "sessionCreation",
-        "type" : "boolean"
-      }, {
-        "name" : "authValue",
+        "name" : "username",
         "type" : "string"
-      }, {
-        "name" : "cipherSuites",
-        "type" : "string"
-      }, {
-        "name" : "protocols",
-        "type" : "string"
-      }, {
-        "name" : "needClientAuth",
-        "type" : "boolean"
       }, {
         "name" : "wantsClientAuth",
         "type" : "boolean"
-      }, {
-        "name" : "execProt",
-        "type" : "string"
-      }, {
-        "name" : "connectTimeout",
-        "type" : "string"
-      }, {
-        "name" : "password",
-        "type" : "string"
-      }, {
-        "name" : "username",
-        "type" : "string"
       } ],
       "datasourceNames" : [ ],
       "dialect" : null,
@@ -391,19 +391,19 @@
         "name" : "batchSize",
         "type" : "string"
       }, {
-        "name" : "spreadsheetId",
+        "name" : "clientId",
         "type" : "string"
       }, {
-        "name" : "spreadsheets",
+        "name" : "clientSecret",
         "type" : "string"
       }, {
         "name" : "refreshToken",
         "type" : "string"
       }, {
-        "name" : "clientId",
+        "name" : "spreadsheetId",
         "type" : "string"
       }, {
-        "name" : "clientSecret",
+        "name" : "spreadsheets",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -417,19 +417,25 @@
     },
     "h2" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.h2.Driver" ],
+        "defaultValue" : "org.h2.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -439,12 +445,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.h2.Driver" ],
-        "defaultValue" : "org.h2.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "org.h2.jdbcx.JdbcDataSource" ],
@@ -458,19 +458,25 @@
     },
     "hana" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.sap.db.jdbc.Driver" ],
+        "defaultValue" : "com.sap.db.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -480,12 +486,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.sap.db.jdbc.Driver" ],
-        "defaultValue" : "com.sap.db.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -516,19 +516,25 @@
     },
     "hive" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.apache.hive.jdbc.HiveDriver" ],
+        "defaultValue" : "org.apache.hive.jdbc.HiveDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -538,12 +544,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.apache.hive.jdbc.HiveDriver" ],
-        "defaultValue" : "org.apache.hive.jdbc.HiveDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -557,19 +557,25 @@
     },
     "hsql" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.hsqldb.jdbc.JDBCDriver" ],
+        "defaultValue" : "org.hsqldb.jdbc.JDBCDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -579,12 +585,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.hsqldb.jdbc.JDBCDriver" ],
-        "defaultValue" : "org.hsqldb.jdbc.JDBCDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "org.hsqldb.jdbc.pool.JDBCXADataSource" ],
@@ -598,19 +598,25 @@
     },
     "impala" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ],
+        "defaultValue" : "org.apache.hadoop.hive.jdbc.HiveDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -620,12 +626,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.apache.hadoop.hive.jdbc.HiveDriver" ],
-        "defaultValue" : "org.apache.hadoop.hive.jdbc.HiveDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -639,22 +639,16 @@
     },
     "infinispan-hotrod" : {
       "configuration" : [ {
-        "name" : "cacheName",
-        "type" : "string"
-      }, {
-        "name" : "saslMechanism",
-        "type" : "string"
-      }, {
         "name" : "authenticationRealm",
         "type" : "string"
       }, {
         "name" : "authenticationServerName",
         "type" : "string"
       }, {
-        "name" : "trustStoreFileName",
+        "name" : "cacheName",
         "type" : "string"
       }, {
-        "name" : "trustStorePassword",
+        "name" : "cacheTemplate",
         "type" : "string"
       }, {
         "name" : "keyStoreFileName",
@@ -663,19 +657,25 @@
         "name" : "keyStorePassword",
         "type" : "string"
       }, {
-        "name" : "cacheTemplate",
-        "type" : "string"
-      }, {
-        "name" : "transactionMode",
+        "name" : "password",
         "type" : "string"
       }, {
         "name" : "remoteServerList",
         "type" : "string"
       }, {
-        "name" : "url",
+        "name" : "saslMechanism",
         "type" : "string"
       }, {
-        "name" : "password",
+        "name" : "transactionMode",
+        "type" : "string"
+      }, {
+        "name" : "trustStoreFileName",
+        "type" : "string"
+      }, {
+        "name" : "trustStorePassword",
+        "type" : "string"
+      }, {
+        "name" : "url",
         "type" : "string"
       }, {
         "name" : "username",
@@ -692,19 +692,25 @@
     },
     "informix" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.informix.jdbc.IfxDriver" ],
+        "defaultValue" : "com.informix.jdbc.IfxDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -714,12 +720,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.informix.jdbc.IfxDriver" ],
-        "defaultValue" : "com.informix.jdbc.IfxDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -733,19 +733,25 @@
     },
     "ingres" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
+        "defaultValue" : "com.ingres.jdbc.IngresDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -755,12 +761,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.ingres.jdbc.IngresDriver" ],
-        "defaultValue" : "com.ingres.jdbc.IngresDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -774,19 +774,25 @@
     },
     "jdbc-ansi" : {
       "configuration" : [ {
+        "allowedValues" : [ "java.sql.Driver" ],
+        "defaultValue" : "java.sql.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -796,12 +802,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "java.sql.Driver" ],
-        "defaultValue" : "java.sql.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -815,19 +815,25 @@
     },
     "jdbc-simple" : {
       "configuration" : [ {
+        "allowedValues" : [ "java.sql.Driver" ],
+        "defaultValue" : "java.sql.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -837,12 +843,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "java.sql.Driver" ],
-        "defaultValue" : "java.sql.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -856,19 +856,25 @@
     },
     "jtds" : {
       "configuration" : [ {
+        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -878,12 +884,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ],
-        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -897,19 +897,25 @@
     },
     "jtds-sqlserver" : {
       "configuration" : [ {
+        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ],
+        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -919,12 +925,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "net.sourceforge.jtds.jdbc.Driver" ],
-        "defaultValue" : "net.sourceforge.jtds.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -938,28 +938,28 @@
     },
     "mongodb" : {
       "configuration" : [ {
-        "name" : "remoteServerList",
-        "type" : "string"
-      }, {
-        "name" : "uri",
+        "name" : "authDatabase",
         "type" : "string"
       }, {
         "name" : "database",
         "type" : "string"
       }, {
-        "name" : "user",
+        "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "remoteServerList",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
         "type" : "string"
       }, {
         "name" : "ssl",
         "type" : "boolean"
       }, {
-        "name" : "securityType",
+        "name" : "uri",
         "type" : "string"
       }, {
-        "name" : "authDatabase",
-        "type" : "string"
-      }, {
-        "name" : "password",
+        "name" : "user",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -973,19 +973,25 @@
     },
     "ms-sqlserver" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+        "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -995,12 +1001,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
-        "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
@@ -1014,19 +1014,25 @@
     },
     "mssql-server" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+        "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1036,12 +1042,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
-        "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
@@ -1055,19 +1055,25 @@
     },
     "mysql" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.mysql.jdbc.Driver" ],
+        "defaultValue" : "com.mysql.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1077,12 +1083,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.mysql.jdbc.Driver" ],
-        "defaultValue" : "com.mysql.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "com.mysql.jdbc.jdbc2.optional.MysqlXADataSource" ],
@@ -1096,19 +1096,25 @@
     },
     "netezza" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.netezza.Driver " ],
+        "defaultValue" : "org.netezza.Driver ",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1118,12 +1124,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.netezza.Driver " ],
-        "defaultValue" : "org.netezza.Driver ",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1137,7 +1137,10 @@
     },
     "odata" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "accessTokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1146,34 +1149,31 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "trustStoreFileName",
+        "name" : "disableHostNameVerification",
+        "type" : "boolean"
+      }, {
+        "name" : "disableTrustManager",
+        "type" : "boolean"
+      }, {
+        "name" : "endpoint",
         "type" : "string"
       }, {
-        "name" : "trustStorePassword",
+        "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "scope",
         "type" : "string"
       }, {
         "name" : "securityType",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "trustStoreFileName",
         "type" : "string"
       }, {
-        "name" : "accessTokenUrl",
-        "type" : "string"
-      }, {
-        "name" : "endpoint",
-        "type" : "string"
-      }, {
-        "name" : "disableTrustManager",
-        "type" : "boolean"
-      }, {
-        "name" : "disableHostNameVerification",
-        "type" : "boolean"
-      }, {
-        "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "password",
+        "name" : "trustStorePassword",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1190,7 +1190,10 @@
     },
     "odata4" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "accessTokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1199,34 +1202,31 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "trustStoreFileName",
+        "name" : "disableHostNameVerification",
+        "type" : "boolean"
+      }, {
+        "name" : "disableTrustManager",
+        "type" : "boolean"
+      }, {
+        "name" : "endpoint",
         "type" : "string"
       }, {
-        "name" : "trustStorePassword",
+        "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "scope",
         "type" : "string"
       }, {
         "name" : "securityType",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "trustStoreFileName",
         "type" : "string"
       }, {
-        "name" : "accessTokenUrl",
-        "type" : "string"
-      }, {
-        "name" : "endpoint",
-        "type" : "string"
-      }, {
-        "name" : "disableTrustManager",
-        "type" : "boolean"
-      }, {
-        "name" : "disableHostNameVerification",
-        "type" : "boolean"
-      }, {
-        "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "password",
+        "name" : "trustStorePassword",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1243,7 +1243,10 @@
     },
     "openapi" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "accessTokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1252,34 +1255,31 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "trustStoreFileName",
+        "name" : "disableHostNameVerification",
+        "type" : "boolean"
+      }, {
+        "name" : "disableTrustManager",
+        "type" : "boolean"
+      }, {
+        "name" : "endpoint",
         "type" : "string"
       }, {
-        "name" : "trustStorePassword",
+        "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "scope",
         "type" : "string"
       }, {
         "name" : "securityType",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "trustStoreFileName",
         "type" : "string"
       }, {
-        "name" : "accessTokenUrl",
-        "type" : "string"
-      }, {
-        "name" : "endpoint",
-        "type" : "string"
-      }, {
-        "name" : "disableTrustManager",
-        "type" : "boolean"
-      }, {
-        "name" : "disableHostNameVerification",
-        "type" : "boolean"
-      }, {
-        "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "password",
+        "name" : "trustStorePassword",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1296,19 +1296,25 @@
     },
     "oracle" : {
       "configuration" : [ {
+        "allowedValues" : [ "oracle.jdbc.OracleDriver" ],
+        "defaultValue" : "oracle.jdbc.OracleDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1318,12 +1324,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "oracle.jdbc.OracleDriver" ],
-        "defaultValue" : "oracle.jdbc.OracleDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "oracle.jdbc.xa.client.OracleXADataSource" ],
@@ -1337,19 +1337,25 @@
     },
     "osisoft-pi" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.osisoft.jdbc.Driver" ],
+        "defaultValue" : "com.osisoft.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1359,12 +1365,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.osisoft.jdbc.Driver" ],
-        "defaultValue" : "com.osisoft.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1378,19 +1378,25 @@
     },
     "phoenix" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
+        "defaultValue" : "org.apache.phoenix.jdbc.PhoenixDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1400,12 +1406,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.apache.phoenix.jdbc.PhoenixDriver" ],
-        "defaultValue" : "org.apache.phoenix.jdbc.PhoenixDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1419,19 +1419,25 @@
     },
     "postgresql" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.postgresql.Driver" ],
+        "defaultValue" : "org.postgresql.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1441,12 +1447,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.postgresql.Driver" ],
-        "defaultValue" : "org.postgresql.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "org.postgresql.xa.PGXADataSource" ],
@@ -1460,19 +1460,25 @@
     },
     "prestodb" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.facebook.presto.jdbc.PrestoDriver" ],
+        "defaultValue" : "com.facebook.presto.jdbc.PrestoDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1482,12 +1488,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.facebook.presto.jdbc.PrestoDriver" ],
-        "defaultValue" : "com.facebook.presto.jdbc.PrestoDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1501,19 +1501,25 @@
     },
     "redshift" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.amazon.redshift.jdbc42.Driver" ],
+        "defaultValue" : "com.amazon.redshift.jdbc42.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1523,12 +1529,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.amazon.redshift.jdbc42.Driver" ],
-        "defaultValue" : "com.amazon.redshift.jdbc42.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1542,7 +1542,10 @@
     },
     "rest" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "accessTokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1551,34 +1554,31 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "trustStoreFileName",
+        "name" : "disableHostNameVerification",
+        "type" : "boolean"
+      }, {
+        "name" : "disableTrustManager",
+        "type" : "boolean"
+      }, {
+        "name" : "endpoint",
         "type" : "string"
       }, {
-        "name" : "trustStorePassword",
+        "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "scope",
         "type" : "string"
       }, {
         "name" : "securityType",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "trustStoreFileName",
         "type" : "string"
       }, {
-        "name" : "accessTokenUrl",
-        "type" : "string"
-      }, {
-        "name" : "endpoint",
-        "type" : "string"
-      }, {
-        "name" : "disableTrustManager",
-        "type" : "boolean"
-      }, {
-        "name" : "disableHostNameVerification",
-        "type" : "boolean"
-      }, {
-        "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "password",
+        "name" : "trustStorePassword",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1595,13 +1595,7 @@
     },
     "s3" : {
       "configuration" : [ {
-        "name" : "region",
-        "type" : "string"
-      }, {
-        "name" : "sseAlgorithm",
-        "type" : "string"
-      }, {
-        "name" : "sseKey",
+        "name" : "accessKey",
         "type" : "string"
       }, {
         "name" : "bucket",
@@ -1610,10 +1604,16 @@
         "name" : "endpoint",
         "type" : "string"
       }, {
-        "name" : "accessKey",
+        "name" : "region",
         "type" : "string"
       }, {
         "name" : "secretKey",
+        "type" : "string"
+      }, {
+        "name" : "sseAlgorithm",
+        "type" : "string"
+      }, {
+        "name" : "sseKey",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1627,7 +1627,7 @@
     },
     "salesforce" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1636,13 +1636,19 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
+        "name" : "password",
         "type" : "string"
       }, {
         "name" : "pollingInterval",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
         "type" : "string"
       }, {
         "name" : "restTemplate",
@@ -1651,13 +1657,7 @@
         "name" : "tokenUrl",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
-        "type" : "string"
-      }, {
         "name" : "url",
-        "type" : "string"
-      }, {
-        "name" : "password",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1674,7 +1674,7 @@
     },
     "salesforce-34" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1683,13 +1683,19 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
+        "name" : "password",
         "type" : "string"
       }, {
         "name" : "pollingInterval",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
         "type" : "string"
       }, {
         "name" : "restTemplate",
@@ -1698,13 +1704,7 @@
         "name" : "tokenUrl",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
-        "type" : "string"
-      }, {
         "name" : "url",
-        "type" : "string"
-      }, {
-        "name" : "password",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1721,7 +1721,7 @@
     },
     "salesforce-41" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1730,13 +1730,19 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "connectTimeout",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
+        "name" : "password",
         "type" : "string"
       }, {
         "name" : "pollingInterval",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
         "type" : "string"
       }, {
         "name" : "restTemplate",
@@ -1745,13 +1751,7 @@
         "name" : "tokenUrl",
         "type" : "string"
       }, {
-        "name" : "connectTimeout",
-        "type" : "string"
-      }, {
         "name" : "url",
-        "type" : "string"
-      }, {
-        "name" : "password",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1768,7 +1768,10 @@
     },
     "sap-gateway" : {
       "configuration" : [ {
-        "name" : "refreshToken",
+        "name" : "accessTokenUrl",
+        "type" : "string"
+      }, {
+        "name" : "authorizeUrl",
         "type" : "string"
       }, {
         "name" : "clientId",
@@ -1777,34 +1780,31 @@
         "name" : "clientSecret",
         "type" : "string"
       }, {
-        "name" : "trustStoreFileName",
+        "name" : "disableHostNameVerification",
+        "type" : "boolean"
+      }, {
+        "name" : "disableTrustManager",
+        "type" : "boolean"
+      }, {
+        "name" : "endpoint",
         "type" : "string"
       }, {
-        "name" : "trustStorePassword",
+        "name" : "password",
+        "type" : "string"
+      }, {
+        "name" : "refreshToken",
+        "type" : "string"
+      }, {
+        "name" : "scope",
         "type" : "string"
       }, {
         "name" : "securityType",
         "type" : "string"
       }, {
-        "name" : "authorizeUrl",
+        "name" : "trustStoreFileName",
         "type" : "string"
       }, {
-        "name" : "accessTokenUrl",
-        "type" : "string"
-      }, {
-        "name" : "endpoint",
-        "type" : "string"
-      }, {
-        "name" : "disableTrustManager",
-        "type" : "boolean"
-      }, {
-        "name" : "disableHostNameVerification",
-        "type" : "boolean"
-      }, {
-        "name" : "scope",
-        "type" : "string"
-      }, {
-        "name" : "password",
+        "name" : "trustStorePassword",
         "type" : "string"
       }, {
         "name" : "username",
@@ -1821,19 +1821,25 @@
     },
     "sap-iq" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.sybase.jdbc4.jdbc.SybDriver" ],
+        "defaultValue" : "com.sybase.jdbc4.jdbc.SybDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1843,12 +1849,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.sybase.jdbc4.jdbc.SybDriver" ],
-        "defaultValue" : "com.sybase.jdbc4.jdbc.SybDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1862,21 +1862,6 @@
     },
     "soap" : {
       "configuration" : [ {
-        "name" : "securityType",
-        "type" : "string"
-      }, {
-        "name" : "wsdl",
-        "type" : "string"
-      }, {
-        "name" : "endPoint",
-        "type" : "string"
-      }, {
-        "name" : "serviceName",
-        "type" : "string"
-      }, {
-        "name" : "endPointName",
-        "type" : "string"
-      }, {
         "name" : "authPassword",
         "type" : "string"
       }, {
@@ -1889,13 +1874,28 @@
         "name" : "configName",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
-        "type" : "string"
-      }, {
         "name" : "connectTimeout",
         "type" : "string"
       }, {
+        "name" : "endPoint",
+        "type" : "string"
+      }, {
+        "name" : "endPointName",
+        "type" : "string"
+      }, {
         "name" : "namespaceUri",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
+        "type" : "string"
+      }, {
+        "name" : "serviceName",
+        "type" : "string"
+      }, {
+        "name" : "wsdl",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1909,19 +1909,25 @@
     },
     "sqlserver" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
+        "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1931,12 +1937,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.microsoft.sqlserver.jdbc.SQLServerDriver" ],
-        "defaultValue" : "com.microsoft.sqlserver.jdbc.SQLServerDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ "com.microsoft.sqlserver.jdbc.SQLServerXADataSource" ],
@@ -1950,19 +1950,25 @@
     },
     "sybase" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ],
+        "defaultValue" : "com.sybase.jdbc2.jdbc.SybDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -1972,12 +1978,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.sybase.jdbc2.jdbc.SybDriver", "com.sybase.jdbc4.jdbc.SybDriver" ],
-        "defaultValue" : "com.sybase.jdbc2.jdbc.SybDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -1991,19 +1991,25 @@
     },
     "teiid" : {
       "configuration" : [ {
+        "allowedValues" : [ "org.teiid.jdbc.TeiidDriver" ],
+        "defaultValue" : "org.teiid.jdbc.TeiidDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -2013,12 +2019,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "org.teiid.jdbc.TeiidDriver" ],
-        "defaultValue" : "org.teiid.jdbc.TeiidDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -2032,19 +2032,25 @@
     },
     "teradata" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.teradata.jdbc.TeraDriver" ],
+        "defaultValue" : "com.teradata.jdbc.TeraDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -2054,12 +2060,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.teradata.jdbc.TeraDriver" ],
-        "defaultValue" : "com.teradata.jdbc.TeraDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -2073,19 +2073,25 @@
     },
     "ucanaccess" : {
       "configuration" : [ {
+        "allowedValues" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ],
+        "defaultValue" : "net.ucanaccess.jdbc.UcanaccessDriver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -2095,12 +2101,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "net.ucanaccess.jdbc.UcanaccessDriver" ],
-        "defaultValue" : "net.ucanaccess.jdbc.UcanaccessDriver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -2114,19 +2114,25 @@
     },
     "vertica" : {
       "configuration" : [ {
+        "allowedValues" : [ "com.vertica.jdbc.Driver" ],
+        "defaultValue" : "com.vertica.jdbc.Driver",
+        "name" : "driverClassName",
+        "required" : false,
+        "type" : "string"
+      }, {
         "displayName" : "Connection URL",
         "name" : "jdbcUrl",
         "required" : true,
         "type" : "string"
       }, {
         "advanced" : true,
-        "defaultValue" : "0",
-        "name" : "minimumIdle",
+        "defaultValue" : "5",
+        "name" : "maximumPoolSize",
         "type" : "number"
       }, {
         "advanced" : true,
-        "defaultValue" : "5",
-        "name" : "maximumPoolSize",
+        "defaultValue" : "0",
+        "name" : "minimumIdle",
         "type" : "number"
       }, {
         "masked" : true,
@@ -2136,12 +2142,6 @@
       }, {
         "name" : "username",
         "required" : true,
-        "type" : "string"
-      }, {
-        "allowedValues" : [ "com.vertica.jdbc.Driver" ],
-        "defaultValue" : "com.vertica.jdbc.Driver",
-        "name" : "driverClassName",
-        "required" : false,
         "type" : "string"
       } ],
       "datasourceNames" : [ ],
@@ -2155,21 +2155,6 @@
     },
     "ws" : {
       "configuration" : [ {
-        "name" : "securityType",
-        "type" : "string"
-      }, {
-        "name" : "wsdl",
-        "type" : "string"
-      }, {
-        "name" : "endPoint",
-        "type" : "string"
-      }, {
-        "name" : "serviceName",
-        "type" : "string"
-      }, {
-        "name" : "endPointName",
-        "type" : "string"
-      }, {
         "name" : "authPassword",
         "type" : "string"
       }, {
@@ -2182,13 +2167,28 @@
         "name" : "configName",
         "type" : "string"
       }, {
-        "name" : "requestTimeout",
-        "type" : "string"
-      }, {
         "name" : "connectTimeout",
         "type" : "string"
       }, {
+        "name" : "endPoint",
+        "type" : "string"
+      }, {
+        "name" : "endPointName",
+        "type" : "string"
+      }, {
         "name" : "namespaceUri",
+        "type" : "string"
+      }, {
+        "name" : "requestTimeout",
+        "type" : "string"
+      }, {
+        "name" : "securityType",
+        "type" : "string"
+      }, {
+        "name" : "serviceName",
+        "type" : "string"
+      }, {
+        "name" : "wsdl",
         "type" : "string"
       } ],
       "datasourceNames" : [ ],

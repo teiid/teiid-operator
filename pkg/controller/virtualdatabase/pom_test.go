@@ -55,9 +55,9 @@ func TestParsingDataSources2(t *testing.T) {
 
 	assert.Equal(t, 2, len(dsInfo))
 	assert.Equal(t, "user-s3", dsInfo[0].Name)
-	assert.Equal(t, "amazon-s3", dsInfo[0].Type)
+	assert.Equal(t, "s3", dsInfo[0].Type)
 
-	assert.Equal(t, "s3", dsInfo[1].Name)
+	assert.Equal(t, "cephstore", dsInfo[1].Name)
 	assert.Equal(t, "user-s3", dsInfo[1].Type)
 }
 
@@ -89,7 +89,7 @@ func TestPomGeneration2(t *testing.T) {
 
 	project, err := GenerateVdbPom(&vdb, dsInfo, false, false, false)
 	assert.Nil(t, err)
-	assert.True(t, hasDependency(project, "org.teiid", "spring-data-amazon-s3"))
+	assert.True(t, hasDependency(project, "org.teiid", "spring-data-s3"))
 	assert.True(t, hasDependency(project, "org.teiid", "teiid-spring-boot-starter"))
 	assert.True(t, hasDependency(project, "org.springframework.boot", "spring-boot-starter-actuator"))
 	assert.True(t, hasDependency(project, "io.opentracing.contrib", "opentracing-spring-jaeger-web-starter"))
