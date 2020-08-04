@@ -19,9 +19,9 @@ spec:
       ddl: |
         CREATE DATABASE example;
         USE DATABASE example;
-          
+
         CREATE FOREIGN DATA WRAPPER "salesforce";
         CREATE SERVER bqt FOREIGN DATA WRAPPER "salesforce";
         CREATE SCHEMA salesforce SERVER bqt;
-        SET SCHEMA salesforce;          
+        SET SCHEMA salesforce;
         IMPORT FROM SERVER bqt INTO salesforce;

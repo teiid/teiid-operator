@@ -23,11 +23,13 @@ import (
 
 var log = logs.GetLogger("openshift-webconsole")
 
+// ConsoleYAMLSampleExists --
 func ConsoleYAMLSampleExists() error {
 	gvk := schema.GroupVersionKind{Group: "console.openshift.io", Version: "v1", Kind: "ConsoleYAMLSample"}
 	return kubernetes.CustomResourceDefinitionExists(gvk)
 }
 
+// CreateConsoleYAMLSamples --
 func CreateConsoleYAMLSamples(c client.Client) {
 	log.Info("Loading CR YAML samples.")
 	box := packr.New("cryamlsamples", "../../../deploy/crs")
@@ -67,11 +69,13 @@ func CreateConsoleYAMLSamples(c client.Client) {
 	}
 }
 
+// ConsoleLinkExists --
 func ConsoleLinkExists() error {
 	gvk := schema.GroupVersionKind{Group: "console.openshift.io", Version: "v1", Kind: "ConsoleLink"}
 	return kubernetes.CustomResourceDefinitionExists(gvk)
 }
 
+// CreateConsoleLink --
 func CreateConsoleLink(ctx context.Context, route *routev1.Route, c client.Client, vdb *v1alpha1.VirtualDatabase) {
 	consoleLinkName := fmt.Sprintf("%s-%s", vdb.ObjectMeta.Name, vdb.Namespace)
 	doCreateConsoleLink(ctx, consoleLinkName, route, c, vdb)
@@ -135,6 +139,7 @@ func consoleLinkText(route *routev1.Route) string {
 	return "VirtualDatabase - " + route.Name
 }
 
+// RemoveConsoleLink --
 func RemoveConsoleLink(ctx context.Context, c client.Client, vdb *v1alpha1.VirtualDatabase) {
 	consoleLinkName := fmt.Sprintf("%s-%s", vdb.ObjectMeta.Name, vdb.Namespace)
 	doDeleteConsoleLink(ctx, consoleLinkName, c)

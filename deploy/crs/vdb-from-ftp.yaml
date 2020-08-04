@@ -37,6 +37,6 @@ spec:
           PRIMARY KEY(symbol)
         )
         AS
-        SELECT tt.symbol, tt.price 
-          FROM (EXEC marketdata.getTextFiles('data.txt')) AS f, 
+        SELECT tt.symbol, tt.price
+          FROM (EXEC marketdata.getTextFiles('data.txt')) AS f,
           TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;

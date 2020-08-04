@@ -23,8 +23,7 @@ spec:
       ddl: |
         CREATE DATABASE example;
         USE DATABASE example;
-        
+
         CREATE SERVER store FOREIGN DATA WRAPPER file;
         CREATE SCHEMA testing SERVER store;
         IMPORT FROM SERVER store INTO testing;
-

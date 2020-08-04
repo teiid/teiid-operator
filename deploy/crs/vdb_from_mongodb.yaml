@@ -18,7 +18,7 @@ spec:
   build:
     source:
       ddl: >
-        CREATE DATABASE movies OPTIONS (ANNOTATION 'Movies Database'); 
+        CREATE DATABASE movies OPTIONS (ANNOTATION 'Movies Database');
         USE DATABASE movies;
 
         CREATE FOREIGN DATA WRAPPER mongodb;

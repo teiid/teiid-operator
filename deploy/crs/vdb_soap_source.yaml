@@ -21,17 +21,17 @@ spec:
       ddl: |
         CREATE DATABASE soap;
         USE DATABASE soap;
-        
+
         --sources
         CREATE SERVER soapCountry FOREIGN DATA WRAPPER soap;
 
         --schema
         CREATE SCHEMA countrySource SERVER soapCountry;
         CREATE VIRTUAL SCHEMA country;
-        
+
         IMPORT FROM SERVER soapCountry INTO countrySource;
-        
+
         SET SCHEMA country;
-        
-        CREATE VIRTUAL PROCEDURE GetCapitalCity (code string) returns string as 
+
+        CREATE VIRTUAL PROCEDURE GetCapitalCity (code string) returns string as
           select xpathValue(CapitalCitySoapResponse, '//*:CapitalCityResult') from (call countrySource.CapitalCity(xmlelement("CapitalCity", xmlnamespaces(default 'http://www.oorsprong.org/websamples.countryinfo'), xmlelement("sCountryISOCode",code)))) x;

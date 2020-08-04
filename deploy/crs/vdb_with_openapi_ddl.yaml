@@ -37,7 +37,7 @@ spec:
         SET SCHEMA pets;
 
         CREATE VIRTUAL PROCEDURE createPets(IN pet json) OPTIONS (UPDATECOUNT 1)AS
-        BEGIN  
+        BEGIN
           LOOP ON (SELECT j.id, j.name, j.status FROM JSONTABLE(pet, '$', false COLUMNS id integer, name string, status string) as j) AS x
           BEGIN
               INSERT INTO petdb.Pet(id, name, status) VALUES (x.id, x.name, x.status);
@@ -52,7 +52,7 @@ spec:
 
         CREATE VIRTUAL PROCEDURE listPets(IN "limit" integer) RETURNS json OPTIONS (UPDATECOUNT 0)AS
         BEGIN
-            declare json x = (SELECT JSONARRAY_AGG(JSONOBJECT(p.id, p.name, p.status)) 
+            declare json x = (SELECT JSONARRAY_AGG(JSONOBJECT(p.id, p.name, p.status))
                 FROM petdb.Pet p WHERE p.status in (status));
             return x;
         END
