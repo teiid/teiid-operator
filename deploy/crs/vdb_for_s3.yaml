@@ -24,7 +24,7 @@ spec:
         CREATE DATABASE example;
         USE DATABASE example;
 
-        CREATE FOREIGN DATA WRAPPER "user-s3" TYPE s3;  
+        CREATE FOREIGN DATA WRAPPER "user-s3" TYPE s3;
         CREATE SERVER store FOREIGN DATA WRAPPER "user-s3";
         CREATE SCHEMA ceph SERVER store;
 
@@ -37,6 +37,6 @@ spec:
           PRIMARY KEY(symbol)
         ) AS
         SELECT tt.symbol, tt.price,
-        FROM 
-          (EXEC testing.getTextFiles('sample_data.csv')) AS f, 
-          TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;        
+        FROM
+          (EXEC testing.getTextFiles('sample_data.csv')) AS f,
+          TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;

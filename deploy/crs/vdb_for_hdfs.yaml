@@ -17,7 +17,7 @@ spec:
       ddl: |
         CREATE DATABASE example;
         USE DATABASE example;
-        
+
         CREATE SERVER store FOREIGN DATA WRAPPER file;
         CREATE SCHEMA testing SERVER store;
 
@@ -34,4 +34,4 @@ spec:
         SELECT
         tt.symbol, tt.price
         FROM (EXEC testing.getTextFiles('/path/stock.txt')) AS f,
-        TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;      
+        TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;

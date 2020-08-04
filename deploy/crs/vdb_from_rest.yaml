@@ -35,5 +35,5 @@ spec:
         ) AS
             SELECT p.id, p.employee_name, p.employee_salary, p.employee_age
             FROM TABLE(call invokeHttp(action=>'GET', endpoint=>'employees')) as x,
-            JSONTABLE(JSONPARSE(x.result,true), '$.data' COLUMNS id integer, 
+            JSONTABLE(JSONPARSE(x.result,true), '$.data' COLUMNS id integer,
             employee_name string, employee_salary double, employee_age integer) as p;

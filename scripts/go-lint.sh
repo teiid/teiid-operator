@@ -1,5 +1,6 @@
 #!/bin/sh
-yamllint deploy config
+
+yamllint --no-warnings -c scripts/yamllint.config deploy/crs
 dirs=(cmd pkg version)
 for dir in "${dirs[@]}"
 do
