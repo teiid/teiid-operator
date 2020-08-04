@@ -10,11 +10,11 @@ Teiid Operator for OpenShift/Kubernetes
 ### Requirements
 
 - go v1.13+
-- operator-sdk v0.15.0+
+- operator-sdk v0.17.0+ (will be installed automatically)
 - buildah v1.14.2+
 - golint
+- yamllint
 - Optional Docker Hub account
-
 
 ### SetUp the OpenShift 4.x Cluster (Code Ready Containers) on Laptop
 
