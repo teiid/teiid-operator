@@ -1,0 +1,37 @@
+apiVersion: teiid.io/v1alpha1
+kind: VirtualDatabase
+metadata:
+  name: example
+spec:
+  replicas: 1
+  expose:
+    - LoadBalancer
+  datasources:
+    - name: store
+      type: hdfs
+      properties:
+        - name: fsUri
+          value: hdfs://myhost:9000
+  build:
+    source:
+      ddl: |
+        CREATE DATABASE example;
+        USE DATABASE example;
+        
+        CREATE SERVER store FOREIGN DATA WRAPPER file;
+        CREATE SCHEMA testing SERVER store;
+
+        IMPORT FROM SERVER store INTO testing;
+
+        SET SCHEMA testing;
+
+        CREATE VIEW stock_price (
+          symbol string(255) NOT NULL AUTO_INCREMENT,
+          price double NOT NULL,
+          PRIMARY KEY(symbol)
+        )
+        AS
+        SELECT
+        tt.symbol, tt.price
+        FROM (EXEC testing.getTextFiles('/path/stock.txt')) AS f,
+        TEXTTABLE(f.file COLUMNS symbol string, price double  HEADER) AS tt;      

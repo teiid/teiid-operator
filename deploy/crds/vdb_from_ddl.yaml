@@ -1,38 +1,33 @@
 apiVersion: teiid.io/v1alpha1
 kind: VirtualDatabase
 metadata:
-  name: dv-customer
+  name: hello-world
 spec:
   replicas: 1
-  expose:
-    - LoadBalancer
   datasources:
     - name: sampledb
-      type: postgresql
+      type: h2
       properties:
         - name: username
-          value: postgres
+          value: sa
         - name: password
-          value: postgres
+          value: sa
         - name: jdbc-url
-          value: jdbc:postgresql://database/postgres
+          value: jdbc:h2:mem:sampledb;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;INIT=create table note(id integer primary key, msg varchar(80))\;INSERT INTO note VALUES(1, 'First note')\;INSERT INTO note VALUES(2, 'Second note');
+        - name: driver-class-name
+          value: org.h2.Driver
   build:
     source:
+      dependencies:
+        - com.h2database:h2:1.4.199
       ddl: |
-        CREATE DATABASE customer OPTIONS (ANNOTATION 'Customer VDB');
-        USE DATABASE customer;
+        CREATE DATABASE dispatch OPTIONS (ANNOTATION 'Dispatch VDB');
+        USE DATABASE dispatch;
+        CREATE FOREIGN DATA WRAPPER h2;
 
-        CREATE SERVER sampledb TYPE 'NONE' FOREIGN DATA WRAPPER postgresql;
+        CREATE SERVER sampledb FOREIGN DATA WRAPPER h2;
 
-        CREATE SCHEMA accounts SERVER sampledb;
-        CREATE VIRTUAL SCHEMA portfolio;
+        CREATE SCHEMA dispatch SERVER sampledb;
 
-        SET SCHEMA accounts;
-        IMPORT FOREIGN SCHEMA public FROM SERVER sampledb INTO accounts OPTIONS("importer.useFullSchemaName" 'false');
-
-        SET SCHEMA portfolio;
-
-        CREATE VIEW CustomerZip(id bigint PRIMARY KEY, name string, ssn string, zip string) AS 
-            SELECT c.ID as id, c.NAME as name, c.SSN as ssn, a.ZIP as zip 
-            FROM accounts.CUSTOMER c LEFT OUTER JOIN accounts.ADDRESS a 
-            ON c.ID = a.CUSTOMER_ID;
+        -- H2 converts the schema name to capital case
+        IMPORT FOREIGN SCHEMA "PUBLIC" FROM SERVER sampledb INTO dispatch;
