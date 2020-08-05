@@ -8,22 +8,25 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/go-logr/logr v0.1.0
 	github.com/go-openapi/spec v0.19.6
-	github.com/gobuffalo/packr/v2 v2.7.1
+	github.com/gobuffalo/packr/v2 v2.8.0
 	github.com/hetesiistvan/go-pkcs12 v0.0.0-20191008101753-f02f3241080a
 	github.com/infinispan/infinispan-operator v0.0.0-20200421123311-ca42dade66d1
 	github.com/jaegertracing/jaeger-operator v1.16.0
+	github.com/karrick/godirwalk v1.15.6 // indirect
 	github.com/magiconair/properties v1.8.1
 	github.com/openshift/api v3.9.1-0.20190927182313-d4a64ec2cbd8+incompatible
 	github.com/openshift/client-go v3.9.0+incompatible
 	github.com/operator-framework/operator-sdk v0.17.0
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/common v0.9.1
+	github.com/rogpeppe/go-internal v1.6.1 // indirect
 	github.com/scylladb/go-set v1.0.2
+	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.5.1
 	go.uber.org/zap v1.14.1
-	golang.org/x/crypto v0.0.0-20200214034016-1d94cc7ab1c6 // indirect
-	golang.org/x/sys v0.0.0-20200219091948-cb0a6d8edb6c // indirect
+	golang.org/x/crypto v0.0.0-20200728195943-123391ffb6de // indirect
+	golang.org/x/sys v0.0.0-20200805065543-0cf7623e9dbd // indirect
+	golang.org/x/tools v0.0.0-20200805155214-75c71030ab24 // indirect
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.17.4
 	k8s.io/apimachinery v0.17.4

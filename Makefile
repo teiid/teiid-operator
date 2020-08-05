@@ -79,7 +79,11 @@ install: install-sdk install-tools
 ci: install ensure-generate-is-noop check format lint build test
 
 .PHONY: generate
-generate: internal-generate format
+generate: update-connections internal-generate format
+
+.PHONY: update-connections
+update-connections:
+	./scripts/update-connections.sh
 
 .PHONY: internal-generate
 internal-generate:
