@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 IMAGE=$1
 CRC_IMAGE=$2
 CRC_EXTERNAL=default-route-openshift-image-registry.apps-crc.testing

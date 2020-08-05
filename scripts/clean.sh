@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 IMAGE=$1
 
 sed "s|\$IMAGE_LOCATION|${IMAGE}|g" deploy/operator.yaml > deploy/operator-`whoami`.yaml

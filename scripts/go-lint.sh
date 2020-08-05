@@ -1,5 +1,5 @@
-#!/bin/sh
-yamllint --no-warnings -c scripts/yamllint.config deploy/crs
+#!/bin/bash
+yamllint -c scripts/yamllint.config deploy/crs
 dirs=(cmd pkg)
 for dir in "${dirs[@]}"
 do
