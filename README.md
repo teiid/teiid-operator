@@ -91,7 +91,7 @@ make build
 ```
 When you run this command the Operator is built and a (docker) container image is created on your local machine under `{REGISTRY}/teiid-operator:{current-version}` using the `buildah` tool.
 
-Before submitting PR, please be sure to generate, vet, format, and test your code. This all can be done with one command.
+Before submitting PR, please be sure to generate, update-connections, vet, format, and test your code. This all can be done with one command.
 
 ```bash
 make ci
@@ -99,13 +99,20 @@ make ci
 
 ### Updating the CRDs and Adding new data sources
 
-If the Operator being released and if you need to update the CRD to a new version or if you added a new data source in Teiid Spring Boot that needs to be used with Operator then run 
+If the Operator being released and if you need to update the CRD to a new version
 
 ```bash
 make generate
 ```
 
-This will generate the new CRDs or `connection_factories.json` file
+This will generate the new CRDs
+
+
+To pull the latest set of connection information for you version - generally only needed if you following a SNASHOT version - run
+
+```bash
+make update-connections
+```
 
 ### Deploying Teiid Operator in OpenShift
 
