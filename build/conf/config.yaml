@@ -1,5 +1,5 @@
-teiidSpringBootVersion: 1.6.0-SNAPSHOT
-teiidVersion: 15.0.0-SNAPSHOT
+teiidSpringBootVersion: 1.6.0
+teiidVersion: 15.0.0
 springBootVersion: 2.2.6.RELEASE
 mavenRepositories:
   central: https://repo.maven.apache.org/maven2
