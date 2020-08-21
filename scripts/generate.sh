@@ -20,7 +20,7 @@ if [ $? != 0 ]; then
 fi
 
 # generate the CRD(s)
-operator-sdk generate crds
+${GOPATH}/bin/operator-sdk generate crds
 RT=$?
 if [ ${RT} != 0 ]; then
     echo "Failed to generate CRDs."
@@ -36,7 +36,7 @@ if [ ${RT} != 0 ]; then
 fi
 
 # generate the Kubernetes stubs
-operator-sdk generate k8s
+${GOPATH}/bin/operator-sdk generate k8s
 RT=$?
 if [ ${RT} != 0 ]; then
     echo "Failed to generate the Kubernetes stubs."

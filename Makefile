@@ -30,13 +30,13 @@ test: vet fmt
 
 .PHONY: sdk-generate
 sdk-generate:
-	@${GO_FLAGS} operator-sdk generate k8s
+	@${GO_FLAGS} ${GOPATH}/bin/operator-sdk generate k8s
 
 .PHONY: build
 build: format test
 	@echo Building image $(IMAGE_NAME)
 	go generate ./...
-	@${GO_FLAGS} operator-sdk build --image-builder buildah $(IMAGE_NAME)
+	@${GO_FLAGS} ${GOPATH}/bin/operator-sdk build --image-builder buildah $(IMAGE_NAME)
 
 .PHONY: clean
 clean:
