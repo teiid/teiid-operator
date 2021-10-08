@@ -1,3 +1,7 @@
+# Deprecation Note: 
+
+This project is no longer being maintained.
+
 # Teiid Operator
 
 Teiid Operator for OpenShift/Kubernetes
